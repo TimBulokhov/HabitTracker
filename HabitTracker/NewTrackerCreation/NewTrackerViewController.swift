@@ -16,7 +16,7 @@ final class NewTrackerViewController: UIViewController {
     
     private lazy var creatingTrackerLabel: UILabel = {
         let trackerLabel = UILabel()
-        trackerLabel.text = "Создание трекера"
+        trackerLabel.text = "Creation of the tracker"
         trackerLabel.textColor = .ypBlackDay
         trackerLabel.font = .systemFont(ofSize: 16, weight: .medium)
         trackerLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -24,14 +24,14 @@ final class NewTrackerViewController: UIViewController {
     }()
     
     private lazy var creatingHabitButton: UIButton = {
-        let title = "Привычка"
+        let title = "Habit"
         let button = addActionsForButton(title: title, action: #selector(creatingHabit))
         button.accessibilityIdentifier = "creatingHabitButton"
         return button
     }()
     
     private lazy var creatingIrregularEventButton: UIButton = {
-        let title = "Нерегулярные событие"
+        let title = "Irregular event"
         let button = addActionsForButton(title: title, action: #selector(creatingIrregularEvent))
         button.accessibilityIdentifier = "createIrregularEventButton"
         return button

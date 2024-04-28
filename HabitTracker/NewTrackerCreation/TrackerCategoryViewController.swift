@@ -27,7 +27,7 @@ final class TrackerCategoryViewController: UIViewController {
     
     private lazy var habitLabel: UILabel = {
         let label = UILabel()
-        label.text = "Категория"
+        label.text = "Category"
         label.textColor = .ypBlackDay
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -35,7 +35,7 @@ final class TrackerCategoryViewController: UIViewController {
     }()
     
     private lazy var mainStarImageStub: UIImageView = {
-        let image = UIImageView(image: UIImage(named: "starIcon"))
+        let image = UIImageView(image: UIImage(named: "Error1"))
         image.clipsToBounds = true
         image.contentMode = .scaleAspectFill
         image.translatesAutoresizingMaskIntoConstraints = false
@@ -44,7 +44,7 @@ final class TrackerCategoryViewController: UIViewController {
     
     private lazy var descriptionPlaceholderStub: UILabel = {
         let label = UILabel()
-        label.text = "Привычки и события можно\nобъединить по смыслу"
+        label.text = "Habits and events can be\ncombined in meaning"
         label.numberOfLines = 2
         label.textAlignment = .center
         label.font = .systemFont(ofSize: 12, weight: .medium)
@@ -54,7 +54,7 @@ final class TrackerCategoryViewController: UIViewController {
     
     private lazy var creatingHabitButton: UIButton = {
         let button = UIButton()
-        button.setTitle("Добавить категорию", for: .normal)
+        button.setTitle("Add category", for: .normal)
         button.setTitleColor(.ypWhiteDay, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = .ypBlackDay
@@ -195,7 +195,7 @@ extension TrackerCategoryViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        let deleteAction = UIAction(title: "Удалить", attributes: .destructive) { [weak self] _ in
+        let deleteAction = UIAction(title: "Delete", attributes: .destructive) { [weak self] _ in
             guard let self = self else { return }
             self.dataStorege.removeCategory(atIndex: indexPath.row)
             self.checkForAvailableCategories()

@@ -40,17 +40,6 @@ final class TrackersViewController: UIViewController {
         return collectionView
     }()
     
-    private lazy var addTrackerButton: UIButton = {
-        let button = UIButton.systemButton(
-            with: UIImage(named: "addTracker")!,
-            target: self,
-            action: #selector(self.addNewTracker))
-        button.accessibilityIdentifier = "addTrackerButton"
-        button.tintColor = .ypBlackDay
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
-    
     private lazy var datePicker: UIDatePicker = {
         let datePicker = UIDatePicker()
         datePicker.preferredDatePickerStyle = .compact
@@ -65,7 +54,7 @@ final class TrackersViewController: UIViewController {
     
     private lazy var trackerLabel: UILabel = {
         let trackerLabel = UILabel()
-        trackerLabel.text = "Трекеры"
+        trackerLabel.text = "Trackers"
         trackerLabel.font = .boldSystemFont(ofSize: 34)
         trackerLabel.translatesAutoresizingMaskIntoConstraints = false
         return trackerLabel
@@ -76,7 +65,7 @@ final class TrackersViewController: UIViewController {
         trackersSearchBar.layer.masksToBounds = true
         trackersSearchBar.searchBarStyle = .minimal
         trackersSearchBar.translatesAutoresizingMaskIntoConstraints = false
-        trackersSearchBar.placeholder = "Поиск"
+        trackersSearchBar.placeholder = "Search"
         trackersSearchBar.delegate = self
         return trackersSearchBar
     }()
@@ -158,10 +147,10 @@ final class TrackersViewController: UIViewController {
         collectionView.isHidden = true
         let searchText = searchBar.text ?? ""
         if visibleCategories.isEmpty && !categories.isEmpty || !searchText.isEmpty{
-            searchMainPlaceholderStub.text = "Ничего не найдено"
+            searchMainPlaceholderStub.text = "Nothing found"
             mainImageStub.image = UIImage(named: "error2")
         } else {
-            searchMainPlaceholderStub.text = "Что будем отслеживать?"
+            searchMainPlaceholderStub.text = "What you want to track?"
             mainImageStub.image = UIImage(named: "Error1")
         }
     }
@@ -194,10 +183,23 @@ final class TrackersViewController: UIViewController {
     }
     
     private func configNavigationBar() {
-        let addTrackerBarButtonItem = UIBarButtonItem(customView: addTrackerButton)
+        let addButton = UIButton(type: .custom)
+        if let iconImage = UIImage(named: "addTracker")?.withRenderingMode(.alwaysOriginal) {
+            addButton.setImage(iconImage, for: .normal)
+        }
+        addButton.titleLabel?.font = UIFont(name: "SF Pro", size: 34)
+        addButton.addTarget(
+            self,
+            action: #selector(addNewTracker),
+            for: .touchUpInside
+        )
+
+        addButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: -20, bottom: 0, right: 0)
+
+        let addButtonItem = UIBarButtonItem(customView: addButton)
+        navigationItem.leftBarButtonItem = addButtonItem
         let datePickerBarButtonItem = UIBarButtonItem(customView: datePicker)
-        let datePickerConstraint = NSLayoutConstraint(item: datePicker, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1.0, constant: 100.0)
-        navigationItem.leftBarButtonItem = addTrackerBarButtonItem
+        let datePickerConstraint = NSLayoutConstraint(item: datePicker, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1.0, constant: 110.0)
         navigationItem.rightBarButtonItems = [datePickerBarButtonItem]
         navigationBar.barTintColor = UIColor.ypWhiteDay
         navigationBar.shadowImage = UIImage()
@@ -215,7 +217,7 @@ final class TrackersViewController: UIViewController {
     
     private func configViews() {
         _ = self.skipKeyboard
-        searchBar.setValue("Отменить", forKey: "cancelButtonText")
+        searchBar.setValue("Cancel", forKey: "cancelButtonText")
         view.backgroundColor = .ypWhiteDay
         view.addSubview(navigationBar)
         view.addSubview(trackerLabel)

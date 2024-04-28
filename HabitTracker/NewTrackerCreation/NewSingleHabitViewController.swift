@@ -20,7 +20,7 @@ final class NewSingleHabitViewController: UIViewController {
     private let characterLimitInField = 38
     private let color: UIColor = .colorSelection.randomElement()!
     private var creatingTrackersModel: [CreatingTrackersModel] = [
-        CreatingTrackersModel(titleLabelText: "Категория", subTitleLabel: "")
+        CreatingTrackersModel(titleLabelText: "Category", subTitleLabel: "")
     ]
     
     //MARK: - UiElements
@@ -29,7 +29,7 @@ final class NewSingleHabitViewController: UIViewController {
     
     private lazy var newHabitLabel: UILabel = {
         let trackerLabel = UILabel()
-        trackerLabel.text = "Новое нерегулярное событие"
+        trackerLabel.text = "New irregular event"
         trackerLabel.textColor = .ypBlackDay
         trackerLabel.font = .systemFont(ofSize: 16, weight: .medium)
         trackerLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -39,7 +39,7 @@ final class NewSingleHabitViewController: UIViewController {
     private lazy var nameTrackerTextField: UITextField = {
         let textField = UITextField()
         textField.indent(size: 16)
-        textField.placeholder = "Введите название трекера"
+        textField.placeholder = "Enter the name of the tracker"
         textField.textColor = .ypBlackDay
         textField.backgroundColor = .ypBackgroundDay
         textField.layer.cornerRadius = 16
@@ -53,7 +53,7 @@ final class NewSingleHabitViewController: UIViewController {
     
     private lazy var errorLabel: UILabel = {
         let label = UILabel()
-        label.text = "Ограничение 38 символов"
+        label.text = "Limit is 38 characters"
         label.textColor = .ypRed
         label.font = .systemFont(ofSize: 17)
         label.textAlignment = .center
@@ -75,7 +75,7 @@ final class NewSingleHabitViewController: UIViewController {
         let button = UIButton()
         button.addTarget(self, action: #selector(self.cancelCreation), for: .touchUpInside)
         button.accessibilityIdentifier = "cancelButton"
-        button.setTitle("Отменить", for: .normal)
+        button.setTitle("Cancel", for: .normal)
         button.setTitleColor(.ypRed, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = .clear
@@ -91,7 +91,7 @@ final class NewSingleHabitViewController: UIViewController {
         let button = UIButton()
         button.addTarget(self, action: #selector(self.create), for: .touchUpInside)
         button.accessibilityIdentifier = "creatingButton"
-        button.setTitle("Создать", for: .normal)
+        button.setTitle("Create", for: .normal)
         button.setTitleColor(.ypWhiteDay, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = .ypGray

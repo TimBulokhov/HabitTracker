@@ -26,8 +26,8 @@ final class NewHabitViewController: UIViewController {
     private let color: UIColor = .colorSelection.randomElement()!
     private var dateEvents = [Int]()
     private var creatingTrackersModel: [CreatingTrackersModel] = [
-        CreatingTrackersModel(titleLabelText: "Категория", subTitleLabel: ""),
-        CreatingTrackersModel(titleLabelText: "Расписание", subTitleLabel: "")
+        CreatingTrackersModel(titleLabelText: "Category", subTitleLabel: ""),
+        CreatingTrackersModel(titleLabelText: "Schedule", subTitleLabel: "")
     ]
     
     // MARK: - UiElements
@@ -36,7 +36,7 @@ final class NewHabitViewController: UIViewController {
     
     private lazy var newHabitLabel: UILabel = {
         let trackerLabel = UILabel()
-        trackerLabel.text = "Новая привычка"
+        trackerLabel.text = "New habit"
         trackerLabel.textColor = .ypBlackDay
         trackerLabel.font = .systemFont(ofSize: 16, weight: .medium)
         trackerLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -46,7 +46,7 @@ final class NewHabitViewController: UIViewController {
     private lazy var nameTrackerTextField: UITextField = {
         let textField = UITextField()
         textField.indent(size: 16)
-        textField.placeholder = "Введите название трекера"
+        textField.placeholder = "Enter the name of the tracker"
         textField.textColor = .ypBlackDay
         textField.backgroundColor = .ypBackgroundDay
         textField.layer.cornerRadius = 16
@@ -60,7 +60,7 @@ final class NewHabitViewController: UIViewController {
     
     private lazy var errorLabel: UILabel = {
         let label = UILabel()
-        label.text = "Ограничение 38 символов"
+        label.text = "Limit is 38 characters"
         label.textColor = .ypRed
         label.font = .systemFont(ofSize: 17)
         label.textAlignment = .center
@@ -81,7 +81,7 @@ final class NewHabitViewController: UIViewController {
     private lazy var cancelButton: UIButton = {
         let button = UIButton()
         button.addTarget(self, action: #selector(self.cancelCreation), for: .touchUpInside)
-        button.setTitle("Отменить", for: .normal)
+        button.setTitle("Cancel", for: .normal)
         button.setTitleColor(.ypRed, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = .clear
@@ -96,7 +96,7 @@ final class NewHabitViewController: UIViewController {
     private lazy var creatingButton: UIButton = {
         let button = UIButton()
         button.addTarget(self, action: #selector(self.create), for: .touchUpInside)
-        button.setTitle("Создать", for: .normal)
+        button.setTitle("Create", for: .normal)
         button.setTitleColor(.ypWhiteDay, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = .ypGray
@@ -216,7 +216,7 @@ extension NewHabitViewController: NewHabitViewControllerDelegate {
     func updateDate(days: [String]) {
         if !days.isEmpty {
             if days.count == 7 {
-                creatingTrackersModel[1].subTitleLabel = "Каждый день"
+                creatingTrackersModel[1].subTitleLabel = "Every day"
                 convertToDayInDateFormatter(days)
             } else {
                 creatingTrackersModel[1].subTitleLabel = days.joined(separator: ", ")

@@ -31,7 +31,7 @@ final class ScheduleViewController: UIViewController {
     
     private lazy var scheduleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Расписание"
+        label.text = "Schedule"
         label.textColor = .ypBlackDay
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -40,7 +40,7 @@ final class ScheduleViewController: UIViewController {
     
     private lazy var doneButton: UIButton = {
         let button = UIButton()
-        button.setTitle("Готово", for: .normal)
+        button.setTitle("Ready", for: .normal)
         button.setTitleColor(.ypWhiteDay, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = .ypBlackDay
