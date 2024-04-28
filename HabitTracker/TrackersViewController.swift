@@ -128,7 +128,7 @@ final class TrackersViewController: UIViewController {
     
     @objc
     private func addNewTracker() {
-        let сreatingNewTrackerViewController = CreatingNewTrackerViewController()
+        let сreatingNewTrackerViewController = NewTrackerViewController()
         сreatingNewTrackerViewController.delegate = self
         let navigationController = UINavigationController(rootViewController: сreatingNewTrackerViewController)
         present(navigationController, animated: true)
@@ -159,7 +159,7 @@ final class TrackersViewController: UIViewController {
         let searchText = searchBar.text ?? ""
         if visibleCategories.isEmpty && !categories.isEmpty || !searchText.isEmpty{
             searchMainPlaceholderStub.text = "Ничего не найдено"
-            mainImageStub.image = UIImage(named: "error3")
+            mainImageStub.image = UIImage(named: "error2")
         } else {
             searchMainPlaceholderStub.text = "Что будем отслеживать?"
             mainImageStub.image = UIImage(named: "Error1")

@@ -9,15 +9,15 @@ import UIKit
 
 // MARK: - CategoryViewDelegate
 
-protocol CategoryViewDelegate: AnyObject {
+protocol TrackerCategoryViewControllerDelegate: AnyObject {
     func updateData(nameCategory: String)
 }
 
 // MARK: - CategoryViewController
 
-final class CategoryViewController: UIViewController {
-    weak var delegateHabbit: CreatingHabitViewControllerDelegate?
-    weak var delegateIrregular: CreatingIrregularEventViewControllerDelegate?
+final class TrackerCategoryViewController: UIViewController {
+    weak var delegateHabbit: NewHabitViewControllerDelegate?
+    weak var delegateIrregular: NewSingleHabitViewControllerDelegate?
     private let dataStorege = DataStorege.shared
     private var category = [String]()
     
@@ -35,7 +35,7 @@ final class CategoryViewController: UIViewController {
     }()
     
     private lazy var mainStarImageStub: UIImageView = {
-        let image = UIImageView(image: UIImage(named: "Error1"))
+        let image = UIImageView(image: UIImage(named: "starIcon"))
         image.clipsToBounds = true
         image.contentMode = .scaleAspectFill
         image.translatesAutoresizingMaskIntoConstraints = false
@@ -164,7 +164,7 @@ final class CategoryViewController: UIViewController {
 
 // MARK: - CategoryViewDelegate
 
-extension CategoryViewController: CategoryViewDelegate {
+extension TrackerCategoryViewController: TrackerCategoryViewControllerDelegate {
     func updateData(nameCategory: String) {
         dataStorege.saveCategories(nameCategory)
         category = dataStorege.loadCategories()
@@ -175,7 +175,7 @@ extension CategoryViewController: CategoryViewDelegate {
 
 // MARK: - UITableViewDelegate
 
-extension CategoryViewController: UITableViewDelegate {
+extension TrackerCategoryViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if let editingIndexPath = dataStorege.loadIndexPathForCheckmark() {
             let previousSelectedCell = tableView.cellForRow(at: editingIndexPath)
@@ -209,7 +209,7 @@ extension CategoryViewController: UITableViewDelegate {
 
 // MARK: - UITableViewDataSource
 
-extension CategoryViewController: UITableViewDataSource {
+extension TrackerCategoryViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return category.count
     }

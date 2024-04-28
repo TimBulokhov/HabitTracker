@@ -8,8 +8,8 @@
 import UIKit
 
 final class CreatingCategoryViewController: UIViewController {
-    weak var delegate: CategoryViewDelegate?
-    private let categoryViewController = CategoryViewController()
+    weak var delegate: TrackerCategoryViewControllerDelegate?
+    private let categoryViewController = TrackerCategoryViewController()
     private let characterLimitInField = 38
     
     // MARK: - UiElements
@@ -115,5 +115,20 @@ extension CreatingCategoryViewController: UITextFieldDelegate {
         let textField = textField.text ?? ""
         let newLength = textField.count + string.count - range.length
         return newLength <= characterLimitInField
+    }
+}
+
+extension UIViewController {
+    var skipKeyboard: UITapGestureRecognizer {
+        let skipKeyboard = UITapGestureRecognizer (
+            target: self,
+            action: #selector(hideKeyboard))
+        skipKeyboard.cancelsTouchesInView = false
+        view.addGestureRecognizer(skipKeyboard)
+        return skipKeyboard
+    }
+    
+    @objc func hideKeyboard() {
+        view.endEditing(true)
     }
 }

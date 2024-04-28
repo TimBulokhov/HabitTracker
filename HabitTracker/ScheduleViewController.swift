@@ -22,7 +22,7 @@ private enum DaysOfTheWeek: String, CaseIterable {
 // MARK: - ScheduleViewController
 
 final class ScheduleViewController: UIViewController {
-    weak var delegate: CreatingHabitViewControllerDelegate?
+    weak var delegate: NewHabitViewControllerDelegate?
     private let dataStorege = DataStorege.shared
     
     // MARK: - UiElements

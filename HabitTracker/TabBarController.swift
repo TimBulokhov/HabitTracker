@@ -7,46 +7,54 @@
 
 import UIKit
 
+import UIKit
+
+// MARK: - UITabBarController
+
 final class TabBarController: UITabBarController {
+    
+    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        let trackerViewController = TrackersViewController()
-        trackerViewController.tabBarItem = UITabBarItem(
-            title: "Trackers",
-            image: UIImage(named: "trackersIcon"),
-            selectedImage: UIImage(named: "trackersIcon")
-        )
-        
-        let statsViewController = StatsViewController()
-        statsViewController.tabBarItem = UITabBarItem(
-            title: "Statistic",
-            image: UIImage(named: "statsIcon"),
-            selectedImage: UIImage(named: "statsIcon")
-        )
-        
-        viewControllers = [createNavigationController(rootViewController: trackerViewController),
-                           createNavigationController(rootViewController: statsViewController)
-        ]
-        
-        let separatorTabBarLine = UIView()
-        separatorTabBarLine.backgroundColor = .ypGray
-        separatorTabBarLine.translatesAutoresizingMaskIntoConstraints = false
-        
-        tabBar.addSubview(separatorTabBarLine)
-        
-        NSLayoutConstraint.activate([
-            separatorTabBarLine.topAnchor.constraint(equalTo: tabBar.topAnchor),
-            separatorTabBarLine.leadingAnchor.constraint(equalTo: tabBar.leadingAnchor),
-            separatorTabBarLine.trailingAnchor.constraint(equalTo: tabBar.trailingAnchor),
-            separatorTabBarLine.heightAnchor.constraint(equalToConstant: 1)
-        ])
-        
+        generateTabBar()
+        tabBarAppearance()
+        tabBarSetup()
     }
     
-    private func createNavigationController(rootViewController: UIViewController) -> UINavigationController {
-        let navigationController = UINavigationController(rootViewController: rootViewController)
-        return navigationController
+    // MARK: - Private methods
+    
+    private func generateTabBar() {
+        viewControllers = [
+            generateVC(
+                viewController: TrackersViewController(),
+                title: "Trackers",
+                image: UIImage(named: "trackersIcon")
+            ),
+            generateVC(
+                viewController: StatsViewController(),
+                title: "Statistic",
+                image: UIImage(named: "statsIcon")
+            )
+        ]
+    }
+    
+    private func tabBarSetup() {
+        tabBar.layer.borderWidth = 0.3
+        tabBar.layer.borderColor = UIColor(red: 0.0/255.0, green: 0.0/255.0, blue: 0.0/255.0, alpha: 0.2).cgColor
+        tabBar.clipsToBounds = true
+    }
+    
+    private func generateVC(viewController: UIViewController, title: String, image: UIImage?) ->
+    UIViewController {
+        viewController.tabBarItem.title = title
+        viewController.tabBarItem.image = image
+        return viewController
+    }
+    
+    private func tabBarAppearance() {
+        let tabBarAppearance: UITabBarAppearance = UITabBarAppearance()
+        tabBarAppearance.configureWithOpaqueBackground()
+        tabBar.standardAppearance = tabBarAppearance
     }
 }

@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class CreatingTableCell: UITableViewCell {
+final class NewTableCell: UITableViewCell {
     
     // MARK: - UIElements
     

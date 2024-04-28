@@ -9,7 +9,7 @@ import UIKit
 
 // MARK: - CreatingNewTrackerViewController
 
-final class CreatingNewTrackerViewController: UIViewController {
+final class NewTrackerViewController: UIViewController {
     weak var delegate: TrackerCreationDelegate?
     
     //MARK: - UiElements
@@ -49,7 +49,7 @@ final class CreatingNewTrackerViewController: UIViewController {
     
     @objc
     private func creatingHabit() {
-        let createHabitViewController = CreatingHabitViewController()
+        let createHabitViewController = NewHabitViewController()
         createHabitViewController.delegate = self.delegate
         let navigationController = UINavigationController(rootViewController: createHabitViewController)
         present(navigationController, animated: true)
@@ -57,7 +57,7 @@ final class CreatingNewTrackerViewController: UIViewController {
     
     @objc
     private func creatingIrregularEvent() {
-        let createIrregularEventViewController = CreatingIrregularEventViewController()
+        let createIrregularEventViewController = NewSingleHabitViewController()
         createIrregularEventViewController.delegate = self.delegate
         let navigationController = UINavigationController(rootViewController: createIrregularEventViewController)
         present(navigationController, animated: true)

@@ -11,14 +11,15 @@ protocol TrackerCreationDelegate: AnyObject {
     func didCreateTracker(_ tracker: Tracker, category: TrackerCategory)
 }
 
-protocol CreatingHabitViewControllerDelegate: AnyObject {
+protocol NewHabitViewControllerDelegate: AnyObject {
     func updateSubitle(nameSubitle: String)
     func updateDate(days: [String])
 }
 
 // MARK: - CreatingHabitViewController
 
-final class CreatingHabitViewController: UIViewController {
+final class NewHabitViewController: UIViewController {
+    private let emoji: String = emojiList.randomElement()!
     weak var delegate: TrackerCreationDelegate?
     private let dataStorege = DataStorege.shared
     private let characterLimitInField = 38
@@ -136,7 +137,7 @@ final class CreatingHabitViewController: UIViewController {
     @objc
     private func create() {
         guard let text = nameTrackerTextField.text else { return }
-        let newTracker = Tracker(id: UUID(), name: text, color: color, emoji: "𓀡", dateEvents: dateEvents)
+        let newTracker = Tracker(id: UUID(), name: text, color: color, emoji: emoji, dateEvents: dateEvents)
         let categoryTracker = TrackerCategory(title: creatingTrackersModel[0].subTitleLabel, trackers: [newTracker])
         delegate?.didCreateTracker(newTracker, category: categoryTracker)
         self.view.window?.rootViewController?.dismiss(animated: true) {
@@ -163,7 +164,7 @@ final class CreatingHabitViewController: UIViewController {
     }
     
     private func configTableView() {
-        tableView.register(CreatingTableCell.self, forCellReuseIdentifier: "CreatingTableCell")
+        tableView.register(NewTableCell.self, forCellReuseIdentifier: "CreatingTableCell")
         tableView.delegate = self
         tableView.dataSource = self
         tableView.separatorColor = .ypGray
@@ -211,7 +212,7 @@ final class CreatingHabitViewController: UIViewController {
 
 // MARK: - CreatingHabitViewControllerDelegate
 
-extension CreatingHabitViewController: CreatingHabitViewControllerDelegate {
+extension NewHabitViewController: NewHabitViewControllerDelegate {
     func updateDate(days: [String]) {
         if !days.isEmpty {
             if days.count == 7 {
@@ -241,7 +242,7 @@ extension CreatingHabitViewController: CreatingHabitViewControllerDelegate {
 
 // MARK: - UITextFieldDelegate
 
-extension CreatingHabitViewController: UITextFieldDelegate {
+extension NewHabitViewController: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         let textField = textField.text ?? ""
         let newLength = textField.count + string.count - range.length
@@ -251,11 +252,11 @@ extension CreatingHabitViewController: UITextFieldDelegate {
 
 // MARK: - CreatingHabitViewController
 
-extension CreatingHabitViewController: UITableViewDelegate {
+extension NewHabitViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         switch indexPath.row {
         case 0:
-            let categoryViewController = CategoryViewController()
+            let categoryViewController = TrackerCategoryViewController()
             categoryViewController.delegateHabbit = self
             let navigationController = UINavigationController(rootViewController: categoryViewController)
             present(navigationController, animated: true)
@@ -276,13 +277,13 @@ extension CreatingHabitViewController: UITableViewDelegate {
 
 // MARK: - UITableViewDataSource
 
-extension CreatingHabitViewController: UITableViewDataSource {
+extension NewHabitViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 2
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "CreatingTableCell", for: indexPath) as? CreatingTableCell
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "CreatingTableCell", for: indexPath) as? NewTableCell
         else { fatalError() }
         let data = creatingTrackersModel[indexPath.row]
         cell.configureCell(title: data.titleLabelText, subTitle: data.subTitleLabel)

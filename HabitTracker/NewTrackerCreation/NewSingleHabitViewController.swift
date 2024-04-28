@@ -7,13 +7,14 @@
 
 import UIKit
 
-protocol CreatingIrregularEventViewControllerDelegate: AnyObject {
+protocol NewSingleHabitViewControllerDelegate: AnyObject {
     func updateSubitle(nameSubitle: String)
 }
 
 // MARK: - CreatingHabitViewController
 
-final class CreatingIrregularEventViewController: UIViewController {
+final class NewSingleHabitViewController: UIViewController {
+    private let emoji: String = emojiList.randomElement()!
     weak var delegate: TrackerCreationDelegate?
     private let dataStorege = DataStorege.shared
     private let characterLimitInField = 38
@@ -130,7 +131,7 @@ final class CreatingIrregularEventViewController: UIViewController {
     @objc
     private func create() {
         guard let text = nameTrackerTextField.text else { return }
-        let newTracker = Tracker(id: UUID(), name: text, color: color, emoji: "𓀡", dateEvents: nil)
+        let newTracker = Tracker(id: UUID(), name: text, color: color, emoji: emoji, dateEvents: nil)
         let categoryTracker = TrackerCategory(title: creatingTrackersModel[0].subTitleLabel, trackers: [newTracker])
         delegate?.didCreateTracker(newTracker, category: categoryTracker)
         self.view.window?.rootViewController?.dismiss(animated: true) {
@@ -151,7 +152,7 @@ final class CreatingIrregularEventViewController: UIViewController {
     }
     
     private func configTableView() {
-        tableView.register(CreatingTableCell.self, forCellReuseIdentifier: "CreatingTableCell")
+        tableView.register(NewTableCell.self, forCellReuseIdentifier: "CreatingTableCell")
         tableView.delegate = self
         tableView.dataSource = self
         tableView.layer.cornerRadius = 16
@@ -197,7 +198,7 @@ final class CreatingIrregularEventViewController: UIViewController {
 
 // MARK: - CreatingIrregularEventViewControllerDelegate
 
-extension CreatingIrregularEventViewController: CreatingIrregularEventViewControllerDelegate {
+extension NewSingleHabitViewController: NewSingleHabitViewControllerDelegate {
     func updateSubitle(nameSubitle: String) {
         creatingTrackersModel[0].subTitleLabel = nameSubitle
         tableView.reloadData()
@@ -207,7 +208,7 @@ extension CreatingIrregularEventViewController: CreatingIrregularEventViewContro
 
 // MARK: - UITextFieldDelegate
 
-extension CreatingIrregularEventViewController: UITextFieldDelegate {
+extension NewSingleHabitViewController: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         let textField = textField.text ?? ""
         let newLength = textField.count + string.count - range.length
@@ -217,11 +218,11 @@ extension CreatingIrregularEventViewController: UITextFieldDelegate {
 
 // MARK: - UITableViewDelegate
 
-extension CreatingIrregularEventViewController: UITableViewDelegate {
+extension NewSingleHabitViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         switch indexPath.row {
         case 0:
-            let categoryViewController = CategoryViewController()
+            let categoryViewController = TrackerCategoryViewController()
             categoryViewController.delegateIrregular = self
             let navigationController = UINavigationController(rootViewController: categoryViewController)
             present(navigationController, animated: true)
@@ -237,32 +238,17 @@ extension CreatingIrregularEventViewController: UITableViewDelegate {
 
 // MARK: - UITableViewDataSource
 
-extension CreatingIrregularEventViewController: UITableViewDataSource {
+extension NewSingleHabitViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return creatingTrackersModel.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "CreatingTableCell", for: indexPath) as? CreatingTableCell
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "CreatingTableCell", for: indexPath) as? NewTableCell
         else { fatalError() }
         let data = creatingTrackersModel[indexPath.row]
         cell.configureCell(title: data.titleLabelText, subTitle: data.subTitleLabel)
         
         return cell
-    }
-}
-
-extension UIViewController {
-    var skipKeyboard: UITapGestureRecognizer {
-        let skipKeyboard = UITapGestureRecognizer (
-            target: self,
-            action: #selector(hideKeyboard))
-        skipKeyboard.cancelsTouchesInView = false
-        view.addGestureRecognizer(skipKeyboard)
-        return skipKeyboard
-    }
-    
-    @objc func hideKeyboard() {
-        view.endEditing(true)
     }
 }

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		12B5B9572BDECE67009013D7 /* EmojiList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12B5B9562BDECE67009013D7 /* EmojiList.swift */; };
 		12D148D72BDEB29400AEA722 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D148D62BDEB29400AEA722 /* AppDelegate.swift */; };
 		12D148D92BDEB29400AEA722 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D148D82BDEB29400AEA722 /* SceneDelegate.swift */; };
 		12D148E02BDEB29500AEA722 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 12D148DF2BDEB29500AEA722 /* Assets.xcassets */; };
@@ -56,6 +57,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		12B5B9562BDECE67009013D7 /* EmojiList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiList.swift; sourceTree = "<group>"; };
 		12D148D32BDEB29400AEA722 /* HabitTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HabitTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		12D148D62BDEB29400AEA722 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		12D148D82BDEB29400AEA722 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -155,6 +157,7 @@
 				12D1492D2BDEC1ED00AEA722 /* ScheduleCell.swift */,
 				12D149312BDEC28D00AEA722 /* TrackerCell.swift */,
 				12D149332BDEC2B500AEA722 /* SupplementaryView.swift */,
+				12B5B9562BDECE67009013D7 /* EmojiList.swift */,
 			);
 			path = HabitTracker;
 			sourceTree = "<group>";
@@ -343,6 +346,7 @@
 			files = (
 				12D1491C2BDEBE7900AEA722 /* Tracker.swift in Sources */,
 				12D149122BDEBC2300AEA722 /* NewSingleHabitViewController.swift in Sources */,
+				12B5B9572BDECE67009013D7 /* EmojiList.swift in Sources */,
 				12D148D72BDEB29400AEA722 /* AppDelegate.swift in Sources */,
 				12D149242BDEC0A800AEA722 /* CreatingTrackersModel.swift in Sources */,
 				12D149202BDEBE9000AEA722 /* TrackerRecord.swift in Sources */,
