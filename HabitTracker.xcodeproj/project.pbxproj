@@ -9,13 +9,14 @@
 /* Begin PBXBuildFile section */
 		12D148D72BDEB29400AEA722 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D148D62BDEB29400AEA722 /* AppDelegate.swift */; };
 		12D148D92BDEB29400AEA722 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D148D82BDEB29400AEA722 /* SceneDelegate.swift */; };
-		12D148DB2BDEB29400AEA722 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D148DA2BDEB29400AEA722 /* ViewController.swift */; };
-		12D148DE2BDEB29400AEA722 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 12D148DC2BDEB29400AEA722 /* Main.storyboard */; };
 		12D148E02BDEB29500AEA722 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 12D148DF2BDEB29500AEA722 /* Assets.xcassets */; };
 		12D148E32BDEB29500AEA722 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 12D148E12BDEB29500AEA722 /* LaunchScreen.storyboard */; };
 		12D148EE2BDEB29500AEA722 /* HabitTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D148ED2BDEB29500AEA722 /* HabitTrackerTests.swift */; };
 		12D148F82BDEB29500AEA722 /* HabitTrackerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D148F72BDEB29500AEA722 /* HabitTrackerUITests.swift */; };
 		12D148FA2BDEB29500AEA722 /* HabitTrackerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D148F92BDEB29500AEA722 /* HabitTrackerUITestsLaunchTests.swift */; };
+		12D149072BDEB4E300AEA722 /* TrackersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D149062BDEB4E300AEA722 /* TrackersViewController.swift */; };
+		12D149092BDEB4F800AEA722 /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D149082BDEB4F800AEA722 /* TabBarController.swift */; };
+		12D1490B2BDEB54500AEA722 /* StatsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D1490A2BDEB54500AEA722 /* StatsViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,8 +40,6 @@
 		12D148D32BDEB29400AEA722 /* HabitTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HabitTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		12D148D62BDEB29400AEA722 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		12D148D82BDEB29400AEA722 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		12D148DA2BDEB29400AEA722 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		12D148DD2BDEB29400AEA722 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		12D148DF2BDEB29500AEA722 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		12D148E22BDEB29500AEA722 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		12D148E42BDEB29500AEA722 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -49,6 +48,9 @@
 		12D148F32BDEB29500AEA722 /* HabitTrackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HabitTrackerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		12D148F72BDEB29500AEA722 /* HabitTrackerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitTrackerUITests.swift; sourceTree = "<group>"; };
 		12D148F92BDEB29500AEA722 /* HabitTrackerUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitTrackerUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		12D149062BDEB4E300AEA722 /* TrackersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackersViewController.swift; sourceTree = "<group>"; };
+		12D149082BDEB4F800AEA722 /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
+		12D1490A2BDEB54500AEA722 /* StatsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,11 +103,12 @@
 			children = (
 				12D148D62BDEB29400AEA722 /* AppDelegate.swift */,
 				12D148D82BDEB29400AEA722 /* SceneDelegate.swift */,
-				12D148DA2BDEB29400AEA722 /* ViewController.swift */,
-				12D148DC2BDEB29400AEA722 /* Main.storyboard */,
 				12D148DF2BDEB29500AEA722 /* Assets.xcassets */,
 				12D148E12BDEB29500AEA722 /* LaunchScreen.storyboard */,
 				12D148E42BDEB29500AEA722 /* Info.plist */,
+				12D149062BDEB4E300AEA722 /* TrackersViewController.swift */,
+				12D149082BDEB4F800AEA722 /* TabBarController.swift */,
+				12D1490A2BDEB54500AEA722 /* StatsViewController.swift */,
 			);
 			path = HabitTracker;
 			sourceTree = "<group>";
@@ -233,7 +236,6 @@
 			files = (
 				12D148E32BDEB29500AEA722 /* LaunchScreen.storyboard in Resources */,
 				12D148E02BDEB29500AEA722 /* Assets.xcassets in Resources */,
-				12D148DE2BDEB29400AEA722 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -258,9 +260,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				12D148DB2BDEB29400AEA722 /* ViewController.swift in Sources */,
 				12D148D72BDEB29400AEA722 /* AppDelegate.swift in Sources */,
+				12D149092BDEB4F800AEA722 /* TabBarController.swift in Sources */,
 				12D148D92BDEB29400AEA722 /* SceneDelegate.swift in Sources */,
+				12D1490B2BDEB54500AEA722 /* StatsViewController.swift in Sources */,
+				12D149072BDEB4E300AEA722 /* TrackersViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -297,14 +301,6 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		12D148DC2BDEB29400AEA722 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				12D148DD2BDEB29400AEA722 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		12D148E12BDEB29500AEA722 /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -447,9 +443,9 @@
 				INFOPLIST_FILE = HabitTracker/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -475,9 +471,9 @@
 				INFOPLIST_FILE = HabitTracker/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
