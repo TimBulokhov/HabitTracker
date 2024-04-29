@@ -118,6 +118,34 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1292D8B92BDFA6C0004755C7 /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				12D149062BDEB4E300AEA722 /* TrackersViewController.swift */,
+				12D149252BDEC0EA00AEA722 /* CreatingCategoryViewController.swift */,
+				12D1492B2BDEC1CF00AEA722 /* ScheduleViewController.swift */,
+				12D1490A2BDEB54500AEA722 /* StatsViewController.swift */,
+			);
+			path = ViewControllers;
+			sourceTree = "<group>";
+		};
+		1292D8BA2BDFA6E1004755C7 /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				12D1492D2BDEC1ED00AEA722 /* ScheduleCell.swift */,
+				12D149312BDEC28D00AEA722 /* TrackerCell.swift */,
+			);
+			path = Cells;
+			sourceTree = "<group>";
+		};
+		1292D8BB2BDFA71D004755C7 /* TabBar */ = {
+			isa = PBXGroup;
+			children = (
+				12D149082BDEB4F800AEA722 /* TabBarController.swift */,
+			);
+			path = TabBar;
+			sourceTree = "<group>";
+		};
 		12D148CA2BDEB29400AEA722 = {
 			isa = PBXGroup;
 			children = (
@@ -141,6 +169,9 @@
 		12D148D52BDEB29400AEA722 /* HabitTracker */ = {
 			isa = PBXGroup;
 			children = (
+				1292D8BB2BDFA71D004755C7 /* TabBar */,
+				1292D8BA2BDFA6E1004755C7 /* Cells */,
+				1292D8B92BDFA6C0004755C7 /* ViewControllers */,
 				12D1491A2BDEBE6E00AEA722 /* Models */,
 				12D149172BDEBE0900AEA722 /* Helpers */,
 				12D1490C2BDEBB9700AEA722 /* NewTrackerCreation */,
@@ -149,15 +180,6 @@
 				12D148DF2BDEB29500AEA722 /* Assets.xcassets */,
 				12D148E12BDEB29500AEA722 /* LaunchScreen.storyboard */,
 				12D148E42BDEB29500AEA722 /* Info.plist */,
-				12D149062BDEB4E300AEA722 /* TrackersViewController.swift */,
-				12D149082BDEB4F800AEA722 /* TabBarController.swift */,
-				12D1490A2BDEB54500AEA722 /* StatsViewController.swift */,
-				12D149252BDEC0EA00AEA722 /* CreatingCategoryViewController.swift */,
-				12D1492B2BDEC1CF00AEA722 /* ScheduleViewController.swift */,
-				12D1492D2BDEC1ED00AEA722 /* ScheduleCell.swift */,
-				12D149312BDEC28D00AEA722 /* TrackerCell.swift */,
-				12D149332BDEC2B500AEA722 /* SupplementaryView.swift */,
-				12B5B9562BDECE67009013D7 /* EmojiList.swift */,
 			);
 			path = HabitTracker;
 			sourceTree = "<group>";
@@ -194,11 +216,13 @@
 		12D149172BDEBE0900AEA722 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				12D149332BDEC2B500AEA722 /* SupplementaryView.swift */,
 				12D149182BDEBE1500AEA722 /* DateFormatter.swift */,
 				12D149212BDEC04100AEA722 /* DateStorage.swift */,
 				12D149272BDEC15200AEA722 /* UITextField+Extension.swift */,
 				12D149292BDEC1A300AEA722 /* UIColors.swift */,
 				12D1492F2BDEC27100AEA722 /* CollectionSetup.swift */,
+				12B5B9562BDECE67009013D7 /* EmojiList.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
