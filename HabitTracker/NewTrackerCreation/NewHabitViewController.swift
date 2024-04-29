@@ -234,7 +234,7 @@ extension NewHabitViewController: NewHabitViewControllerDelegate {
     }
     
     private func convertToDayInDateFormatter(_ days: [String]){
-        let orderedDays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+        let orderedDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         let resultArray = days.compactMap { orderedDays.firstIndex(of: $0)?.advanced(by: 1) }
         dateEvents = resultArray
     }
