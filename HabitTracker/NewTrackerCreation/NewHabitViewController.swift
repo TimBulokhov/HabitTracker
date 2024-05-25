@@ -141,7 +141,7 @@ final class NewHabitViewController: UIViewController {
         collectionView.register(EmojiCollectionViewCell.self, forCellWithReuseIdentifier: "EmojiCollectionViewCell")
         collectionView.register(ColorsCollectionViewCell.self, forCellWithReuseIdentifier: "ColorsCollectionViewCell")
         collectionView.register(SupplementaryView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")
-        collectionView.backgroundColor = .whiteDay
+        collectionView.backgroundColor = .ypWhiteDay
         collectionView.allowsMultipleSelection = true
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.isScrollEnabled = false
@@ -402,7 +402,7 @@ extension NewHabitViewController: UICollectionViewDataSource {
                 for: indexPath
             ) as? EmojiCollectionViewCell else { return UICollectionViewCell()}
             cell.titleLabel.text = emojiList[indexPath.row]
-            cell.backgroundColor = cell.isSelected ? .lightGrayYP : .clear
+            cell.backgroundColor = cell.isSelected ? UIColor.ypLightGray : .clear
             return cell
         case 1:
             guard let cell = collectionView.dequeueReusableCell(

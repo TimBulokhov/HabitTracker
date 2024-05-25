@@ -13,6 +13,8 @@
 		12C011E02C02433E0055E836 /* StorageError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C011DF2C02433E0055E836 /* StorageError.swift */; };
 		12C011E42C0244DD0055E836 /* TrackerModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 12C011E22C0244DD0055E836 /* TrackerModel.xcdatamodeld */; };
 		12C011E62C0247A20055E836 /* UIColorSorting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C011E52C0247A20055E836 /* UIColorSorting.swift */; };
+		12C011E82C0260510055E836 /* EmojiCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C011E72C0260510055E836 /* EmojiCollectionViewCell.swift */; };
+		12C011EA2C0260730055E836 /* ColorsCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C011E92C0260730055E836 /* ColorsCollectionViewCell.swift */; };
 		12D148D72BDEB29400AEA722 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D148D62BDEB29400AEA722 /* AppDelegate.swift */; };
 		12D148D92BDEB29400AEA722 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D148D82BDEB29400AEA722 /* SceneDelegate.swift */; };
 		12D148E02BDEB29500AEA722 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 12D148DF2BDEB29500AEA722 /* Assets.xcassets */; };
@@ -68,6 +70,8 @@
 		12C011DF2C02433E0055E836 /* StorageError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageError.swift; sourceTree = "<group>"; };
 		12C011E32C0244DD0055E836 /* TrackerModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = TrackerModel.xcdatamodel; sourceTree = "<group>"; };
 		12C011E52C0247A20055E836 /* UIColorSorting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColorSorting.swift; sourceTree = "<group>"; };
+		12C011E72C0260510055E836 /* EmojiCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiCollectionViewCell.swift; sourceTree = "<group>"; };
+		12C011E92C0260730055E836 /* ColorsCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorsCollectionViewCell.swift; sourceTree = "<group>"; };
 		12D148D32BDEB29400AEA722 /* HabitTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HabitTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		12D148D62BDEB29400AEA722 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		12D148D82BDEB29400AEA722 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -144,6 +148,8 @@
 			children = (
 				12D1492D2BDEC1ED00AEA722 /* ScheduleCell.swift */,
 				12D149312BDEC28D00AEA722 /* TrackerCell.swift */,
+				12C011E72C0260510055E836 /* EmojiCollectionViewCell.swift */,
+				12C011E92C0260730055E836 /* ColorsCollectionViewCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -417,12 +423,14 @@
 				12D1492E2BDEC1ED00AEA722 /* ScheduleCell.swift in Sources */,
 				12D149142BDEBD6400AEA722 /* NewTableCell.swift in Sources */,
 				12D149192BDEBE1500AEA722 /* DateFormatter.swift in Sources */,
+				12C011EA2C0260730055E836 /* ColorsCollectionViewCell.swift in Sources */,
 				12D148D92BDEB29400AEA722 /* SceneDelegate.swift in Sources */,
 				12D1490B2BDEB54500AEA722 /* StatsViewController.swift in Sources */,
 				12D1492A2BDEC1A300AEA722 /* UIColors.swift in Sources */,
 				12D1492C2BDEC1CF00AEA722 /* ScheduleViewController.swift in Sources */,
 				12D149302BDEC27100AEA722 /* CollectionSetup.swift in Sources */,
 				12D149162BDEBD9100AEA722 /* TrackerCategoryViewController.swift in Sources */,
+				12C011E82C0260510055E836 /* EmojiCollectionViewCell.swift in Sources */,
 				12C011DA2C023F700055E836 /* TrackersCategoryStorage.swift in Sources */,
 				12D1490E2BDEBBB500AEA722 /* NewTrackerViewController.swift in Sources */,
 				12C011DE2C023F930055E836 /* TrackersRecordStorage.swift in Sources */,

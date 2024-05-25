@@ -8,7 +8,9 @@
 import UIKit
 
 extension UIColor {
-    
+    static var lightGrayYP: UIColor { UIColor(named: "YP Light Gray")! }
+    static var backgroundDay: UIColor { UIColor(named: "YP Background [day]")! }
+    static var backgroundNight: UIColor { UIColor(named: "YP Background [night]")! }
     static let colorSelection: [UIColor] = [
         UIColor(named: "Color selection 1") ?? #colorLiteral(red: 1, green: 0.3956416845, blue: 0.3553284407, alpha: 1),
         UIColor(named: "Color selection 2") ?? #colorLiteral(red: 1, green: 0.606235683, blue: 0.1476774216, alpha: 1),

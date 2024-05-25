@@ -383,8 +383,6 @@ extension TrackersViewController: UISearchBarDelegate {
 // MARK: - TrackerCreationDelegate
 
 extension TrackersViewController: TrackerCreationDelegate {
-    func didCreateTracker(_ tracker: Tracker, category: TrackerCategory) {
-    }
     
     func didCreateTracker(_ tracker: Tracker, category: String) {
         try? createCategoryAndTracker(ctracker: tracker, with: category)

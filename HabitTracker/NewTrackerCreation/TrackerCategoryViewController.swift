@@ -20,6 +20,7 @@ final class TrackerCategoryViewController: UIViewController {
     weak var delegateIrregular: NewSingleHabitViewControllerDelegate?
     private let dataStorege = DataStorege.shared
     private var category = [String]()
+    private let trackerCategoryStore = TrackersCategoryStorage()
     
     // MARK: - UiElements
     
@@ -87,7 +88,7 @@ final class TrackerCategoryViewController: UIViewController {
     // MARK: - Private methods
     
     private func checkForAvailableCategories() {
-        category = dataStorege.loadCategories()
+        try? fetchACategory()
         tableView.reloadData()
         if !category.isEmpty {
             configTableView()
@@ -160,14 +161,22 @@ final class TrackerCategoryViewController: UIViewController {
             return []
         }
     }
+    
+    private func separatorInsetForCell(index: Int) -> UIEdgeInsets {
+        let quantityCategory = category.count - 1
+        if index == quantityCategory {
+            return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: .greatestFiniteMagnitude)
+        } else {
+            return UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        }
+    }
 }
 
 // MARK: - CategoryViewDelegate
 
 extension TrackerCategoryViewController: TrackerCategoryViewControllerDelegate {
     func updateData(nameCategory: String) {
-        dataStorege.saveCategories(nameCategory)
-        category = dataStorege.loadCategories()
+        try? createACategory(nameOfCategory: nameCategory)
         checkForAvailableCategories()
         tableView.reloadData()
     }
@@ -218,11 +227,51 @@ extension TrackerCategoryViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
         let categoryName = category[indexPath.row]
         cell.textLabel?.text = categoryName
-        cell.backgroundColor = .ypBackgroundDay
+        cell.textLabel?.textColor = .ypBlackDay
+        cell.backgroundColor = .backgroundDay
         cell.layer.masksToBounds = true
         cell.layer.cornerRadius = 10
+        cell.separatorInset = separatorInsetForCell(index: indexPath.row)
         cell.layer.maskedCorners = roundingForCellsInATable(cellIndex: indexPath.row, numberOfLines: category.count)
         cell.accessoryType = indexPath == dataStorege.loadIndexPathForCheckmark() ? .checkmark : .none
         return cell
     }
 }
+
+extension TrackerCategoryViewController {
+    private func fetchACategory() throws {
+        do {
+            let categories = try trackerCategoryStore.fetchAllCategories()
+            category = categories.compactMap { $0.titleCategory }
+        } catch {
+            throw StorageError.failedReading
+        }
+    }
+    
+    private func createACategory(nameOfCategory: String) throws {
+        do {
+            let newCategory = TrackerCategory(title: nameOfCategory, trackers: [])
+            try trackerCategoryStore.createCategory(newCategory)
+        } catch {
+            throw StorageError.failedToWrite
+        }
+    }
+    
+    private func removeACategory(atIndex index: Int) throws {
+        let nameOfCategory = category[index]
+        do {
+            try trackerCategoryStore.deleteCategory(with: nameOfCategory)
+        } catch {
+            throw StorageError.failedActoionDelete
+        }
+    }
+}
+
+// MARK: - TrackerStoreDelegate
+
+extension TrackerCategoryViewController: TrackersCategoryStorageDelegate {
+    func didUpdateData(in store: TrackersCategoryStorage) {
+        tableView.reloadData()
+    }
+}
+
