@@ -344,7 +344,7 @@ extension NewHabitViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "CreatingTableCell", for: indexPath) as? NewTableCell
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "NewTableCell", for: indexPath) as? NewTableCell
         else { fatalError() }
         let data = creatingTrackersModel[indexPath.row]
         cell.configureCell(title: data.titleLabelText, subTitle: data.subTitleLabel)

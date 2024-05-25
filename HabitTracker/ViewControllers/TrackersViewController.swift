@@ -465,7 +465,7 @@ extension TrackersViewController {
             try trackersRecordStore.deleteATrackerRecord(trackerRecord: record)
             try fetchARecord()
         } catch {
-            throw StorageError.failedActoionDelete
+            throw StorageError.failedActionDelete
         }
     }
 }

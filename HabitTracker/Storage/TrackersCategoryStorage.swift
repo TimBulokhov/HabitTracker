@@ -76,7 +76,7 @@ extension TrackersCategoryStorage {
                 throw StorageError.failedGettingTitle
             }
         } catch {
-            throw StorageError.failedActoionDelete
+            throw StorageError.failedActionDelete
         }
     }
 }

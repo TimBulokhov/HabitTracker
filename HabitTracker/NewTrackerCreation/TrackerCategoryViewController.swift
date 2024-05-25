@@ -206,7 +206,7 @@ extension TrackerCategoryViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         let deleteAction = UIAction(title: "Delete", attributes: .destructive) { [weak self] _ in
             guard let self = self else { return }
-            self.dataStorege.removeCategory(atIndex: indexPath.row)
+            try? self.removeACategory(atIndex: indexPath.row)
             self.checkForAvailableCategories()
         }
         let deleteMenu = UIMenu(title: "", children: [deleteAction])
@@ -262,7 +262,7 @@ extension TrackerCategoryViewController {
         do {
             try trackerCategoryStore.deleteCategory(with: nameOfCategory)
         } catch {
-            throw StorageError.failedActoionDelete
+            throw StorageError.failedActionDelete
         }
     }
 }

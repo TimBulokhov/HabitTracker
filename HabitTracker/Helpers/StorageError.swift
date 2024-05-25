@@ -12,5 +12,5 @@ enum StorageError: Error {
     case failedReading
     case failedDecoding
     case failedGettingTitle
-    case failedActoionDelete
+    case failedActionDelete
 }
