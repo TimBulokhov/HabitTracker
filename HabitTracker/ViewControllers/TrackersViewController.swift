@@ -13,8 +13,10 @@ final class TrackersViewController: UIViewController {
     private var filteredCategoriesBySearch: [TrackerCategory] = []
     private var filteredCategoriesByDate: [TrackerCategory] = []
     private var visibleCategories: [TrackerCategory] = []
-    private var completedTrackers: Set<TrackerRecord> = []
+    private var completedTrackers: [TrackerRecord] = []
     private var currentDate: Date = Date()
+    private let trackersCategoryStore = TrackersCategoryStore()
+    private let trackersRecordStore = TrackersRecordStore()
     private var categories: [TrackerCategory] = [] {
         didSet {
             visibleCategories = categories
@@ -35,6 +37,7 @@ final class TrackersViewController: UIViewController {
     private var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = .ypWhiteDay
         collectionView.contentInset = UIEdgeInsets(top: .zero, left: .zero, bottom: .zero, right: .zero)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
@@ -42,6 +45,7 @@ final class TrackersViewController: UIViewController {
     
     private lazy var datePicker: UIDatePicker = {
         let datePicker = UIDatePicker()
+        datePicker.backgroundColor = .ypBackgroundDay
         datePicker.preferredDatePickerStyle = .compact
         datePicker.datePickerMode = .date
         datePicker.locale = Locale(identifier: "en_EN")
@@ -54,6 +58,7 @@ final class TrackersViewController: UIViewController {
     
     private lazy var trackerLabel: UILabel = {
         let trackerLabel = UILabel()
+        trackerLabel.textColor = .ypBlackDay
         trackerLabel.text = "Trackers"
         trackerLabel.font = .boldSystemFont(ofSize: 34)
         trackerLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -62,6 +67,7 @@ final class TrackersViewController: UIViewController {
     
     private lazy var searchBar: UISearchBar = {
         let trackersSearchBar = UISearchBar()
+        trackersSearchBar.barTintColor = .ypGray
         trackersSearchBar.layer.masksToBounds = true
         trackersSearchBar.searchBarStyle = .minimal
         trackersSearchBar.translatesAutoresizingMaskIntoConstraints = false
@@ -80,6 +86,7 @@ final class TrackersViewController: UIViewController {
     
     private lazy var searchMainPlaceholderStub: UILabel = {
         let searchSpacePlaceholderStack = UILabel()
+        searchSpacePlaceholderStack.textColor = .ypBlackDay
         searchSpacePlaceholderStack.font = .systemFont(ofSize: 12, weight: .medium)
         searchSpacePlaceholderStack.translatesAutoresizingMaskIntoConstraints = false
         return searchSpacePlaceholderStack
@@ -102,6 +109,17 @@ final class TrackersViewController: UIViewController {
         return view
     }()
     
+    private lazy var addNewTrackerButton: UIButton = {
+        let button = UIButton.systemButton(
+            with: UIImage(named: "addTracker")!,
+            target: self,
+            action: #selector(self.addNewTracker))
+        button.accessibilityIdentifier = "addNewTrackerButton"
+        button.tintColor = .ypBlackDay
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -110,7 +128,10 @@ final class TrackersViewController: UIViewController {
         configConstraints()
         configNavigationBar()
         configCollectionView()
+        try? fetchACategory()
         checkingForActiveTrackers()
+        updateVisibleCategories()
+        try? fetchARecord()
     }
     
     // MARK: - Actions
@@ -183,21 +204,7 @@ final class TrackersViewController: UIViewController {
     }
     
     private func configNavigationBar() {
-        let addButton = UIButton(type: .custom)
-        if let iconImage = UIImage(named: "addTracker")?.withRenderingMode(.alwaysOriginal) {
-            addButton.setImage(iconImage, for: .normal)
-        }
-        addButton.titleLabel?.font = UIFont(name: "SF Pro", size: 34)
-        addButton.addTarget(
-            self,
-            action: #selector(addNewTracker),
-            for: .touchUpInside
-        )
-
-        addButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: -20, bottom: 0, right: 0)
-
-        let addButtonItem = UIBarButtonItem(customView: addButton)
-        navigationItem.leftBarButtonItem = addButtonItem
+        let addTrackerBarButtonItem = UIBarButtonItem(customView: addNewTrackerButton)
         let datePickerBarButtonItem = UIBarButtonItem(customView: datePicker)
         let datePickerConstraint = NSLayoutConstraint(item: datePicker, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1.0, constant: 110.0)
         navigationItem.rightBarButtonItems = [datePickerBarButtonItem]
@@ -375,14 +382,9 @@ extension TrackersViewController: UISearchBarDelegate {
 // MARK: - TrackerCreationDelegate
 
 extension TrackersViewController: TrackerCreationDelegate {
-    func didCreateTracker(_ tracker: Tracker, category: TrackerCategory) {
-        if let index = categories.firstIndex(where: { $0.title == category.title }) {
-            let updatedTrackers = categories[index].trackers + [tracker]
-            let updatedCategory = TrackerCategory(title: category.title, trackers: updatedTrackers)
-            categories[index] = updatedCategory
-        } else {
-            categories.append(category)
-        }
+    func didCreateTracker(_ tracker: Tracker, category: String) {
+        try? createCategoryAndTracker(atracker: Tracker, with: category)
+        try? fetchCategory()
         checkingForActiveTrackers()
         updateVisibleCategories()
         collectionView.reloadData()
@@ -396,7 +398,7 @@ extension TrackersViewController: TrackerCellDelegate {
         let record = TrackerRecord(id: id, date: currentDate)
         if currentDate <= Date() {
             if !completedTrackers.contains(where: { $0.id == id && Calendar.current.isDate($0.date, inSameDayAs: currentDate) }) {
-                completedTrackers.insert(record)
+                try? createARecord(record: record)
             }
             collectionView.reloadData()
         }
@@ -404,8 +406,72 @@ extension TrackersViewController: TrackerCellDelegate {
     
     func trackerNotCompleted(id: UUID) {
         if let index = completedTrackers.firstIndex(where: { $0.id == id && Calendar.current.isDate($0.date, inSameDayAs: currentDate) }) {
-            completedTrackers.remove(at: index)
+            try? deleteARecord(atIndex: index)
         }
+        try? fetchARecord()
+        collectionView.reloadData()
+    }
+}
+// MARK: - CategoryStore
+
+extension TrackersViewController {
+    private func fetchCategory() throws {
+        do {
+            let coreDataCategories = try trackersCategoryStore.fetchAllCategories()
+            categories = try coreDataCategories.compactMap { coreDataCategory in
+                return try trackersCategoryStore.decodingCategory(from: coreDataCategory)
+            }
+        } catch {
+            throw StorageError.failedReading
+        }
+    }
+    
+    private func createCategoryAndTracker(ctracker: Tracker, with titleOfCategory: String) throws {
+        do {
+            try trackersCategoryStore.createCategoryAndTracker(tracker: atracker, with: titleOfCategory)
+        } catch {
+            throw StorageError.failedToWrite
+        }
+    }
+}
+
+// MARK: - RecordStore
+
+extension TrackersViewController {
+    private func fetchRecord() throws {
+        do {
+            completedTrackers = try trackersRecordStore.fetchRecords()
+            print(completedTrackers)
+        } catch {
+            throw StorageError.failedReading
+        }
+    }
+    
+    private func createRecord(record: TrackerRecord) throws {
+        do {
+            try trackersRecordStore.addNewRecord(from: record)
+            try fetchRecord()
+        } catch {
+            throw StorageError.failedToWrite
+        }
+    }
+    
+    private func deleteRecord(atIndex index: Int) throws {
+        let record = completedTrackers[index]
+        print("record ---- \(record)")
+        do {
+            try trackersRecordStore.deleteATrackerRecord(trackerRecord: record)
+            try fetchRecord()
+        } catch {
+            throw StorageError.failedActoionDelete
+        }
+    }
+}
+
+// MARK: - TrackerStoreDelegate
+
+extension TrackersViewController: TrackersCategoryStoreDelegate {
+    func didUpdateData(in store: TrackersCategoryStore) {
         collectionView.reloadData()
     }
 }
