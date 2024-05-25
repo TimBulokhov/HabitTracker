@@ -15,8 +15,8 @@ final class TrackersViewController: UIViewController {
     private var visibleCategories: [TrackerCategory] = []
     private var completedTrackers: [TrackerRecord] = []
     private var currentDate: Date = Date()
-    private let trackersCategoryStore = TrackersCategoryStore()
-    private let trackersRecordStore = TrackersRecordStore()
+    private let trackersCategoryStore = TrackersCategoryStorage()
+    private let trackersRecordStore = TrackersRecordStorage()
     private var categories: [TrackerCategory] = [] {
         didSet {
             visibleCategories = categories
@@ -207,6 +207,7 @@ final class TrackersViewController: UIViewController {
         let addTrackerBarButtonItem = UIBarButtonItem(customView: addNewTrackerButton)
         let datePickerBarButtonItem = UIBarButtonItem(customView: datePicker)
         let datePickerConstraint = NSLayoutConstraint(item: datePicker, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1.0, constant: 110.0)
+        navigationItem.leftBarButtonItem = addTrackerBarButtonItem
         navigationItem.rightBarButtonItems = [datePickerBarButtonItem]
         navigationBar.barTintColor = UIColor.ypWhiteDay
         navigationBar.shadowImage = UIImage()
@@ -382,9 +383,12 @@ extension TrackersViewController: UISearchBarDelegate {
 // MARK: - TrackerCreationDelegate
 
 extension TrackersViewController: TrackerCreationDelegate {
+    func didCreateTracker(_ tracker: Tracker, category: TrackerCategory) {
+    }
+    
     func didCreateTracker(_ tracker: Tracker, category: String) {
-        try? createCategoryAndTracker(atracker: Tracker, with: category)
-        try? fetchCategory()
+        try? createCategoryAndTracker(ctracker: tracker, with: category)
+        try? fetchACategory()
         checkingForActiveTrackers()
         updateVisibleCategories()
         collectionView.reloadData()
@@ -415,7 +419,7 @@ extension TrackersViewController: TrackerCellDelegate {
 // MARK: - CategoryStore
 
 extension TrackersViewController {
-    private func fetchCategory() throws {
+    private func fetchACategory() throws {
         do {
             let coreDataCategories = try trackersCategoryStore.fetchAllCategories()
             categories = try coreDataCategories.compactMap { coreDataCategory in
@@ -426,9 +430,9 @@ extension TrackersViewController {
         }
     }
     
-    private func createCategoryAndTracker(ctracker: Tracker, with titleOfCategory: String) throws {
+    private func createCategoryAndTracker(ctracker: Tracker, with titleCategory: String) throws {
         do {
-            try trackersCategoryStore.createCategoryAndTracker(tracker: atracker, with: titleOfCategory)
+            try trackersCategoryStore.createCategoryAndTracker(tracker: ctracker, with: titleCategory)
         } catch {
             throw StorageError.failedToWrite
         }
@@ -438,7 +442,7 @@ extension TrackersViewController {
 // MARK: - RecordStore
 
 extension TrackersViewController {
-    private func fetchRecord() throws {
+    private func fetchARecord() throws {
         do {
             completedTrackers = try trackersRecordStore.fetchRecords()
             print(completedTrackers)
@@ -447,21 +451,21 @@ extension TrackersViewController {
         }
     }
     
-    private func createRecord(record: TrackerRecord) throws {
+    private func createARecord(record: TrackerRecord) throws {
         do {
             try trackersRecordStore.addNewRecord(from: record)
-            try fetchRecord()
+            try fetchARecord()
         } catch {
             throw StorageError.failedToWrite
         }
     }
     
-    private func deleteRecord(atIndex index: Int) throws {
+    private func deleteARecord(atIndex index: Int) throws {
         let record = completedTrackers[index]
         print("record ---- \(record)")
         do {
             try trackersRecordStore.deleteATrackerRecord(trackerRecord: record)
-            try fetchRecord()
+            try fetchARecord()
         } catch {
             throw StorageError.failedActoionDelete
         }
@@ -470,8 +474,8 @@ extension TrackersViewController {
 
 // MARK: - TrackerStoreDelegate
 
-extension TrackersViewController: TrackersCategoryStoreDelegate {
-    func didUpdateData(in store: TrackersCategoryStore) {
+extension TrackersViewController: TrackersCategoryStorageDelegate {
+    func didUpdateData(in store: TrackersCategoryStorage) {
         collectionView.reloadData()
     }
 }
