@@ -9,22 +9,27 @@ import UIKit
 
 // MARK: - CategoryViewDelegate
 
-protocol TrackerCategoryViewControllerDelegate: AnyObject {
+protocol TrackerCategoryViewModelDelegate: AnyObject {
     func updateData(nameCategory: String)
 }
 
 // MARK: - CategoryViewController
 
 final class TrackerCategoryViewController: UIViewController {
-    weak var delegateHabbit: NewHabitViewControllerDelegate?
-    weak var delegateIrregular: NewSingleHabitViewControllerDelegate?
-    private let dataStorege = DataStorege.shared
-    private var category = [String]()
-    private let trackerCategoryStore = TrackersCategoryStorage()
+    var viewModel: TrackerCategoryViewModel?
     
     // MARK: - UiElements
     
-    private var tableView: UITableView = .init()
+    private var tableView: UITableView = {
+        let tableView = UITableView()
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "CategoryCell")
+        tableView.layer.masksToBounds = true
+        tableView.layer.cornerRadius = 16
+        tableView.backgroundColor = .none
+        tableView.separatorInset = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20)
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        return tableView
+    }()
     
     private lazy var habitLabel: UILabel = {
         let label = UILabel()
@@ -66,6 +71,11 @@ final class TrackerCategoryViewController: UIViewController {
         return button
     }()
     
+    func initialize(viewModel: TrackerCategoryViewModel) {
+        self.viewModel = viewModel
+        bind()
+    }
+    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -73,6 +83,20 @@ final class TrackerCategoryViewController: UIViewController {
         configViews()
         configConstraints()
         checkForAvailableCategories()
+        try? viewModel?.fetchACategory()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        guard let categories = viewModel?.categories,
+              categories.isEmpty else { return }
+    }
+    
+    // MARK: Binding
+    private func bind() {
+        viewModel?.$categories.bind(action: { [weak self] _ in
+            self?.checkForAvailableCategories()
+        })
     }
     
     // MARK: - Actions
@@ -88,37 +112,41 @@ final class TrackerCategoryViewController: UIViewController {
     // MARK: - Private methods
     
     private func checkForAvailableCategories() {
-        try? fetchACategory()
         tableView.reloadData()
+        guard let category = viewModel?.categories else { return }
         if !category.isEmpty {
-            configTableView()
+            placeholderDisplaySwitch(isHiden: true)
             configThereAreCategories()
         } else {
-            configForCreateCategory()
+            placeholderDisplaySwitch(isHiden: false)
         }
     }
     
-    private func configTableView() {
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "CategoryCell")
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.separatorColor = .ypGray
-        tableView.layer.cornerRadius = 16
-        tableView.layer.masksToBounds = true
-        tableView.separatorInset = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20)
-        tableView.translatesAutoresizingMaskIntoConstraints = false
+    private func placeholderDisplaySwitch(isHiden: Bool) {
+        mainStarImageStub.isHidden = isHiden
+        descriptionPlaceholderStub.isHidden = isHiden
     }
     
     private func configViews() {
+        tableView.delegate = self
+        tableView.dataSource = self
         view.backgroundColor = .ypWhiteDay
         view.addSubview(habitLabel)
         view.addSubview(creatingHabitButton)
+        view.addSubview(mainStarImageStub)
+        view.addSubview(descriptionPlaceholderStub)
     }
     
     private func configConstraints() {
         NSLayoutConstraint.activate([
             habitLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             habitLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 27),
+            mainStarImageStub.widthAnchor.constraint(equalToConstant: 80),
+            mainStarImageStub.heightAnchor.constraint(equalToConstant: 80),
+            mainStarImageStub.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            mainStarImageStub.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            descriptionPlaceholderStub.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            descriptionPlaceholderStub.topAnchor.constraint(equalTo: mainStarImageStub.bottomAnchor, constant: 8),
             creatingHabitButton.heightAnchor.constraint(equalToConstant: 60),
             creatingHabitButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             creatingHabitButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
@@ -135,66 +163,20 @@ final class TrackerCategoryViewController: UIViewController {
             tableView.bottomAnchor.constraint(equalTo: creatingHabitButton.topAnchor, constant: -38)
         ])
     }
-    
-    private func configForCreateCategory() {
-        view.addSubview(mainStarImageStub)
-        view.addSubview(descriptionPlaceholderStub)
-        NSLayoutConstraint.activate([
-            mainStarImageStub.widthAnchor.constraint(equalToConstant: 80),
-            mainStarImageStub.heightAnchor.constraint(equalToConstant: 80),
-            mainStarImageStub.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            mainStarImageStub.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            descriptionPlaceholderStub.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            descriptionPlaceholderStub.topAnchor.constraint(equalTo: mainStarImageStub.bottomAnchor, constant: 8)
-        ])
-    }
-    
-    private func roundingForCellsInATable(cellIndex: Int, numberOfLines: Int) -> CACornerMask {
-        switch (cellIndex, numberOfLines) {
-        case (0, 1):
-            return [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-        case (0, _):
-            return [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        case (_, _) where cellIndex == numberOfLines - 1:
-            return [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-        default:
-            return []
-        }
-    }
-    
-    private func separatorInsetForCell(index: Int) -> UIEdgeInsets {
-        let quantityCategory = category.count - 1
-        if index == quantityCategory {
-            return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: .greatestFiniteMagnitude)
-        } else {
-            return UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-        }
-    }
-}
-
-// MARK: - CategoryViewDelegate
-
-extension TrackerCategoryViewController: TrackerCategoryViewControllerDelegate {
-    func updateData(nameCategory: String) {
-        try? createACategory(nameOfCategory: nameCategory)
-        checkForAvailableCategories()
-        tableView.reloadData()
-    }
 }
 
 // MARK: - UITableViewDelegate
 
 extension TrackerCategoryViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if let editingIndexPath = dataStorege.loadIndexPathForCheckmark() {
+        if let editingIndexPath = viewModel?.loadIndexPathForCheckmark() {
             let previousSelectedCell = tableView.cellForRow(at: editingIndexPath)
             previousSelectedCell?.accessoryType = .none
         }
         let cell = tableView.cellForRow(at: indexPath)
         cell?.accessoryType = .checkmark
-        dataStorege.saveIndexPathForCheckmark(indexPath)
-        delegateIrregular?.updateSubitle(nameSubitle: category[indexPath.row])
-        delegateHabbit?.updateSubitle(nameSubitle: category[indexPath.row])
+        viewModel?.selectedCategoryForCheckmark(indexPath)
+        viewModel?.addingCategoryToCreate(indexPath)
         tableView.deselectRow(at: indexPath, animated: true)
         dismiss(animated: true)
     }
@@ -206,7 +188,7 @@ extension TrackerCategoryViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         let deleteAction = UIAction(title: "Delete", attributes: .destructive) { [weak self] _ in
             guard let self = self else { return }
-            try? self.removeACategory(atIndex: indexPath.row)
+            try? self.viewModel?.removeACategory(atIndex: indexPath.row)
             self.checkForAvailableCategories()
         }
         let deleteMenu = UIMenu(title: "", children: [deleteAction])
@@ -220,58 +202,58 @@ extension TrackerCategoryViewController: UITableViewDelegate {
 
 extension TrackerCategoryViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return category.count
+        guard let count = viewModel?.categoriesCount() else { return 0 }
+        return count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
-        let categoryName = category[indexPath.row]
-        cell.textLabel?.text = categoryName
+        guard let count = viewModel?.categoriesCount() else { return UITableViewCell() }
+        cell.textLabel?.text = viewModel?.categories[indexPath.row].title
         cell.textLabel?.textColor = .ypBlackDay
         cell.backgroundColor = .backgroundDay
         cell.layer.masksToBounds = true
-        cell.layer.cornerRadius = 10
-        cell.separatorInset = separatorInsetForCell(index: indexPath.row)
-        cell.layer.maskedCorners = roundingForCellsInATable(cellIndex: indexPath.row, numberOfLines: category.count)
-        cell.accessoryType = indexPath == dataStorege.loadIndexPathForCheckmark() ? .checkmark : .none
+        cell.layer.cornerRadius = 16
+        cell.separatorInset = separatorInsetForCell(index: indexPath.row, numberOfLines: count)
+        cell.layer.maskedCorners = roundingForCellsInATable(cellIndex: indexPath.row, numberOfLines: count)
+        cell.accessoryType = indexPath == viewModel?.loadIndexPathForCheckmark() ? .checkmark : .none
         return cell
     }
 }
 
+// MARK: - ConfigForCell
+
 extension TrackerCategoryViewController {
-    private func fetchACategory() throws {
-        do {
-            let categories = try trackerCategoryStore.fetchAllCategories()
-            category = categories.compactMap { $0.titleCategory }
-        } catch {
-            throw StorageError.failedReading
+    func roundingForCellsInATable(cellIndex: Int, numberOfLines: Int) -> CACornerMask {
+        switch (cellIndex, numberOfLines) {
+        case (0, 1):
+            return [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        case (0, _):
+            return [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        case (_, _) where cellIndex == numberOfLines - 1:
+            return [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        default:
+            return []
         }
     }
     
-    private func createACategory(nameOfCategory: String) throws {
-        do {
-            let newCategory = TrackerCategory(title: nameOfCategory, trackers: [])
-            try trackerCategoryStore.createCategory(newCategory)
-        } catch {
-            throw StorageError.failedToWrite
-        }
-    }
-    
-    private func removeACategory(atIndex index: Int) throws {
-        let nameOfCategory = category[index]
-        do {
-            try trackerCategoryStore.deleteCategory(with: nameOfCategory)
-        } catch {
-            throw StorageError.failedActionDelete
+    func separatorInsetForCell(index: Int, numberOfLines: Int) -> UIEdgeInsets {
+        let quantityCategory = numberOfLines - 1
+        if index == quantityCategory {
+            return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: .greatestFiniteMagnitude)
+        } else {
+            return UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         }
     }
 }
 
-// MARK: - TrackerStoreDelegate
+// MARK: - CreateCategoryViewDelegate
 
-extension TrackerCategoryViewController: TrackersCategoryStorageDelegate {
-    func didUpdateData(in store: TrackersCategoryStorage) {
-        tableView.reloadData()
+extension TrackerCategoryViewController: TrackerCategoryViewModelDelegate {
+    func updateData(nameCategory: String) {
+        try? viewModel?.createACategory(nameOfCategory: nameCategory)
+        try? viewModel?.fetchACategory()
     }
 }
+
 

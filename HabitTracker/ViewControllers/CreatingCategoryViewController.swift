@@ -8,7 +8,7 @@
 import UIKit
 
 final class CreatingCategoryViewController: UIViewController {
-    weak var delegate: TrackerCategoryViewControllerDelegate?
+    weak var delegate: TrackerCategoryViewModelDelegate?
     private let categoryViewController = TrackerCategoryViewController()
     private let characterLimitInField = 38
     

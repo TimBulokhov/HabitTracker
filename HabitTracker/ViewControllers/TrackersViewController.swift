@@ -48,7 +48,7 @@ final class TrackersViewController: UIViewController {
         datePicker.backgroundColor = .ypBackgroundDay
         datePicker.preferredDatePickerStyle = .compact
         datePicker.datePickerMode = .date
-        datePicker.locale = Locale(identifier: "en_EN")
+        datePicker.locale = Locale(identifier: "ru_RU")
         datePicker.layer.cornerRadius = 8
         datePicker.calendar.firstWeekday = 2
         datePicker.translatesAutoresizingMaskIntoConstraints = false
