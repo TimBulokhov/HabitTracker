@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		125C6A652C0B95E80070F742 /* OnboardVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125C6A642C0B95E80070F742 /* OnboardVC.swift */; };
-		125C6A672C0B95F90070F742 /* OnboardContentVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125C6A662C0B95F90070F742 /* OnboardContentVC.swift */; };
+		125C6A652C0B95E80070F742 /* OnboardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125C6A642C0B95E80070F742 /* OnboardViewController.swift */; };
+		125C6A672C0B95F90070F742 /* OnboardContentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125C6A662C0B95F90070F742 /* OnboardContentViewController.swift */; };
 		125C6A692C0B96B10070F742 /* ObservableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125C6A682C0B96B10070F742 /* ObservableValue.swift */; };
 		125C6A6B2C0B9CCB0070F742 /* TrackerCategoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125C6A6A2C0B9CCB0070F742 /* TrackerCategoryViewModel.swift */; };
 		12C011DA2C023F700055E836 /* TrackersCategoryStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C011D92C023F700055E836 /* TrackersCategoryStorage.swift */; };
@@ -68,8 +68,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		125C6A642C0B95E80070F742 /* OnboardVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardVC.swift; sourceTree = "<group>"; };
-		125C6A662C0B95F90070F742 /* OnboardContentVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardContentVC.swift; sourceTree = "<group>"; };
+		125C6A642C0B95E80070F742 /* OnboardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardViewController.swift; sourceTree = "<group>"; };
+		125C6A662C0B95F90070F742 /* OnboardContentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardContentViewController.swift; sourceTree = "<group>"; };
 		125C6A682C0B96B10070F742 /* ObservableValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableValue.swift; sourceTree = "<group>"; };
 		125C6A6A2C0B9CCB0070F742 /* TrackerCategoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCategoryViewModel.swift; sourceTree = "<group>"; };
 		12C011D92C023F700055E836 /* TrackersCategoryStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackersCategoryStorage.swift; sourceTree = "<group>"; };
@@ -147,8 +147,8 @@
 				12D149252BDEC0EA00AEA722 /* CreatingCategoryViewController.swift */,
 				12D1492B2BDEC1CF00AEA722 /* ScheduleViewController.swift */,
 				12D1490A2BDEB54500AEA722 /* StatsViewController.swift */,
-				125C6A642C0B95E80070F742 /* OnboardVC.swift */,
-				125C6A662C0B95F90070F742 /* OnboardContentVC.swift */,
+				125C6A642C0B95E80070F742 /* OnboardViewController.swift */,
+				125C6A662C0B95F90070F742 /* OnboardContentViewController.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -450,8 +450,8 @@
 				12C011DE2C023F930055E836 /* TrackersRecordStorage.swift in Sources */,
 				12C011E02C02433E0055E836 /* StorageError.swift in Sources */,
 				12D149222BDEC04100AEA722 /* DateStorage.swift in Sources */,
-				125C6A652C0B95E80070F742 /* OnboardVC.swift in Sources */,
-				125C6A672C0B95F90070F742 /* OnboardContentVC.swift in Sources */,
+				125C6A652C0B95E80070F742 /* OnboardViewController.swift in Sources */,
+				125C6A672C0B95F90070F742 /* OnboardContentViewController.swift in Sources */,
 				12D149072BDEB4E300AEA722 /* TrackersViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

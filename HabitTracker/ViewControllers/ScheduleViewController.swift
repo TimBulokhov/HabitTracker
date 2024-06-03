@@ -9,7 +9,7 @@ import UIKit
 
 // MARK: - enum DaysOfTheWeek
 
-private enum DaysOfTheWeek: String, CaseIterable {
+enum DaysOfTheWeek: String, CaseIterable {
     case monday = "Monday"
     case tuesday = "Tuesday"
     case wednesday = "Wednesday"
@@ -88,7 +88,6 @@ final class ScheduleViewController: UIViewController {
         tableView.separatorColor = .ypGray
         tableView.layer.cornerRadius = 16
         tableView.layer.masksToBounds = true
-        tableView.separatorInset = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20)
         tableView.translatesAutoresizingMaskIntoConstraints = false
     }
     
@@ -157,8 +156,21 @@ extension ScheduleViewController: UITableViewDataSource {
         cell.delegate = self
         let day: String = DaysOfTheWeek.allCases[indexPath.row].rawValue
         let isSwitchOn = dataStorege.loadDaysInAWeek().contains(day)
-        //cell.configureCell(with: day, isSwitchOn: isSwitchOn)
+        cell.separatorInset = separatorInsetForCell(index: indexPath.row, numberOfLines: DaysOfTheWeek.allCases.count)
         cell.configureCell(with: day, isSwitchOn: isSwitchOn, cellIndex: indexPath.row, numberOfLines: DaysOfTheWeek.allCases.count)
         return cell
+    }
+}
+
+extension ScheduleViewController {
+    
+    func separatorInsetForCell(index: Int, numberOfLines: Int) -> UIEdgeInsets {
+        if index == DaysOfTheWeek.allCases.count - 1 {
+            return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: .greatestFiniteMagnitude)
+        } else if index == 0 {
+            return UIEdgeInsets(top: 0, left: 16, bottom: 0, right: .greatestFiniteMagnitude)
+        } else {
+            return UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        }
     }
 }

@@ -137,20 +137,13 @@ extension OnboardViewController: UIPageViewControllerDataSource {
 
 extension OnboardViewController: ContentViewControllerDelegate {
     func didTapButton() {
-        guard let currentViewController = viewControllers?.first else { return }
-        if let currentIndex = pages.firstIndex(of: currentViewController) {
-            let nextIndex = currentIndex + 1
-            if nextIndex < pages.count {
-                let nextViewController = pages[nextIndex]
-                self.setViewControllers([nextViewController], direction: .forward, animated: true, completion: nil)
-                pageControl.currentPage = nextIndex
-            } else {
-                guard let window = UIApplication.shared.windows.first else {
-                    fatalError("Invalid Configuration")
-                }
-                window.rootViewController = TabBarController()
-                dataStorage.firstLaunchApplication = true
-            }
+        
+        guard let window = UIApplication.shared.windows.first else {
+            fatalError("Invalid Configuration")
         }
+        window.rootViewController = TabBarController()
+        dataStorage.firstLaunchApplication = true
     }
 }
+
+
