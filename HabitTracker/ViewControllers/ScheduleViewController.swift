@@ -85,7 +85,7 @@ final class ScheduleViewController: UIViewController {
         tableView.register(ScheduleCell.self, forCellReuseIdentifier: "ScheduleCell")
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.separatorColor = .ypGray
+        tableView.separatorStyle = .none
         tableView.layer.cornerRadius = 16
         tableView.layer.masksToBounds = true
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -156,21 +156,8 @@ extension ScheduleViewController: UITableViewDataSource {
         cell.delegate = self
         let day: String = DaysOfTheWeek.allCases[indexPath.row].rawValue
         let isSwitchOn = dataStorege.loadDaysInAWeek().contains(day)
-        cell.separatorInset = separatorInsetForCell(index: indexPath.row, numberOfLines: DaysOfTheWeek.allCases.count)
         cell.configureCell(with: day, isSwitchOn: isSwitchOn, cellIndex: indexPath.row, numberOfLines: DaysOfTheWeek.allCases.count)
         return cell
     }
 }
 
-extension ScheduleViewController {
-    
-    func separatorInsetForCell(index: Int, numberOfLines: Int) -> UIEdgeInsets {
-        if index == DaysOfTheWeek.allCases.count - 1 {
-            return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: .greatestFiniteMagnitude)
-        } else if index == 0 {
-            return UIEdgeInsets(top: 0, left: 16, bottom: 0, right: .greatestFiniteMagnitude)
-        } else {
-            return UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-        }
-    }
-}

@@ -33,6 +33,13 @@ final class ScheduleCell: UITableViewCell {
         return switchDay
     }()
     
+    private lazy var separator: UIView = {
+        let view = UIView()
+        view.backgroundColor = .ypLightGray
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     private lazy var uiView: UIView = {
         let view = UIView()
         view.backgroundColor = .ypBackgroundDay
@@ -42,6 +49,7 @@ final class ScheduleCell: UITableViewCell {
         view.addSubview(scheduleLabel)
         view.addSubview(switchDay)
         view.addSubview(switchDay)
+        view.addSubview(separator)
         NSLayoutConstraint.activate([
             scheduleLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 16),
             scheduleLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
@@ -49,6 +57,10 @@ final class ScheduleCell: UITableViewCell {
             switchDay.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -16),
             switchDay.heightAnchor.constraint(equalToConstant: 31),
             switchDay.widthAnchor.constraint(equalToConstant: 51),
+            separator.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            separator.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            separator.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            separator.heightAnchor.constraint(equalToConstant: 1)
         ])
         return view
     }()
@@ -83,6 +95,7 @@ final class ScheduleCell: UITableViewCell {
         scheduleLabel.text = text
         switchDay.setOn(isSwitchOn, animated: true)
         roundingForCellsInATable(cellIndex: cellIndex, numberOfLines: numberOfLines)
+        separator.isHidden = cellIndex == numberOfLines - 1
     }
     
     // MARK: - Privatr methods
