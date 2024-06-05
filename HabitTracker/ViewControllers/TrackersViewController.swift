@@ -109,17 +109,6 @@ final class TrackersViewController: UIViewController {
         return view
     }()
     
-    private lazy var addNewTrackerButton: UIButton = {
-        let button = UIButton.systemButton(
-            with: UIImage(named: "addTracker")!,
-            target: self,
-            action: #selector(self.addNewTracker))
-        button.accessibilityIdentifier = "addNewTrackerButton"
-        button.tintColor = .ypBlackDay
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
-    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -204,7 +193,9 @@ final class TrackersViewController: UIViewController {
     }
     
     private func configNavigationBar() {
-        let addTrackerBarButtonItem = UIBarButtonItem(customView: addNewTrackerButton)
+        let addTrackerBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewTracker))
+        addTrackerBarButtonItem.tintColor = UIColor.ypBlackDay
+        navigationItem.leftBarButtonItem = addTrackerBarButtonItem
         let datePickerBarButtonItem = UIBarButtonItem(customView: datePicker)
         let datePickerConstraint = NSLayoutConstraint(item: datePicker, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1.0, constant: 110.0)
         navigationItem.leftBarButtonItem = addTrackerBarButtonItem
