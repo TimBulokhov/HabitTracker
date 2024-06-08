@@ -11,14 +11,28 @@
 "filterButton" = "Filters";
 "search" = "Search";
 "cancel" = "Cancel";
+"schedule" = "Schedule";
+"ready" = "Ready";
+"category" = "Category";
+
 
 "pinTracker" = "Pin";
 "unpinTracker" = "Unpin";
 "editTracker" = "Edit";
 "deleteTracker" = "Delete";
+"addCategory" = "Add a category";
+"deleteCategory" = "Delete";
 
 "pinnedTrackers" = "Pinned";
 "showDeleteAlert" = "Are you sure you want to delete the tracker?";
 
 "searchErrorStub" = "Nothing found";
 "emptyErrorStub" = "What will we track?";
+"nothingToAnalyze" = "There is nothing to analyze yet";
+"descriptionPlaceholderStub" = "Habits and events can be\ncombined in meaning";
+
+
+"blueOnboardingText" = "Track only what you want";
+"redOnboardingText" = "Even if it's not liters of water and yoga";
+"onboardingButton" = "Wow, these are the techologies!";
+

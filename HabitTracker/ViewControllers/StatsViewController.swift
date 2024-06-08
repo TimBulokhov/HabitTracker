@@ -11,13 +11,13 @@ import UIKit
 
 final class StatisticsViewController: UIViewController {
     var viewModel: StatsViewModel?
-    //private let analyticsService = AnalyticsService()
+    private let analyticsService = AnalyticsService()
     
     // MARK: - UiElements
     
     private lazy var trackerLabel: UILabel = {
         let trackerLabel = UILabel()
-        trackerLabel.text = "Статистика"
+        trackerLabel.text = NSLocalizedString("statisticsTitle", comment: "statisticsTitle")
         trackerLabel.textColor = .ypBlackDay
         trackerLabel.font = .boldSystemFont(ofSize: 34)
         trackerLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -35,7 +35,7 @@ final class StatisticsViewController: UIViewController {
     
     private lazy var descriptionPlaceholder: UILabel = {
         let label = UILabel()
-        label.text = "Анализировать пока нечего"
+        label.text = NSLocalizedString("nothingToAnalyze", comment: "nothingToAnalyze")
         label.numberOfLines = 2
         label.textColor = .ypBlackDay
         label.isHidden = true
@@ -70,12 +70,12 @@ final class StatisticsViewController: UIViewController {
         configViews()
         configConstraints()
         try? viewModel?.fetchStatistics()
-        //analyticsService.report(event: .open, params: ["Screen" : "Statistics"])
+        analyticsService.report(event: .open, params: ["Screen" : "Statistics"])
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-       // analyticsService.report(event: .close, params: ["Screen" : "Statistics"])
+        analyticsService.report(event: .close, params: ["Screen" : "Statistics"])
     }
     
     // MARK: - Binding
@@ -117,10 +117,12 @@ final class StatisticsViewController: UIViewController {
         NSLayoutConstraint.activate([
             trackerLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 88),
             trackerLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            
             descriptionImage.widthAnchor.constraint(equalToConstant: 80),
             descriptionImage.heightAnchor.constraint(equalToConstant: 80),
             descriptionImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             descriptionImage.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            
             descriptionPlaceholder.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             descriptionPlaceholder.topAnchor.constraint(equalTo: descriptionImage.bottomAnchor, constant: 8)
         ])

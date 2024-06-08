@@ -32,12 +32,12 @@ final class TabBarController: UITabBarController {
             generateVC(
                 viewController: trackerViewController,
                 title: NSLocalizedString("trackerTitle", comment: "trackerTitle"),
-                image: UIImage(named: "recordIcon")
+                image: UIImage(named: "trackersIcon")
             ),
             generateVC(
                 viewController: statisticsViewController,
                 title: NSLocalizedString("statisticsTitle", comment: "statisticsTitle"),
-                image: UIImage(named: "statisticsIcon")
+                image: UIImage(named: "statsIcon")
             )
         ]
     }

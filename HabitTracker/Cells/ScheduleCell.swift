@@ -48,7 +48,6 @@ final class ScheduleCell: UITableViewCell {
         view.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scheduleLabel)
         view.addSubview(switchDay)
-        view.addSubview(switchDay)
         view.addSubview(separator)
         NSLayoutConstraint.activate([
             scheduleLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 16),

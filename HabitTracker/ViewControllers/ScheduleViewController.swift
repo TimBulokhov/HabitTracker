@@ -10,13 +10,13 @@ import UIKit
 // MARK: - enum DaysOfTheWeek
 
 enum DaysOfTheWeek: String, CaseIterable {
-    case monday = "Monday"
-    case tuesday = "Tuesday"
-    case wednesday = "Wednesday"
-    case thursday = "Thursday"
-    case friday = "Friday"
-    case saturday = "Saturday"
-    case sunday = "Sunday"
+    case monday = "Понедельник"
+    case tuesday = "Вторник"
+    case wednesday = "Среда"
+    case thursday = "Четверг"
+    case friday = "Пятница"
+    case saturday = "Суббота"
+    case sunday = "Воскресенье"
 }
 
 // MARK: - ScheduleViewController
@@ -31,7 +31,7 @@ final class ScheduleViewController: UIViewController {
     
     private lazy var scheduleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Schedule"
+        label.text = NSLocalizedString("schedule", comment: "schedule")
         label.textColor = .ypBlackDay
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -40,7 +40,7 @@ final class ScheduleViewController: UIViewController {
     
     private lazy var doneButton: UIButton = {
         let button = UIButton()
-        button.setTitle("Ready", for: .normal)
+        button.setTitle(NSLocalizedString("ready", comment: "ready"), for: .normal)
         button.setTitleColor(.ypWhiteDay, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = .ypBlackDay
@@ -102,10 +102,12 @@ final class ScheduleViewController: UIViewController {
         NSLayoutConstraint.activate([
             scheduleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             scheduleLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 27),
+            
             tableView.topAnchor.constraint(equalTo: scheduleLabel.bottomAnchor, constant: 30),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             tableView.bottomAnchor.constraint(equalTo: doneButton.topAnchor, constant: -70),
+            
             doneButton.heightAnchor.constraint(equalToConstant: 60),
             doneButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             doneButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
