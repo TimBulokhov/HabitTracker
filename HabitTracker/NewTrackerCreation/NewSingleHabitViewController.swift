@@ -119,7 +119,7 @@ final class NewSingleHabitViewController: UIViewController {
     
     private lazy var tableView: UITableView = {
         let tableView = UITableView()
-        tableView.register(NewTableCell.self, forCellReuseIdentifier: "CreatingTableCell")
+        tableView.register(NewTableCell.self, forCellReuseIdentifier: "NewTableCell")
         tableView.delegate = self
         tableView.dataSource = self
         tableView.separatorStyle = .none
@@ -285,7 +285,9 @@ extension NewSingleHabitViewController: UITableViewDelegate {
         switch indexPath.row {
         case 0:
             let categoryViewController = TrackerCategoryViewController()
-            categoryViewController.delegateIrregular = self
+            let categoryViewModel = TrackerCategoryViewModel()
+            categoryViewController.initialize(viewModel: categoryViewModel)
+            categoryViewModel.delegateIrregular = self
             let navigationController = UINavigationController(rootViewController: categoryViewController)
             present(navigationController, animated: true)
         default:
@@ -306,7 +308,7 @@ extension NewSingleHabitViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "CreatingTableCell", for: indexPath) as? NewTableCell
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "NewTableCell", for: indexPath) as? NewTableCell
         else { fatalError() }
         let data = creatingTrackersModel[indexPath.row]
         cell.configureCell(title: data.titleLabelText, subTitle: data.subTitleLabel)

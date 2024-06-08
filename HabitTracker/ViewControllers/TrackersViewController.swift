@@ -48,7 +48,7 @@ final class TrackersViewController: UIViewController {
         datePicker.backgroundColor = .ypBackgroundDay
         datePicker.preferredDatePickerStyle = .compact
         datePicker.datePickerMode = .date
-        datePicker.locale = Locale(identifier: "en_EN")
+        datePicker.locale = Locale(identifier: "ru_RU")
         datePicker.layer.cornerRadius = 8
         datePicker.calendar.firstWeekday = 2
         datePicker.translatesAutoresizingMaskIntoConstraints = false
@@ -107,17 +107,6 @@ final class TrackersViewController: UIViewController {
             searchMainPlaceholderStub.topAnchor.constraint(equalTo: mainImageStub.bottomAnchor, constant: 8)
         ])
         return view
-    }()
-    
-    private lazy var addNewTrackerButton: UIButton = {
-        let button = UIButton.systemButton(
-            with: UIImage(named: "addTracker")!,
-            target: self,
-            action: #selector(self.addNewTracker))
-        button.accessibilityIdentifier = "addNewTrackerButton"
-        button.tintColor = .ypBlackDay
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
     }()
     
     // MARK: - Lifecycle
@@ -204,7 +193,9 @@ final class TrackersViewController: UIViewController {
     }
     
     private func configNavigationBar() {
-        let addTrackerBarButtonItem = UIBarButtonItem(customView: addNewTrackerButton)
+        let addTrackerBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewTracker))
+        addTrackerBarButtonItem.tintColor = UIColor.ypBlackDay
+        navigationItem.leftBarButtonItem = addTrackerBarButtonItem
         let datePickerBarButtonItem = UIBarButtonItem(customView: datePicker)
         let datePickerConstraint = NSLayoutConstraint(item: datePicker, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1.0, constant: 110.0)
         navigationItem.leftBarButtonItem = addTrackerBarButtonItem

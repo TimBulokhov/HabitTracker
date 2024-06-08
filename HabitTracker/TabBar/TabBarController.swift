@@ -7,8 +7,6 @@
 
 import UIKit
 
-import UIKit
-
 // MARK: - UITabBarController
 
 final class TabBarController: UITabBarController {

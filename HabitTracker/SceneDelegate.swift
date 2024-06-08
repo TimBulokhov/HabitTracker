@@ -9,6 +9,7 @@ import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
+    let dataStorage = DataStorege.shared
     var window: UIWindow?
     
     
@@ -16,7 +17,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
         let window = UIWindow(windowScene: windowScene)
-        window.rootViewController = TabBarController()
+        window.rootViewController = dataStorage.firstLaunchApplication ? (TabBarController()) : (OnboardViewController())
         window.makeKeyAndVisible()
         self.window = window
     }

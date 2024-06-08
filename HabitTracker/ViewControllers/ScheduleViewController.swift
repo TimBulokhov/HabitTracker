@@ -9,7 +9,7 @@ import UIKit
 
 // MARK: - enum DaysOfTheWeek
 
-private enum DaysOfTheWeek: String, CaseIterable {
+enum DaysOfTheWeek: String, CaseIterable {
     case monday = "Monday"
     case tuesday = "Tuesday"
     case wednesday = "Wednesday"
@@ -85,10 +85,9 @@ final class ScheduleViewController: UIViewController {
         tableView.register(ScheduleCell.self, forCellReuseIdentifier: "ScheduleCell")
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.separatorColor = .ypGray
+        tableView.separatorStyle = .none
         tableView.layer.cornerRadius = 16
         tableView.layer.masksToBounds = true
-        tableView.separatorInset = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20)
         tableView.translatesAutoresizingMaskIntoConstraints = false
     }
     
@@ -157,8 +156,8 @@ extension ScheduleViewController: UITableViewDataSource {
         cell.delegate = self
         let day: String = DaysOfTheWeek.allCases[indexPath.row].rawValue
         let isSwitchOn = dataStorege.loadDaysInAWeek().contains(day)
-        //cell.configureCell(with: day, isSwitchOn: isSwitchOn)
         cell.configureCell(with: day, isSwitchOn: isSwitchOn, cellIndex: indexPath.row, numberOfLines: DaysOfTheWeek.allCases.count)
         return cell
     }
 }
+

@@ -318,7 +318,9 @@ extension NewHabitViewController: UITableViewDelegate {
         switch indexPath.row {
         case 0:
             let categoryViewController = TrackerCategoryViewController()
-            categoryViewController.delegateHabbit = self
+            let categoryViewModel = TrackerCategoryViewModel()
+            categoryViewController.initialize(viewModel: categoryViewModel)
+            categoryViewModel.delegateHabbit = self
             let navigationController = UINavigationController(rootViewController: categoryViewController)
             present(navigationController, animated: true)
         case 1:
