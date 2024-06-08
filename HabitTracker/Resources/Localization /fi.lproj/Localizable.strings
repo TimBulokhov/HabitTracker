@@ -1,0 +1,24 @@
+/* 
+  Localizable.strings
+  HabitTracker
+
+  Created by Timofey Bulokhov on 08.06.2024.
+  
+*/
+
+"trackerTitle" = "Seuranta";
+"statisticsTitle" = "Tilasto";
+"filterButton" = "Suodattimet";
+"search" = "Etsiä";
+"Cancel" = "Peruuttaa";
+
+"pinTracker" = "Kiinnittää";
+"unpinTracker" = "Irrotta";
+"editTracker" = "Muokkaa";
+"deleteTracker" = "Poistaa";
+
+"pinnedTrackers" = "Kiinnitetty";
+"showDeleteAlert" = "Haluatko varmasti poistaa seurannan?";
+
+"searchErrorStub" = "Mitään ei löytynyt";
+"emptyErrorStub" = "Mitä me jäljitämme?";

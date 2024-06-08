@@ -1,0 +1,24 @@
+/* 
+  Localizable.strings
+  HabitTracker
+
+  Created by Timofey Bulokhov on 08.06.2024.
+  
+*/
+
+"trackerTitle" = "Trackers";
+"statisticsTitle" = "Statistics";
+"filterButton" = "Filters";
+"search" = "Search";
+"cancel" = "Cancel";
+
+"pinTracker" = "Pin";
+"unpinTracker" = "Unpin";
+"editTracker" = "Edit";
+"deleteTracker" = "Delete";
+
+"pinnedTrackers" = "Pinned";
+"showDeleteAlert" = "Are you sure you want to delete the tracker?";
+
+"searchErrorStub" = "Nothing found";
+"emptyErrorStub" = "What will we track?";

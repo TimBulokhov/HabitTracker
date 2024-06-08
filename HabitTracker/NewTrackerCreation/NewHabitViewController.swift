@@ -27,8 +27,8 @@ final class NewHabitViewController: UIViewController {
     private let colors: [UIColor] = UIColor.colorSelection
     private var dateEvents = [Int]()
     private var creatingTrackersModel: [CreatingTrackersModel] = [
-        CreatingTrackersModel(titleLabelText: "Category", subTitleLabel: ""),
-        CreatingTrackersModel(titleLabelText: "Schedule", subTitleLabel: "")
+        CreatingTrackersModel(titleLabelText: "Категория", subTitleLabel: ""),
+        CreatingTrackersModel(titleLabelText: "Расписание", subTitleLabel: "")
     ]
     
     private let emojiList = [
@@ -52,7 +52,7 @@ final class NewHabitViewController: UIViewController {
     
     private lazy var newHabitLabel: UILabel = {
         let trackerLabel = UILabel()
-        trackerLabel.text = "New habit"
+        trackerLabel.text = "Новая привычка"
         trackerLabel.textColor = .ypBlackDay
         trackerLabel.font = .systemFont(ofSize: 16, weight: .medium)
         trackerLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -62,7 +62,7 @@ final class NewHabitViewController: UIViewController {
     private lazy var nameTrackerTextField: UITextField = {
         let textField = UITextField()
         textField.indent(size: 16)
-        textField.placeholder = "Enter the name of the tracker"
+        textField.placeholder = "Введите название трекера"
         textField.textColor = .ypBlackDay
         textField.backgroundColor = .ypBackgroundDay
         textField.layer.cornerRadius = 16
@@ -76,7 +76,7 @@ final class NewHabitViewController: UIViewController {
     
     private lazy var errorLabel: UILabel = {
         let label = UILabel()
-        label.text = "Limit is 38 characters"
+        label.text = "Ограничение 38 символов"
         label.textColor = .ypRed
         label.font = .systemFont(ofSize: 17)
         label.textAlignment = .center
@@ -97,7 +97,7 @@ final class NewHabitViewController: UIViewController {
     private lazy var cancelButton: UIButton = {
         let button = UIButton()
         button.addTarget(self, action: #selector(self.cancelCreation), for: .touchUpInside)
-        button.setTitle("Cancel", for: .normal)
+        button.setTitle("Отменить", for: .normal)
         button.setTitleColor(.ypRed, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = .clear
@@ -112,7 +112,7 @@ final class NewHabitViewController: UIViewController {
     private lazy var creatingButton: UIButton = {
         let button = UIButton()
         button.addTarget(self, action: #selector(self.create), for: .touchUpInside)
-        button.setTitle("Create", for: .normal)
+        button.setTitle("Создать", for: .normal)
         button.setTitleColor(.ypWhiteDay, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = .ypGray
@@ -183,7 +183,7 @@ final class NewHabitViewController: UIViewController {
         guard let selectedColorIndexPath = isSelectedColor else { return }
         let emoji = emojiList[selectedEmojiIndexPath.row]
         let color = colors[selectedColorIndexPath.row]
-        let newTracker = Tracker(id: UUID(), name: text, color: color, emoji: emoji, dateEvents: dateEvents)
+        let newTracker = Tracker(id: UUID(), name: text, color: color, emoji: emoji, dateEvents: dateEvents, isPinned: <#Bool#>)
         let categoryTracker = creatingTrackersModel[0].subTitleLabel
         delegate?.didCreateTracker(newTracker, category: categoryTracker)
         self.view.window?.rootViewController?.dismiss(animated: true) {
@@ -277,7 +277,7 @@ extension NewHabitViewController: NewHabitViewControllerDelegate {
     func updateDate(days: [String]) {
         if !days.isEmpty {
             if days.count == 7 {
-                creatingTrackersModel[1].subTitleLabel = "Every day"
+                creatingTrackersModel[1].subTitleLabel = "Каждый день"
                 convertToDayInDateFormatter(days)
             } else {
                 creatingTrackersModel[1].subTitleLabel = days.joined(separator: ", ")
@@ -295,7 +295,7 @@ extension NewHabitViewController: NewHabitViewControllerDelegate {
     }
     
     private func convertToDayInDateFormatter(_ days: [String]){
-        let orderedDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        let orderedDays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
         let resultArray = days.compactMap { orderedDays.firstIndex(of: $0)?.advanced(by: 1) }
         dateEvents = resultArray
     }

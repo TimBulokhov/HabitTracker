@@ -10,6 +10,7 @@ import UIKit
 // MARK: - TrackersViewController
 
 final class TrackersViewController: UIViewController {
+    weak var delegateStatistic: StatisticViewControllerProtocol?
     private var filteredCategoriesBySearch: [TrackerCategory] = []
     private var filteredCategoriesByDate: [TrackerCategory] = []
     private var visibleCategories: [TrackerCategory] = []
@@ -59,7 +60,7 @@ final class TrackersViewController: UIViewController {
     private lazy var trackerLabel: UILabel = {
         let trackerLabel = UILabel()
         trackerLabel.textColor = .ypBlackDay
-        trackerLabel.text = "Trackers"
+        trackerLabel.text = "Трекеры"
         trackerLabel.font = .boldSystemFont(ofSize: 34)
         trackerLabel.translatesAutoresizingMaskIntoConstraints = false
         return trackerLabel
@@ -71,7 +72,7 @@ final class TrackersViewController: UIViewController {
         trackersSearchBar.layer.masksToBounds = true
         trackersSearchBar.searchBarStyle = .minimal
         trackersSearchBar.translatesAutoresizingMaskIntoConstraints = false
-        trackersSearchBar.placeholder = "Search"
+        trackersSearchBar.placeholder = "Поиск"
         trackersSearchBar.delegate = self
         return trackersSearchBar
     }()
@@ -157,10 +158,10 @@ final class TrackersViewController: UIViewController {
         collectionView.isHidden = true
         let searchText = searchBar.text ?? ""
         if visibleCategories.isEmpty && !categories.isEmpty || !searchText.isEmpty{
-            searchMainPlaceholderStub.text = "Nothing found"
+            searchMainPlaceholderStub.text = "Ничего не найдено"
             mainImageStub.image = UIImage(named: "error2")
         } else {
-            searchMainPlaceholderStub.text = "What you want to track?"
+            searchMainPlaceholderStub.text = "Что будем отслеживать?"
             mainImageStub.image = UIImage(named: "Error1")
         }
     }
@@ -216,7 +217,7 @@ final class TrackersViewController: UIViewController {
     
     private func configViews() {
         _ = self.skipKeyboard
-        searchBar.setValue("Cancel", forKey: "cancelButtonText")
+        searchBar.setValue("Отменить", forKey: "cancelButtonText")
         view.backgroundColor = .ypWhiteDay
         view.addSubview(navigationBar)
         view.addSubview(trackerLabel)

@@ -108,15 +108,15 @@ final class TrackerCell: UICollectionViewCell {
     
     private func formatDaysText(forDays days: Int) -> String {
         if days > 10 && days < 20 {
-            return "\(days) days"
+            return "\(days) дней"
         } else {
             switch days % 10 {
             case 1:
-                return "\(days) day"
+                return "\(days) день"
             case 2, 3, 4:
-                return "\(days) days"
+                return "\(days) дня"
             default:
-                return "\(days) days"
+                return "\(days) дней"
             }
         }
     }
