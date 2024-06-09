@@ -11,14 +11,56 @@
 "filterButton" = "Filter";
 "search" = "Suche";
 "cancel" = "Abschaffen";
+"schedule" = "Schedule";
+"ready" = "Fertig";
+"category" = "Kategorie";
+"create" = "Schaffen";
+"save" = "Speichern";
 
 "pinTracker" = "Befestigen";
 "unpinTracker" = "Loslösen";
 "editTracker" = "Redigieren";
 "deleteTracker" = "Entfernen";
+"addCategory" = "Kategorie hinzufügen";
+"deleteCategory" = "Entfernen";
+"newCategory" = "Neue Kategorie";
+"nameOfCategory" = "Geben Sie einen Kategorienamen ein";
+"trackerCreation" = "Einen Tracker erstellen";
+"habit" = "Gewohnheit";
+"irrEvent" = "Unregelmäßiges Ereignis";
+"newHabit" = "Neue Gewohnheit";
+"nameOfTracker" = "Geben Sie den Namen des Trackers ein";
+"limit" = "Beschränkung auf 38 Zeichen";
+"everyDay" = "Jeden tag";
+"color" = "Farbe";
+"newIrrEvent" = "Neues unregelmäßiges Ereignis";
+"editing" = "Gewohnheit bearbeiten";
 
 "pinnedTrackers" = "Fixiert";
 "showDeleteAlert" = "Sind Sie sicher, dass Sie den Tracker entfernen möchten?";
 
 "searchErrorStub" = "Nichts gefunden";
 "emptyErrorStub" = "Was werden wir verfolgen?";
+"nothingToAnalyze" = "Es gibt noch nichts zu analysieren";
+"descriptionPlaceholderStub" = "Gewohnheiten und unregelmäßige Ereignisse können\nsinngemäß kombiniert werden";
+
+
+"blueOnboardingText" = "Track nur dem, was Sie wollen";
+"redOnboardingText" = "Auch wenn es keine Liter Wasser und Yoga sind";
+"onboardingButton" = "Das ist Technologie!";
+
+"Monday" = "Montag";
+"Tuesday" = "Dienstag";
+"Wednesday" = "Mittwoch";
+"Thursday" = "Donnerstag";
+"Friday" = "Freitag";
+"Saturday" = "Samstag";
+"Sunday" = "Sonntag";
+
+"Mon" = "Mo";
+"Tue" = "Di";
+"Wed" = "Mi";
+"Thu" = "Do";
+"Fri" = "Fr";
+"Sat" = "Sa";
+"Sun" = "So";

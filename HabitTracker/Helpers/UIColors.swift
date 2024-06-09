@@ -32,3 +32,17 @@ extension UIColor {
         UIColor(named: "Color selection 18") ?? #colorLiteral(red: 0.1919171214, green: 0.8337991834, blue: 0.4192006886, alpha: 1)
     ]
 }
+
+extension UIColor {
+    static func colorComparison(colorFromSet: UIColor,trackerColor: UIColor) -> Bool {
+        var red1: CGFloat = 0, green1: CGFloat = 0, blue1: CGFloat = 0, alpha1: CGFloat = 0
+        var red2: CGFloat = 0, green2: CGFloat = 0, blue2: CGFloat = 0, alpha2: CGFloat = 0
+        colorFromSet.getRed(&red1, green: &green1, blue: &blue1, alpha: &alpha1)
+        trackerColor.getRed(&red2, green: &green2, blue: &blue2, alpha: &alpha2)
+        let threshold: CGFloat = 0.01
+        return abs(red1 - red2) < threshold &&
+        abs(green1 - green2) < threshold &&
+        abs(blue1 - blue2) < threshold &&
+        abs(alpha1 - alpha2) < threshold
+    }
+}

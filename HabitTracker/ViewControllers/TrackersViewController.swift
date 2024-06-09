@@ -373,17 +373,17 @@ extension TrackersViewController: UICollectionViewDelegate {
                 UIAction(title: titleTextisPinned ) { [weak self] _ in
                     guard let self else { return }
                     self.updateStatusIsPinned(tracker: tracker)
-                    self.analyticsService.report(event: .click, params: ["Screen" : "CreatingIrregularEvent", "Item" : tracker.isPinned ? Items.pinned.rawValue : Items.unpinned.rawValue])
+                    self.analyticsService.report(event: .click, params: ["Screen" : "NewSingleHabit", "Item" : tracker.isPinned ? Items.pinned.rawValue : Items.unpinned.rawValue])
                 },
                 UIAction(title: NSLocalizedString("editTracker", comment: "editTracker")) { [weak self] _ in
                     guard let self else { return }
                     self.editingTrackers(indexPath: indexPath)
-                    self.analyticsService.report(event: .click, params: ["Screen" : "CreatingIrregularEvent", "Item" : Items.edit.rawValue])
+                    self.analyticsService.report(event: .click, params: ["Screen" : "NewSingleHabit", "Item" : Items.edit.rawValue])
                 },
                 UIAction(title: NSLocalizedString("deleteTracker", comment: "deleteTracker"), image: nil, identifier: nil, discoverabilityTitle: nil, attributes: .destructive) {[weak self] _ in
                     guard let self else { return }
                     self.showDeleteAlert(indexPath: indexPath)
-                    self.analyticsService.report(event: .click, params: ["Screen" : "CreatingIrregularEvent", "Item" : Items.delete.rawValue])
+                    self.analyticsService.report(event: .click, params: ["Screen" : "NewSingleHabit", "Item" : Items.delete.rawValue])
                 }
             ])
         let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in

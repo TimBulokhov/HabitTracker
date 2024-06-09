@@ -15,13 +15,18 @@ protocol NewSingleHabitViewControllerDelegate: AnyObject {
 
 final class NewSingleHabitViewController: UIViewController {
     weak var delegate: TrackerCreationDelegate?
+    weak var delegateEdit: EditTrackerDelegate?
+    var numberOfDaysCompletedIrregular: Int?
+    var editCategoryIrregular: String?
+    var editTrackerIrregular: Tracker?
+    private let analyticsService = AnalyticsService()
     private let dataStorege = DataStorege.shared
     private let characterLimitInField = 38
     private var isSelectedEmoji: IndexPath?
     private var isSelectedColor: IndexPath?
     private let colors: [UIColor] = UIColor.colorSelection
     private var creatingTrackersModel: [CreatingTrackersModel] = [
-        CreatingTrackersModel(titleLabelText: "Категория", subTitleLabel: "")
+        CreatingTrackersModel(titleLabelText: NSLocalizedString("category", comment: "category"), subTitleLabel: "")
     ]
     
     private let emojiList = [
@@ -45,17 +50,26 @@ final class NewSingleHabitViewController: UIViewController {
     
     private lazy var newHabitLabel: UILabel = {
         let trackerLabel = UILabel()
-        trackerLabel.text = "Новое нерегулярное событие"
+        trackerLabel.text = NSLocalizedString("newIrrEvent", comment: "newIrrEvent")
         trackerLabel.textColor = .ypBlackDay
         trackerLabel.font = .systemFont(ofSize: 16, weight: .medium)
         trackerLabel.translatesAutoresizingMaskIntoConstraints = false
         return trackerLabel
     }()
     
+    private lazy var completedDaysLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 32, weight: .bold)
+        label.isHidden = true
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
     private lazy var nameTrackerTextField: UITextField = {
         let textField = UITextField()
         textField.indent(size: 16)
-        textField.placeholder = "Введите название трекера"
+        textField.placeholder = NSLocalizedString("nameOfTracker", comment: "nameOfTracker")
         textField.textColor = .ypBlackDay
         textField.backgroundColor = .ypBackgroundDay
         textField.layer.cornerRadius = 16
@@ -69,7 +83,7 @@ final class NewSingleHabitViewController: UIViewController {
     
     private lazy var errorLabel: UILabel = {
         let label = UILabel()
-        label.text = "Ограничение 38 символов"
+        label.text = NSLocalizedString("limit", comment: "limit")
         label.textColor = .ypRed
         label.font = .systemFont(ofSize: 17)
         label.textAlignment = .center
@@ -91,7 +105,7 @@ final class NewSingleHabitViewController: UIViewController {
         let button = UIButton()
         button.addTarget(self, action: #selector(self.cancelCreation), for: .touchUpInside)
         button.accessibilityIdentifier = "cancelButton"
-        button.setTitle("Отменить", for: .normal)
+        button.setTitle(NSLocalizedString("cancel", comment: "cancel"), for: .normal)
         button.setTitleColor(.ypRed, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = .clear
@@ -107,7 +121,7 @@ final class NewSingleHabitViewController: UIViewController {
         let button = UIButton()
         button.addTarget(self, action: #selector(self.create), for: .touchUpInside)
         button.accessibilityIdentifier = "creatingButton"
-        button.setTitle("Создать", for: .normal)
+        button.setTitle(NSLocalizedString("create", comment: "create"), for: .normal)
         button.setTitleColor(.ypWhiteDay, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = .ypGray
@@ -151,6 +165,13 @@ final class NewSingleHabitViewController: UIViewController {
         dataStorege.removeIndexPathForCheckmark()
         configViews()
         configConstraints()
+        trackerEditing()
+        analyticsService.report(event: .open, params: ["Screen" : "NewSingleHabit"])
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        analyticsService.report(event: .close, params: ["Screen" : "NewSingleHabit"])
     }
     
     // MARK: - Actions
@@ -167,20 +188,82 @@ final class NewSingleHabitViewController: UIViewController {
     
     @objc
     private func cancelCreation() {
+        analyticsService.report(event: .click, params: ["Screen" : "NewSingleHabit", "Item" : Items.cancelCreation.rawValue])
         dismiss(animated: true)
     }
     
     @objc
     private func create() {
-        guard let text = nameTrackerTextField.text else { return }
-        guard let selectedEmojiIndexPath = isSelectedEmoji else { return }
-        guard let selectedColorIndexPath = isSelectedColor else { return }
-        let emoji = emojiList[selectedEmojiIndexPath.row]
-        let color = colors[selectedColorIndexPath.row]
-        let newTracker = Tracker(id: UUID(), name: text, color: color, emoji: emoji, dateEvents: nil)
+        guard let newTracker = collectingDataForTheTracker(newTracker: true) else { return }
         let categoryTracker = creatingTrackersModel[0].subTitleLabel
         delegate?.didCreateTracker(newTracker, category: categoryTracker)
+        analyticsService.report(event: .click, params: ["Screen" : "NewSingleHabit", "Item" : Items.addTracker.rawValue])
         self.view.window?.rootViewController?.dismiss(animated: true) {
+        }
+    }
+    
+    @objc
+    private func update() {
+        guard let newTracker = collectingDataForTheTracker(newTracker: false) else { return }
+        let categoryTracker = creatingTrackersModel[0].subTitleLabel
+        delegateEdit?.trackerUpdate(newTracker, category: categoryTracker)
+        analyticsService.report(event: .click, params: ["Screen" : "NewSingleHabit", "Item" : Items.updateTracker.rawValue])
+        dismiss(animated: true)
+    }
+    
+    // MARK: - Private methods
+    
+    private func collectingDataForTheTracker(newTracker: Bool) -> Tracker? {
+        guard let text = nameTrackerTextField.text,
+              let selectedEmojiIndexPath = isSelectedEmoji,
+              let selectedColorIndexPath = isSelectedColor else { return nil }
+        let emoji = emojiList[selectedEmojiIndexPath.row]
+        let color = colors[selectedColorIndexPath.row]
+        if newTracker {
+            return Tracker(id: UUID(), name: text, color: color, emoji: emoji, dateEvents: nil, isPinned: false)
+        } else {
+            guard let id = editTrackerIrregular?.id else { return nil }
+            guard let isPinned = editTrackerIrregular?.isPinned else { return nil }
+            return Tracker(id: id, name: text, color: color, emoji: emoji, dateEvents: nil, isPinned: isPinned)
+        }
+    }
+    
+    private func trackerEditing() {
+        guard let daysLabel = numberOfDaysCompletedIrregular else { return }
+        guard let trackerForEditing = editTrackerIrregular else { return }
+        guard let categiryForEditing = editCategoryIrregular else { return }
+        newHabitLabel.text = NSLocalizedString("editing", comment: "editing")
+        completedDaysLabel.isHidden = false
+        creatingButton.setTitle(NSLocalizedString("save", comment: "save"), for: .normal)
+        creatingButton.addTarget(self, action: #selector(self.update), for: .touchUpInside)
+        completedDaysLabel.text = formatDaysText(forDays: daysLabel)
+        nameTrackerTextField.text = trackerForEditing.name
+        updateSubitle(nameSubitle: categiryForEditing)
+        if let emojiIndex = emojiList.firstIndex(of: trackerForEditing.emoji) {
+            let emojieIndexPath = IndexPath(row: emojiIndex, section: 0)
+            collectionView.selectItem(at: emojieIndexPath, animated: false, scrollPosition: [])
+            collectionView.delegate?.collectionView?(collectionView, didSelectItemAt: emojieIndexPath)
+        }
+        if let colorIndex = colors.firstIndex(where: { UIColor.colorComparison(colorFromSet: $0, trackerColor: trackerForEditing.color) }) {
+            let colorIndexPath = IndexPath(row: colorIndex, section: 1)
+            collectionView.selectItem(at: colorIndexPath, animated: false, scrollPosition: [])
+            collectionView.delegate?.collectionView?(collectionView, didSelectItemAt: colorIndexPath)
+        }
+        updateCreatingButton()
+    }
+    
+    private func formatDaysText(forDays days: Int) -> String {
+        if days > 10 && days < 20 {
+            return "\(days) дней"
+        } else {
+            switch days % 10 {
+            case 1:
+                return "\(days) день"
+            case 2, 3, 4:
+                return "\(days) дня"
+            default:
+                return "\(days) дней"
+            }
         }
     }
     
@@ -212,39 +295,54 @@ final class NewSingleHabitViewController: UIViewController {
         contentView.addSubview(collectionView)
         contentView.addSubview(cancelButton)
         contentView.addSubview(creatingButton)
+        contentView.addSubview(completedDaysLabel)
     }
     
     private func configConstraints() {
+        let nameTrackerTextFieldConstant: CGFloat = editTrackerIrregular == nil ? 28 : 106
+        let scrollHeightAnchor: CGFloat = editTrackerIrregular == nil ? 0 : 30
         NSLayoutConstraint.activate([
             newHabitLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             newHabitLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 27),
+            
             scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            
             contentView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
             contentView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
-            contentView.heightAnchor.constraint(equalToConstant: view.frame.height),
-            nameTrackerTextField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 28),
+            contentView.heightAnchor.constraint(equalToConstant: view.frame.height + scrollHeightAnchor),
+            
+            completedDaysLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 28),
+            completedDaysLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            completedDaysLabel.heightAnchor.constraint(equalToConstant: 38),
+            
+            nameTrackerTextField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: nameTrackerTextFieldConstant),
             nameTrackerTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             nameTrackerTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             nameTrackerTextField.heightAnchor.constraint(equalToConstant: 75),
+            
             errorLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            
             tableView.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 24),
             tableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             tableView.heightAnchor.constraint(equalToConstant: 75),
+            
             collectionView.topAnchor.constraint(equalTo: tableView.bottomAnchor, constant: 32),
             collectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             collectionView.heightAnchor.constraint(equalToConstant: 490),
+            
             cancelButton.topAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: 16),
             cancelButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             cancelButton.heightAnchor.constraint(equalToConstant: 60),
             cancelButton.widthAnchor.constraint(equalToConstant: 168),
+            
             creatingButton.leadingAnchor.constraint(equalTo: cancelButton.trailingAnchor, constant: 8),
             creatingButton.topAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: 16),
             creatingButton.heightAnchor.constraint(equalToConstant: 60),
@@ -388,7 +486,7 @@ extension NewSingleHabitViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath
     ) -> UICollectionReusableView {
         guard let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as? SupplementaryView else { return UICollectionReusableView()}
-        indexPath.section == 0 ? (view.titleLabel.text = "Emoji") : (view.titleLabel.text = "Цвет")
+        indexPath.section == 0 ? (view.titleLabel.text = "Emoji") : (view.titleLabel.text = NSLocalizedString("color", comment: "color"))
         return view
     }
     

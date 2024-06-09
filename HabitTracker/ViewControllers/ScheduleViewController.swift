@@ -10,13 +10,21 @@ import UIKit
 // MARK: - enum DaysOfTheWeek
 
 enum DaysOfTheWeek: String, CaseIterable {
-    case monday = "Понедельник"
-    case tuesday = "Вторник"
-    case wednesday = "Среда"
-    case thursday = "Четверг"
-    case friday = "Пятница"
-    case saturday = "Суббота"
-    case sunday = "Воскресенье"
+    case monday = "Monday"
+    case tuesday = "Tuesday"
+    case wednesday = "Wednesday"
+    case thursday = "Thursday"
+    case friday = "Friday"
+    case saturday = "Saturday"
+    case sunday = "Sunday"
+    
+    private func localizedDay() -> String {
+        return NSLocalizedString(self.rawValue, comment: "")
+    }
+    
+    static func LocalizedDaysOfTheWeek(day: DaysOfTheWeek) -> String {
+        return day.localizedDay()
+    }
 }
 
 // MARK: - ScheduleViewController

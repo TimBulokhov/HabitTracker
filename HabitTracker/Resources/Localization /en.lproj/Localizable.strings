@@ -14,7 +14,8 @@
 "schedule" = "Schedule";
 "ready" = "Ready";
 "category" = "Category";
-
+"create" = "Create";
+"save" = "Save";
 
 "pinTracker" = "Pin";
 "unpinTracker" = "Unpin";
@@ -22,6 +23,18 @@
 "deleteTracker" = "Delete";
 "addCategory" = "Add a category";
 "deleteCategory" = "Delete";
+"newCategory" = "New category";
+"nameOfCategory" = "Enter the name of the category";
+"trackerCreation" = "Creation of the tracker";
+"habit" = "Habit";
+"irrEvent" = "Irregular event";
+"newHabit" = "New habit";
+"nameOfTracker" = "Enter the name of the tracker";
+"limit" = "The limit is 38 characters";
+"everyDay" = "Every day";
+"color" = "Color";
+"newIrrEvent" = "New irregular event";
+"editing" = "Editing a habit";
 
 "pinnedTrackers" = "Pinned";
 "showDeleteAlert" = "Are you sure you want to delete the tracker?";
@@ -36,3 +49,18 @@
 "redOnboardingText" = "Even if it's not liters of water and yoga";
 "onboardingButton" = "Wow, these are the techologies!";
 
+"Monday" = "Monday";
+"Tuesday" = "Tuesday";
+"Wednesday" = "Wednesday";
+"Thursday" = "Thursday";
+"Friday" = "Friday";
+"Saturday" = "Saturday";
+"Sunday" = "Sunday";
+
+"Mon" = "Mon";
+"Tue" = "Tue";
+"Wed" = "Wed";
+"Thu" = "Thu";
+"Fri" = "Fri";
+"Sat" = "Sat";
+"Sun" = "Sun";

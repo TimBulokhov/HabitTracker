@@ -15,7 +15,7 @@ final class CreatingCategoryViewController: UIViewController {
     
     private lazy var habitLabel: UILabel = {
         let label = UILabel()
-        label.text = "Новая категория"
+        label.text = NSLocalizedString("newCategory", comment: "newCategory")
         label.textColor = .ypBlackDay
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -25,7 +25,7 @@ final class CreatingCategoryViewController: UIViewController {
     private lazy var nameTrackerTextField: UITextField = {
         let textField = UITextField()
         textField.indent(size: 16)
-        textField.placeholder = "Введите название категории"
+        textField.placeholder = NSLocalizedString("nameOfCategory", comment: "nameOfCategory")
         textField.textColor = .ypBlackDay
         textField.backgroundColor = .ypBackgroundDay
         textField.layer.cornerRadius = 16
@@ -39,7 +39,7 @@ final class CreatingCategoryViewController: UIViewController {
     
     private lazy var creatingCategoryButton: UIButton = {
         let button = UIButton()
-        button.setTitle("Готово", for: .normal)
+        button.setTitle(NSLocalizedString("ready", comment: "ready"), for: .normal)
         button.setTitleColor(.ypWhiteDay, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = .ypGray

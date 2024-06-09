@@ -10,15 +10,57 @@
 "statisticsTitle" = "Tilasto";
 "filterButton" = "Suodattimet";
 "search" = "Etsiä";
-"Cancel" = "Peruuttaa";
+"cancel" = "Peruuttaa";
+"schedule" = "Aikataulu";
+"ready" = "Valmis";
+"category" = "Kategoria";
+"create" = "Luoda";
+"save" = "Tallentaa";
 
 "pinTracker" = "Kiinnittää";
 "unpinTracker" = "Irrotta";
 "editTracker" = "Muokkaa";
 "deleteTracker" = "Poistaa";
+"addCategory" = "Lisää kategoria";
+"deleteCategory" = "Poistaa";
+"newCategory" = "Uusi kategoria";
+"nameOfCategory" = "Kirjoita kategoria nimi";
+"trackerCreation" = "Seuranta luominen";
+"habit" = "Tavaksi";
+"irrEvent" = "Epäsäännöllinen tapahtuma";
+"newHabit" = "Uusi tavaksi";
+"nameOfTracker" = "Kirjoita seurantalaitteen nimi";
+"limit" = "Raja on 38 merkkiä";
+"everyDay" = "Päivittäinen";
+"color" = "Väri";
+"newIrrEvent" = "Uusi epäsäännöllinen tapahtuma";
+"editing" = "Muokkaus tavaksi";
 
 "pinnedTrackers" = "Kiinnitetty";
 "showDeleteAlert" = "Haluatko varmasti poistaa seurannan?";
 
 "searchErrorStub" = "Mitään ei löytynyt";
 "emptyErrorStub" = "Mitä me jäljitämme?";
+"nothingToAnalyze" = "Vielä ei ole mitään analysoitavaa";
+"descriptionPlaceholderStub" = "Tottumukset ja tapahtumat voidaan\nyhdistää merkitykseltään";
+
+
+"blueOnboardingText" = "Seuraa vain mitä haluat";
+"redOnboardingText" = "Vaikka kyse ei ole vedestä ja joogasta";
+"onboardingButton" = "Nämä ovat teknologioita!";
+
+"Monday" = "Maanantai";
+"Tuesday" = "Tiistai";
+"Wednesday" = "Keskiviikko";
+"Thursday" = "Torstai";
+"Friday" = "Perjantai";
+"Saturday" = "Lauantai";
+"Sunday" = "Sunnuntai";
+
+"Mon" = "Ma";
+"Tue" = "Ti";
+"Wed" = "Ke";
+"Thu" = "To";
+"Fri" = "Pe";
+"Sat" = "La";
+"Sun" = "Su";
