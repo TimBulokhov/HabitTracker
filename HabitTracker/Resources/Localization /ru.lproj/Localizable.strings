@@ -64,3 +64,8 @@
 "Fri" = "Пт";
 "Sat" = "Сб";
 "Sun" = "Вс";
+
+"allTtrackers" = "Все трекеры";
+"todayTrackers" = "Трекеры на сегодня";
+"completedTrackers" = "Завершенные";
+"uncompletedTrackers" = "Незавершенные";

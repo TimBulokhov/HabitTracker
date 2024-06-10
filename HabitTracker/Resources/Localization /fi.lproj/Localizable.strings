@@ -64,3 +64,8 @@
 "Fri" = "Pe";
 "Sat" = "La";
 "Sun" = "Su";
+
+"allTtrackers" = "Kaikki seurantalaitteet";
+"todayTrackers" = "Seurantalaitteet tänään";
+"completedTrackers" = "Valmis";
+"uncompletedTrackers" = "Keskeneräiset";

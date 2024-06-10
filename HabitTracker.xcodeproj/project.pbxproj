@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		125BEA152C15B37800D27E72 /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125BEA142C15B37800D27E72 /* AnalyticsService.swift */; };
 		125BEA172C15B38100D27E72 /* Events.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125BEA162C15B38100D27E72 /* Events.swift */; };
+		125BEA192C15E4BA00D27E72 /* FilterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125BEA182C15E4BA00D27E72 /* FilterViewController.swift */; };
 		125C6A652C0B95E80070F742 /* OnboardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125C6A642C0B95E80070F742 /* OnboardViewController.swift */; };
 		125C6A672C0B95F90070F742 /* OnboardContentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125C6A662C0B95F90070F742 /* OnboardContentViewController.swift */; };
 		125C6A692C0B96B10070F742 /* ObservableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125C6A682C0B96B10070F742 /* ObservableValue.swift */; };
@@ -77,6 +78,7 @@
 /* Begin PBXFileReference section */
 		125BEA142C15B37800D27E72 /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
 		125BEA162C15B38100D27E72 /* Events.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Events.swift; sourceTree = "<group>"; };
+		125BEA182C15E4BA00D27E72 /* FilterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterViewController.swift; sourceTree = "<group>"; };
 		125C6A642C0B95E80070F742 /* OnboardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardViewController.swift; sourceTree = "<group>"; };
 		125C6A662C0B95F90070F742 /* OnboardContentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardContentViewController.swift; sourceTree = "<group>"; };
 		125C6A682C0B96B10070F742 /* ObservableValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableValue.swift; sourceTree = "<group>"; };
@@ -179,6 +181,7 @@
 				125C6A642C0B95E80070F742 /* OnboardViewController.swift */,
 				125C6A662C0B95F90070F742 /* OnboardContentViewController.swift */,
 				12D149152BDEBD9100AEA722 /* TrackerCategoryViewController.swift */,
+				125BEA182C15E4BA00D27E72 /* FilterViewController.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -362,6 +365,8 @@
 			dependencies = (
 			);
 			name = HabitTracker;
+			packageProductDependencies = (
+			);
 			productName = HabitTracker;
 			productReference = 12D148D32BDEB29400AEA722 /* HabitTracker.app */;
 			productType = "com.apple.product-type.application";
@@ -437,6 +442,8 @@
 				ru,
 			);
 			mainGroup = 12D148CA2BDEB29400AEA722;
+			packageReferences = (
+			);
 			productRefGroup = 12D148D42BDEB29400AEA722 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -481,6 +488,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				125BEA192C15E4BA00D27E72 /* FilterViewController.swift in Sources */,
 				12C011DC2C023F810055E836 /* TrackersStorage.swift in Sources */,
 				125C6A692C0B96B10070F742 /* ObservableValue.swift in Sources */,
 				12D1491C2BDEBE7900AEA722 /* Tracker.swift in Sources */,
@@ -621,7 +629,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -685,7 +693,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -712,6 +720,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 83W9YR2F63;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = HabitTracker/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -740,6 +749,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 83W9YR2F63;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = HabitTracker/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

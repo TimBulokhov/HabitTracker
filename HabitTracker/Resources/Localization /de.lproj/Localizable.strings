@@ -64,3 +64,8 @@
 "Fri" = "Fr";
 "Sat" = "Sa";
 "Sun" = "So";
+
+"allTtrackers" = "Alle Tracker";
+"todayTrackers" = "Tracker für heute";
+"completedTrackers" = "Abgeschlossene";
+"uncompletedTrackers" = "Unvollendete";

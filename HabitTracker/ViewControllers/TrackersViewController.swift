@@ -23,7 +23,7 @@ final class TrackersViewController: UIViewController {
     private var filteredCategoriesByDate: [TrackerCategory] = []
     private var visibleCategories: [TrackerCategory] = []
     private var completedTrackers: [TrackerRecord] = []
-    private var currentDate: Date = Date()
+    private var selectedDate: Date = Date()
     private let trackersCategoryStore = TrackersCategoryStorage()
     private let trackersRecordStore = TrackersRecordStorage()
     private var categories: [TrackerCategory] = [] {
@@ -58,7 +58,7 @@ final class TrackersViewController: UIViewController {
         datePicker.backgroundColor = .ypBackgroundDay
         datePicker.preferredDatePickerStyle = .compact
         datePicker.datePickerMode = .date
-        datePicker.locale = Locale(identifier: "ru_RU")
+        datePicker.locale = Locale.current
         datePicker.layer.cornerRadius = 8
         datePicker.calendar.firstWeekday = 2
         datePicker.translatesAutoresizingMaskIntoConstraints = false
@@ -164,7 +164,7 @@ final class TrackersViewController: UIViewController {
     
     @objc
     private func filterByDate() {
-        currentDate = datePicker.date
+        selectedDate = datePicker.date
         updateVisibleCategories()
         dismiss(animated: true)
         analyticsService.report(event: .click, params: ["Screen" : "DatePicker", "Item" : Items.filterByDate.rawValue])
@@ -223,7 +223,7 @@ final class TrackersViewController: UIViewController {
         } else {
             filteredCategoriesBySearch = categories
         }
-        let dayOfWeek = currentDate.dayOfWeek()
+        let dayOfWeek = selectedDate.dayOfWeek()
         filteredCategoriesByDate = filteredCategoriesBySearch.map { categories in
             let filter = categories.trackers.filter {
                 $0.dateEvents?.contains(dayOfWeek) ?? true
@@ -231,9 +231,9 @@ final class TrackersViewController: UIViewController {
             return TrackerCategory(title: categories.title, trackers: filter)
         } .filter { !$0.trackers.isEmpty}
         visibleCategories = filteredCategoriesByDate
-        if selectedFilter == .completed {
+        if selectedFilter == .completedTrackers {
             filteringTrackers(completed: true)
-        } else if selectedFilter == .uncompleted {
+        } else if selectedFilter == .uncompletedTrackers {
             filteringTrackers(completed: false)
         }
         checkingForActiveTrackers()
@@ -623,15 +623,15 @@ extension TrackersViewController: FilterViewControllerProtocol {
         selectedFilter = filter
         searchBar.text = ""
         switch filter {
-        case .all:
+        case .allTrackers:
             filterButton.setTitleColor(.ypWhiteDay, for: .normal)
-        case .today:
+        case .todayTrackers:
             datePicker.setDate(Date(), animated: false)
             selectedDate = datePicker.date
             filterButton.setTitleColor(.ypWhiteDay, for: .normal)
-        case .completed:
+        case .completedTrackers:
             filterButton.setTitleColor(.ypRed, for: .normal)
-        case .uncompleted:
+        case .uncompletedTrackers:
             filterButton.setTitleColor(.ypRed, for: .normal)
         }
         updateVisibleCategories()

@@ -275,7 +275,7 @@ final class NewHabitViewController: UIViewController {
     }
     
     private func convertToDateFormatterInDay(_ indices: [Int]) {
-        let orderedDays = ["\(NSLocalizedString("Mon", comment: "Mon"))", "\(NSLocalizedString("Tue", comment: "Tue"))", "\(NSLocalizedString("Wed", comment: "Wed"))", "\(NSLocalizedString("Thu", comment: "Thu"))", "\(NSLocalizedString("Fri", comment: "Fri"))", "\(NSLocalizedString("Sat", comment: "Sat"))", "\(NSLocalizedString("Sun", comment: "Sun"))"]
+        let orderedDays = ["Пн","Вт","Ср","Чт","Пт","Сб","В"]
         let resultArray = indices.compactMap { (index: Int) -> String? in
             guard (1...orderedDays.count).contains(index) else { return nil }
             return orderedDays[index - 1]
