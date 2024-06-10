@@ -206,10 +206,10 @@ final class TrackersViewController: UIViewController {
         let searchText = searchBar.text ?? ""
         if visibleCategories.isEmpty && !categories.isEmpty && !searchText.isEmpty {
             searchMainPlaceholderStub.text = NSLocalizedString("searchErrorStub", comment: "searchErrorStub")
-            mainImageStub.image = UIImage(named: "nothingFoundIcon")
+            mainImageStub.image = UIImage(named: "error2")
         } else {
             searchMainPlaceholderStub.text = NSLocalizedString("emptyErrorStub", comment: "emptyErrorStub")
-            mainImageStub.image = UIImage(named: "starIcon")
+            mainImageStub.image = UIImage(named: "Error1")
         }
     }
     

@@ -46,10 +46,10 @@ extension StatsViewModel {
             statistics.removeAll()
         } else {
             statistics = [
-                .init(title: "Лучший период", value: "\(bestPeriod())"),
-                .init(title: "Идеальные дни", value: "\(idealDays())"),
-                .init(title: "Трекеров завершено", value: "\(trackersCompleted())"),
-                .init(title: "Среднее значение", value: "\(averageValue())")
+                .init(title: NSLocalizedString("bestPeriod", comment: "bestPeriod"), value: "\(bestPeriod())"),
+                .init(title: NSLocalizedString("idealDays", comment: "idealDays"), value: "\(idealDays())"),
+                .init(title: NSLocalizedString("trackersCompletedStats", comment: "trackersCompletedStats"), value: "\(trackersCompleted())"),
+                .init(title: NSLocalizedString("averageValue", comment: "averageValue"), value: "\(averageValue())")
             ]
         }
     }

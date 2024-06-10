@@ -275,13 +275,14 @@ final class NewHabitViewController: UIViewController {
     }
     
     private func convertToDateFormatterInDay(_ indices: [Int]) {
-        let orderedDays = ["Пн","Вт","Ср","Чт","Пт","Сб","В"]
+        let orderedDays = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
         let resultArray = indices.compactMap { (index: Int) -> String? in
             guard (1...orderedDays.count).contains(index) else { return nil }
-            return orderedDays[index - 1]
+            return NSLocalizedString(orderedDays[index - 1], comment: "")
         }
         updateDate(days: resultArray)
     }
+
     
     
     private func updateCreatingButton() {

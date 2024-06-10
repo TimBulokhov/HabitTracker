@@ -100,10 +100,19 @@ extension FilterViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        let filter = filters[indexPath.row]
-        cell.textLabel?.text = filter.rawValue
+        var filter = filters[indexPath.row].rawValue
+        if filter == "Все трекеры" {
+            filter = NSLocalizedString("allTrackers", comment: "allTrackers")
+        } else if filter == "Трекеры на сегодня" {
+            filter = NSLocalizedString("todayTrackers", comment: "todayTrackers")
+        } else if filter == "Завершенные" {
+            filter = NSLocalizedString("completedTrackers", comment: "completedTrackers")
+        } else if filter == "Незавершенные" {
+            filter = NSLocalizedString("uncompletedTrackers", comment: "uncompletedTrackers")
+        }
+        cell.textLabel?.text = filter
         cell.backgroundColor = .backgroundDay
-        cell.accessoryType = filter == selectedFilter ? .checkmark : .none
+        cell.accessoryType = filter == selectedFilter?.rawValue ? .checkmark : .none
         return cell
     }
 }

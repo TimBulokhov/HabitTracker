@@ -23,7 +23,7 @@
 "deleteTracker" = "Удалить";
 "addCategory" = "Добавить категорию";
 "deleteCategory" = "Удалить";
-"newCategory" = "новая категория";
+"newCategory" = "Новая категория";
 "nameOfCategory" = "Введите название категории";
 "trackerCreation" = "Создание трекера";
 "habit" = "Привычка";
@@ -65,7 +65,12 @@
 "Sat" = "Сб";
 "Sun" = "Вс";
 
-"allTtrackers" = "Все трекеры";
+"allTrackers" = "Все трекеры";
 "todayTrackers" = "Трекеры на сегодня";
 "completedTrackers" = "Завершенные";
 "uncompletedTrackers" = "Незавершенные";
+
+"bestPeriod" = "Лучший период";
+"idealDays" = "Идеальные дни";
+"trackersCompletedStats" = "Трекеров завершено";
+"averageValue" = "Среднее значение";

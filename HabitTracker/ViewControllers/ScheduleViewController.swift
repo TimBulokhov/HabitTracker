@@ -156,7 +156,22 @@ extension ScheduleViewController: UITableViewDataSource {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "ScheduleCell", for: indexPath) as? ScheduleCell
         else { fatalError() }
         cell.delegate = self
-        let day: String = DaysOfTheWeek.allCases[indexPath.row].rawValue
+        var day: String = DaysOfTheWeek.allCases[indexPath.row].rawValue
+        if day == "Понедельник" {
+            day = NSLocalizedString("Monday", comment: "Monday")
+        } else if day == "Вторник" {
+            day = NSLocalizedString("Tuesday", comment: "Tuesday")
+        } else if day == "Среда" {
+            day = NSLocalizedString("Wednesday", comment: "Wednesday")
+        } else if day == "Четверг" {
+            day = NSLocalizedString("Thursday", comment: "Thursday")
+        } else if day == "Пятница" {
+            day = NSLocalizedString("Friday", comment: "Friday")
+        } else if day == "Суббота" {
+            day = NSLocalizedString("Saturday", comment: "Saturday")
+        } else {
+            day = NSLocalizedString("Sunday", comment: "Sunday")
+        }
         let isSwitchOn = dataStorege.loadDaysInAWeek().contains(day)
         cell.configureCell(with: day, isSwitchOn: isSwitchOn, cellIndex: indexPath.row, numberOfLines: DaysOfTheWeek.allCases.count)
         return cell

@@ -57,15 +57,20 @@
 "Saturday" = "Lauantai";
 "Sunday" = "Sunnuntai";
 
-"Mon" = "Ma";
-"Tue" = "Ti";
-"Wed" = "Ke";
-"Thu" = "To";
-"Fri" = "Pe";
-"Sat" = "La";
-"Sun" = "Su";
+"Mon" = "Maa";
+"Tue" = "Tii";
+"Wed" = "Kes";
+"Thu" = "Tor";
+"Fri" = "Per";
+"Sat" = "Lau";
+"Sun" = "Sun";
 
-"allTtrackers" = "Kaikki seurantalaitteet";
+"allTrackers" = "Kaikki seurantalaitteet";
 "todayTrackers" = "Seurantalaitteet tänään";
 "completedTrackers" = "Valmis";
 "uncompletedTrackers" = "Keskeneräiset";
+
+"bestPeriod" = "Paras kausi";
+"idealDays" = "Täydelliset päivät";
+"trackersCompletedStats" = "Seurantalaitteet valmistuneet";
+"averageValue" = "Keskiarvo";

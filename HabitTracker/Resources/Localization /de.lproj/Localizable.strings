@@ -57,15 +57,20 @@
 "Saturday" = "Samstag";
 "Sunday" = "Sonntag";
 
-"Mon" = "Mo";
-"Tue" = "Di";
-"Wed" = "Mi";
-"Thu" = "Do";
-"Fri" = "Fr";
-"Sat" = "Sa";
-"Sun" = "So";
+"Mon" = "Mon";
+"Tue" = "Die";
+"Wed" = "Mit";
+"Thu" = "Don";
+"Fri" = "Fre";
+"Sat" = "Sam";
+"Sun" = "Son";
 
-"allTtrackers" = "Alle Tracker";
+"allTrackers" = "Alle Tracker";
 "todayTrackers" = "Tracker für heute";
 "completedTrackers" = "Abgeschlossene";
 "uncompletedTrackers" = "Unvollendete";
+
+"bestPeriod" = "Beste Zeit";
+"idealDays" = "Perfekte Tage";
+"trackersCompletedStats" = "Tracker abgeschlossen";
+"averageValue" = "Durchschnittswert";

@@ -65,7 +65,12 @@
 "Sat" = "Sat";
 "Sun" = "Sun";
 
-"allTtrackers" = "All trackers";
+"allTrackers" = "All trackers";
 "todayTrackers" = "Trackers for today";
 "completedTrackers" = "Completed";
 "uncompletedTrackers" = "Uncompleted";
+
+"bestPeriod" = "Best period";
+"idealDays" = "Ideal days";
+"trackersCompletedStats" = "Trackers completed";
+"averageValue" = "Average value";
