@@ -58,14 +58,14 @@ final class TrackerCell: UICollectionViewCell {
     private let daysCounterLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
-        label.textColor = .ypBlackDay
+        label.textColor = .ypBlack
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private lazy var accomplishedButton: UIButton = {
         let button = UIButton()
-        button.tintColor = .ypWhiteDay
+        button.tintColor = .ypWhite
         button.layer.cornerRadius = 17
         button.layer.masksToBounds = true
         button.translatesAutoresizingMaskIntoConstraints = false

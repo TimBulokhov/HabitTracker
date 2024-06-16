@@ -22,7 +22,7 @@ final class NewTableCell: UITableViewCell {
     
     private let categoryLabel: UILabel = {
         let trackerLabel = UILabel()
-        trackerLabel.textColor = .ypBlackDay
+        trackerLabel.textColor = .ypBlack
         trackerLabel.textAlignment = .left
         trackerLabel.font = .systemFont(ofSize: 17, weight: .regular)
         return trackerLabel
@@ -41,7 +41,7 @@ final class NewTableCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         self.selectionStyle = .none
         self.accessoryType = .disclosureIndicator
-        self.backgroundColor = .ypBackgroundDay
+        self.backgroundColor = .ypWhite
         configViews()
         configConstraints()
     }

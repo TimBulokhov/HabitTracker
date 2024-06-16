@@ -41,7 +41,7 @@ final class NewSingleHabitViewController: UIViewController {
     
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
-        scrollView.backgroundColor = .ypWhiteDay
+        scrollView.backgroundColor = .ypWhite
         scrollView.isScrollEnabled = true
         scrollView.isUserInteractionEnabled = true
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -51,7 +51,7 @@ final class NewSingleHabitViewController: UIViewController {
     private lazy var newHabitLabel: UILabel = {
         let trackerLabel = UILabel()
         trackerLabel.text = NSLocalizedString("newIrrEvent", comment: "newIrrEvent")
-        trackerLabel.textColor = .ypBlackDay
+        trackerLabel.textColor = .ypBlack
         trackerLabel.font = .systemFont(ofSize: 16, weight: .medium)
         trackerLabel.translatesAutoresizingMaskIntoConstraints = false
         return trackerLabel
@@ -70,8 +70,8 @@ final class NewSingleHabitViewController: UIViewController {
         let textField = UITextField()
         textField.indent(size: 16)
         textField.placeholder = NSLocalizedString("nameOfTracker", comment: "nameOfTracker")
-        textField.textColor = .ypBlackDay
-        textField.backgroundColor = .ypBackgroundDay
+        textField.textColor = .ypBlack
+        textField.backgroundColor = .ypWhite
         textField.layer.cornerRadius = 16
         textField.font = .systemFont(ofSize: 17)
         textField.translatesAutoresizingMaskIntoConstraints = false
@@ -122,7 +122,7 @@ final class NewSingleHabitViewController: UIViewController {
         button.addTarget(self, action: #selector(self.create), for: .touchUpInside)
         button.accessibilityIdentifier = "creatingButton"
         button.setTitle(NSLocalizedString("create", comment: "create"), for: .normal)
-        button.setTitleColor(.ypWhiteDay, for: .normal)
+        button.setTitleColor(.ypWhite, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = .ypGray
         button.layer.cornerRadius = 16
@@ -149,7 +149,7 @@ final class NewSingleHabitViewController: UIViewController {
         collectionView.register(EmojiCollectionViewCell.self, forCellWithReuseIdentifier: "EmojiCollectionViewCell")
         collectionView.register(ColorsCollectionViewCell.self, forCellWithReuseIdentifier: "ColorsCollectionViewCell")
         collectionView.register(SupplementaryView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")
-        collectionView.backgroundColor = .ypWhiteDay
+        collectionView.backgroundColor = .ypWhite
         collectionView.allowsMultipleSelection = true
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.isScrollEnabled = false
@@ -275,7 +275,7 @@ final class NewSingleHabitViewController: UIViewController {
         guard let selectedColorIndexPath = isSelectedColor else { return }
         creatingButton.isEnabled = nameTrackerTextField.text?.isEmpty == false && categoryForActivButton.isEmpty == false && selectedEmojiIndexPath.isEmpty == false && selectedColorIndexPath.isEmpty == false
         if creatingButton.isEnabled {
-            creatingButton.backgroundColor = .ypBlackDay
+            creatingButton.backgroundColor = .ypBlack
         } else {
             creatingButton.isEnabled = false
             creatingButton.backgroundColor = .ypGray
@@ -286,7 +286,7 @@ final class NewSingleHabitViewController: UIViewController {
         _ = self.skipKeyboard
         scrollView.delegate = self
         contentView.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = .ypWhiteDay
+        view.backgroundColor = .ypWhite
         view.addSubview(newHabitLabel)
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
@@ -427,7 +427,7 @@ extension NewSingleHabitViewController: UICollectionViewDelegate {
             }
             let cell = collectionView.cellForItem(at: indexPath)
             cell?.layer.cornerRadius = 16
-            cell?.backgroundColor = .ypBackgroundDay
+            cell?.backgroundColor = .ypWhite
             isSelectedEmoji = indexPath
             updateCreatingButton()
         } else if indexPath.section == 1 {
@@ -465,7 +465,7 @@ extension NewSingleHabitViewController: UICollectionViewDataSource {
                 for: indexPath
             ) as? EmojiCollectionViewCell else { return UICollectionViewCell()}
             cell.titleLabel.text = emojiList[indexPath.row]
-            cell.backgroundColor = cell.isSelected ? UIColor.ypBackgroundDay : .clear
+            cell.backgroundColor = cell.isSelected ? UIColor.ypWhite : .clear
             return cell
         case 1:
             guard let cell = collectionView.dequeueReusableCell(

@@ -18,7 +18,7 @@ final class NewTrackerViewController: UIViewController {
     private lazy var creatingTrackerLabel: UILabel = {
         let trackerLabel = UILabel()
         trackerLabel.text = NSLocalizedString("trackerCreation", comment: "trackerCreation")
-        trackerLabel.textColor = .ypBlackDay
+        trackerLabel.textColor = .ypBlack
         trackerLabel.font = .systemFont(ofSize: 16, weight: .medium)
         trackerLabel.translatesAutoresizingMaskIntoConstraints = false
         return trackerLabel
@@ -75,7 +75,7 @@ final class NewTrackerViewController: UIViewController {
     //MARK: - Private methods
     
     private func configViews() {
-        view.backgroundColor = .ypWhiteDay
+        view.backgroundColor = .ypWhite
         view.addSubview(creatingTrackerLabel)
         view.addSubview(creatingHabitButton)
         view.addSubview(creatingIrregularEventButton)
@@ -101,9 +101,9 @@ final class NewTrackerViewController: UIViewController {
     private func addActionsForButton(title: String, action: Selector) -> UIButton {
         let button = UIButton()
         button.setTitle(title, for: .normal)
-        button.setTitleColor(.ypWhiteDay, for: .normal)
+        button.setTitleColor(.ypWhite, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-        button.backgroundColor = .ypBlackDay
+        button.backgroundColor = .ypBlack
         button.layer.cornerRadius = 16
         button.layer.masksToBounds = true
         button.translatesAutoresizingMaskIntoConstraints = false

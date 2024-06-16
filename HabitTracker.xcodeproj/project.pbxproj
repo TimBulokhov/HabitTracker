@@ -15,6 +15,7 @@
 		125C6A672C0B95F90070F742 /* OnboardContentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125C6A662C0B95F90070F742 /* OnboardContentViewController.swift */; };
 		125C6A692C0B96B10070F742 /* ObservableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125C6A682C0B96B10070F742 /* ObservableValue.swift */; };
 		125C6A6B2C0B9CCB0070F742 /* TrackerCategoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125C6A6A2C0B9CCB0070F742 /* TrackerCategoryViewModel.swift */; };
+		126443422C1EE84E00ABEE9A /* HabitTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D148ED2BDEB29500AEA722 /* HabitTrackerTests.swift */; };
 		12C011DA2C023F700055E836 /* TrackersCategoryStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C011D92C023F700055E836 /* TrackersCategoryStorage.swift */; };
 		12C011DC2C023F810055E836 /* TrackersStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C011DB2C023F810055E836 /* TrackersStorage.swift */; };
 		12C011DE2C023F930055E836 /* TrackersRecordStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C011DD2C023F930055E836 /* TrackersRecordStorage.swift */; };
@@ -32,7 +33,6 @@
 		12D148D72BDEB29400AEA722 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D148D62BDEB29400AEA722 /* AppDelegate.swift */; };
 		12D148D92BDEB29400AEA722 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D148D82BDEB29400AEA722 /* SceneDelegate.swift */; };
 		12D148E02BDEB29500AEA722 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 12D148DF2BDEB29500AEA722 /* Assets.xcassets */; };
-		12D148EE2BDEB29500AEA722 /* HabitTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D148ED2BDEB29500AEA722 /* HabitTrackerTests.swift */; };
 		12D148F82BDEB29500AEA722 /* HabitTrackerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D148F72BDEB29500AEA722 /* HabitTrackerUITests.swift */; };
 		12D148FA2BDEB29500AEA722 /* HabitTrackerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D148F92BDEB29500AEA722 /* HabitTrackerUITestsLaunchTests.swift */; };
 		12D149072BDEB4E300AEA722 /* TrackersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D149062BDEB4E300AEA722 /* TrackersViewController.swift */; };
@@ -611,7 +611,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				12D148EE2BDEB29500AEA722 /* HabitTrackerTests.swift in Sources */,
+				126443422C1EE84E00ABEE9A /* HabitTrackerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

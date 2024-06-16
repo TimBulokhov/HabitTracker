@@ -32,7 +32,7 @@ final class ScheduleViewController: UIViewController {
     private lazy var scheduleLabel: UILabel = {
         let label = UILabel()
         label.text = NSLocalizedString("schedule", comment: "schedule")
-        label.textColor = .ypBlackDay
+        label.textColor = .ypBlack
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -41,9 +41,9 @@ final class ScheduleViewController: UIViewController {
     private lazy var doneButton: UIButton = {
         let button = UIButton()
         button.setTitle(NSLocalizedString("ready", comment: "ready"), for: .normal)
-        button.setTitleColor(.ypWhiteDay, for: .normal)
+        button.setTitleColor(.ypWhite, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-        button.backgroundColor = .ypBlackDay
+        button.backgroundColor = .ypBlack
         button.layer.cornerRadius = 16
         button.layer.masksToBounds = true
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -92,7 +92,7 @@ final class ScheduleViewController: UIViewController {
     }
     
     private func configViews() {
-        view.backgroundColor = .ypWhiteDay
+        view.backgroundColor = .ypWhite
         view.addSubview(tableView)
         view.addSubview(scheduleLabel)
         view.addSubview(doneButton)

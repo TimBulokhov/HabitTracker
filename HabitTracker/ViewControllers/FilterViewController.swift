@@ -32,7 +32,7 @@ final class FilterViewController: UIViewController {
     private lazy var filterLabel: UILabel = {
         let trackerLabel = UILabel()
         trackerLabel.text = NSLocalizedString("filterButton", comment: "filterButton")
-        trackerLabel.textColor = .ypBlackDay
+        trackerLabel.textColor = .ypBlack
         trackerLabel.font = .systemFont(ofSize: 16, weight: .medium)
         trackerLabel.translatesAutoresizingMaskIntoConstraints = false
         return trackerLabel
@@ -46,7 +46,7 @@ final class FilterViewController: UIViewController {
         tableView.layer.cornerRadius = 16
         tableView.layer.masksToBounds = true
         tableView.isScrollEnabled = false
-        tableView.backgroundColor = .ypWhiteDay
+        tableView.backgroundColor = .ypWhite
         tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
@@ -69,7 +69,7 @@ final class FilterViewController: UIViewController {
     // MARK: - Private methods
     
     private func configViews() {
-        view.backgroundColor = .ypWhiteDay
+        view.backgroundColor = .ypWhite
         view.addSubview(filterLabel)
         view.addSubview(tableView)
     }
@@ -111,7 +111,7 @@ extension FilterViewController: UITableViewDataSource {
             filter = NSLocalizedString("uncompletedTrackers", comment: "uncompletedTrackers")
         }
         cell.textLabel?.text = filter
-        cell.backgroundColor = .backgroundDay
+        cell.backgroundColor = .ypLightGray
         cell.accessoryType = filter == selectedFilter?.rawValue ? .checkmark : .none
         return cell
     }

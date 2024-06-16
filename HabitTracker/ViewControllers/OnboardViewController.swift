@@ -18,8 +18,8 @@ final class OnboardViewController: UIPageViewController {
     private let analyticsService = AnalyticsService()
     private lazy var pageControl: UIPageControl = {
         let pageControl = UIPageControl()
-        pageControl.currentPageIndicatorTintColor = .ypBlackDay
-        pageControl.pageIndicatorTintColor = .backgroundDay
+        pageControl.currentPageIndicatorTintColor = .ypBlack
+        pageControl.pageIndicatorTintColor = .ypWhite
         pageControl.currentPage = 0
         pageControl.addTarget(OnboardViewController.self, action: #selector(pageControlTapped), for: .valueChanged)
         pageControl.translatesAutoresizingMaskIntoConstraints = false

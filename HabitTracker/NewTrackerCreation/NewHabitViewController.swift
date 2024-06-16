@@ -48,7 +48,7 @@ final class NewHabitViewController: UIViewController {
     
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
-        scrollView.backgroundColor = .ypWhiteDay
+        scrollView.backgroundColor = .ypWhite
         scrollView.isScrollEnabled = true
         scrollView.isUserInteractionEnabled = true
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -58,7 +58,7 @@ final class NewHabitViewController: UIViewController {
     private lazy var newHabitLabel: UILabel = {
         let trackerLabel = UILabel()
         trackerLabel.text = NSLocalizedString("newHabit", comment: "newHabit")
-        trackerLabel.textColor = .ypBlackDay
+        trackerLabel.textColor = .ypBlack
         trackerLabel.font = .systemFont(ofSize: 16, weight: .medium)
         trackerLabel.translatesAutoresizingMaskIntoConstraints = false
         return trackerLabel
@@ -77,8 +77,8 @@ final class NewHabitViewController: UIViewController {
         let textField = UITextField()
         textField.indent(size: 16)
         textField.placeholder = NSLocalizedString("nameOfTracker", comment: "nameOfTracker")
-        textField.textColor = .ypBlackDay
-        textField.backgroundColor = .ypBackgroundDay
+        textField.textColor = .ypBlack
+        textField.backgroundColor = .ypWhite
         textField.layer.cornerRadius = 16
         textField.font = .systemFont(ofSize: 17)
         textField.translatesAutoresizingMaskIntoConstraints = false
@@ -127,7 +127,7 @@ final class NewHabitViewController: UIViewController {
         let button = UIButton()
         button.addTarget(self, action: #selector(self.create), for: .touchUpInside)
         button.setTitle(NSLocalizedString("create", comment: "create"), for: .normal)
-        button.setTitleColor(.ypWhiteDay, for: .normal)
+        button.setTitleColor(.ypWhite, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = .ypGray
         button.isEnabled = false
@@ -155,7 +155,7 @@ final class NewHabitViewController: UIViewController {
         collectionView.register(EmojiCollectionViewCell.self, forCellWithReuseIdentifier: "EmojiCollectionViewCell")
         collectionView.register(ColorsCollectionViewCell.self, forCellWithReuseIdentifier: "ColorsCollectionViewCell")
         collectionView.register(SupplementaryView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")
-        collectionView.backgroundColor = .ypWhiteDay
+        collectionView.backgroundColor = .ypWhite
         collectionView.allowsMultipleSelection = true
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.isScrollEnabled = false
@@ -292,7 +292,7 @@ final class NewHabitViewController: UIViewController {
         guard let selectedColorIndexPathHabbit = isSelectedColor else { return }
         creatingButton.isEnabled = nameTrackerTextField.text?.isEmpty == false && categoryForActiveButton.isEmpty == false && weekDayForActiveButton.isEmpty == false && selectedEmojiIndexPathHabbit.isEmpty == false && selectedColorIndexPathHabbit.isEmpty == false
         if creatingButton.isEnabled {
-            creatingButton.backgroundColor = .ypBlackDay
+            creatingButton.backgroundColor = .ypBlack
         } else {
             creatingButton.isEnabled = false
             creatingButton.backgroundColor = .ypGray
@@ -308,7 +308,7 @@ final class NewHabitViewController: UIViewController {
         _ = self.skipKeyboard
         scrollView.delegate = self
         contentView.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = .ypWhiteDay
+        view.backgroundColor = .ypWhite
         view.addSubview(newHabitLabel)
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
@@ -474,7 +474,7 @@ extension NewHabitViewController: UICollectionViewDelegate {
             }
             let cell = collectionView.cellForItem(at: indexPath)
             cell?.layer.cornerRadius = 16
-            cell?.backgroundColor = .ypBackgroundDay
+            cell?.backgroundColor = .ypWhite
             isSelectedEmoji = indexPath
             updateCreatingButton()
         } else if indexPath.section == 1 {

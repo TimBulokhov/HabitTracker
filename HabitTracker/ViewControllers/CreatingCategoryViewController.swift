@@ -16,7 +16,7 @@ final class CreatingCategoryViewController: UIViewController {
     private lazy var habitLabel: UILabel = {
         let label = UILabel()
         label.text = NSLocalizedString("newCategory", comment: "newCategory")
-        label.textColor = .ypBlackDay
+        label.textColor = .ypBlack
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -26,8 +26,8 @@ final class CreatingCategoryViewController: UIViewController {
         let textField = UITextField()
         textField.indent(size: 16)
         textField.placeholder = NSLocalizedString("nameOfCategory", comment: "nameOfCategory")
-        textField.textColor = .ypBlackDay
-        textField.backgroundColor = .ypBackgroundDay
+        textField.textColor = .ypBlack
+        textField.backgroundColor = .ypWhite
         textField.layer.cornerRadius = 16
         textField.font = .systemFont(ofSize: 17)
         textField.translatesAutoresizingMaskIntoConstraints = false
@@ -40,7 +40,7 @@ final class CreatingCategoryViewController: UIViewController {
     private lazy var creatingCategoryButton: UIButton = {
         let button = UIButton()
         button.setTitle(NSLocalizedString("ready", comment: "ready"), for: .normal)
-        button.setTitleColor(.ypWhiteDay, for: .normal)
+        button.setTitleColor(.ypWhite, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.backgroundColor = .ypGray
         button.layer.cornerRadius = 16
@@ -79,7 +79,7 @@ final class CreatingCategoryViewController: UIViewController {
     private func updateCreatingButton() {
         creatingCategoryButton.isEnabled = nameTrackerTextField.text?.isEmpty == false
         if creatingCategoryButton.isEnabled {
-            creatingCategoryButton.backgroundColor = .ypBlackDay
+            creatingCategoryButton.backgroundColor = .ypBlack
         } else {
             creatingCategoryButton.backgroundColor = .ypGray
         }
@@ -87,7 +87,7 @@ final class CreatingCategoryViewController: UIViewController {
     
     private func configViews() {
         _ = self.skipKeyboard
-        view.backgroundColor = .ypWhiteDay
+        view.backgroundColor = .ypWhite
         view.addSubview(habitLabel)
         view.addSubview(nameTrackerTextField)
         view.addSubview(creatingCategoryButton)

@@ -20,7 +20,7 @@ final class OnboardContentViewController: UIViewController {
         let label = UILabel()
         label.numberOfLines = 0
         label.font = UIFont.boldSystemFont(ofSize: 32)
-        label.tintColor = .ypBlackDay
+        label.tintColor = .ypBlack
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -30,7 +30,7 @@ final class OnboardContentViewController: UIViewController {
         let button = UIButton()
         button.setTitle(NSLocalizedString("onboardingButton", comment: "onboardingButton"), for: .normal)
         button.layer.cornerRadius = 16
-        button.backgroundColor = .ypBlackDay
+        button.backgroundColor = .ypBlack
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(didTapButton), for: .touchUpInside)
         return button

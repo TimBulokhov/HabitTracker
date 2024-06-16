@@ -18,7 +18,7 @@ final class StatisticsViewController: UIViewController {
     private lazy var trackerLabel: UILabel = {
         let trackerLabel = UILabel()
         trackerLabel.text = NSLocalizedString("statisticsTitle", comment: "statisticsTitle")
-        trackerLabel.textColor = .ypBlackDay
+        trackerLabel.textColor = .ypBlack
         trackerLabel.font = .boldSystemFont(ofSize: 34)
         trackerLabel.translatesAutoresizingMaskIntoConstraints = false
         return trackerLabel
@@ -37,7 +37,7 @@ final class StatisticsViewController: UIViewController {
         let label = UILabel()
         label.text = NSLocalizedString("nothingToAnalyze", comment: "nothingToAnalyze")
         label.numberOfLines = 2
-        label.textColor = .ypBlackDay
+        label.textColor = .ypBlack
         label.isHidden = true
         label.textAlignment = .center
         label.font = .systemFont(ofSize: 12, weight: .medium)
@@ -107,7 +107,7 @@ final class StatisticsViewController: UIViewController {
     }
     
     private func configViews() {
-        view.backgroundColor = .ypWhiteDay
+        view.backgroundColor = .ypWhite
         view.addSubview(trackerLabel)
         view.addSubview(descriptionImage)
         view.addSubview(descriptionPlaceholder)

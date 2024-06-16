@@ -46,7 +46,7 @@ final class TrackersViewController: UIViewController {
     private var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.backgroundColor = .ypWhiteDay
+        collectionView.backgroundColor = .ypWhite
         collectionView.contentInset = UIEdgeInsets(top: .zero, left: .zero, bottom: 50, right: .zero)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.alwaysBounceVertical = true
@@ -55,9 +55,9 @@ final class TrackersViewController: UIViewController {
     
     private lazy var datePicker: UIDatePicker = {
         let datePicker = UIDatePicker()
-        datePicker.backgroundColor = .ypBackgroundDay
         datePicker.preferredDatePickerStyle = .compact
         datePicker.datePickerMode = .date
+        datePicker.backgroundColor = .ypWhite
         datePicker.locale = Locale.current
         datePicker.layer.cornerRadius = 8
         datePicker.calendar.firstWeekday = 2
@@ -68,7 +68,7 @@ final class TrackersViewController: UIViewController {
     
     private lazy var trackerLabel: UILabel = {
         let trackerLabel = UILabel()
-        trackerLabel.textColor = .ypBlackDay
+        trackerLabel.textColor = .ypBlack
         trackerLabel.text = NSLocalizedString("trackerTitle", comment: "trackerTitle")
         trackerLabel.font = .boldSystemFont(ofSize: 34)
         trackerLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -96,7 +96,7 @@ final class TrackersViewController: UIViewController {
     
     private lazy var searchMainPlaceholderStub: UILabel = {
         let searchSpacePlaceholderStack = UILabel()
-        searchSpacePlaceholderStack.textColor = .ypBlackDay
+        searchSpacePlaceholderStack.textColor = .ypBlack
         searchSpacePlaceholderStack.font = .systemFont(ofSize: 12, weight: .medium)
         searchSpacePlaceholderStack.translatesAutoresizingMaskIntoConstraints = false
         return searchSpacePlaceholderStack
@@ -124,7 +124,7 @@ final class TrackersViewController: UIViewController {
         let textTitle = NSLocalizedString("filterButton", comment: "filterButton")
         button.setTitle(textTitle, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .medium)
-        button.setTitleColor(.ypWhiteDay, for: .normal)
+        button.setTitleColor(.ypFullWhite, for: .normal)
         button.backgroundColor = .ypBlue
         button.layer.cornerRadius = 16
         button.addTarget(self, action: #selector(filterButtonAction), for: .touchUpInside)
@@ -265,14 +265,12 @@ final class TrackersViewController: UIViewController {
     
     private func configNavigationBar() {
         let addTrackerBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewTracker))
-        addTrackerBarButtonItem.tintColor = UIColor.ypBlackDay
+        addTrackerBarButtonItem.tintColor = UIColor.ypBlack
         navigationItem.leftBarButtonItem = addTrackerBarButtonItem
         let datePickerBarButtonItem = UIBarButtonItem(customView: datePicker)
         let datePickerConstraint = NSLayoutConstraint(item: datePicker, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1.0, constant: 110.0)
         navigationItem.leftBarButtonItem = addTrackerBarButtonItem
         navigationItem.rightBarButtonItems = [datePickerBarButtonItem]
-        navigationBar.barTintColor = UIColor.ypWhiteDay
-        navigationBar.shadowImage = UIImage()
         navigationBar.setItems([navigationItem], animated: false)
         navigationBar.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([datePickerConstraint])
@@ -288,7 +286,7 @@ final class TrackersViewController: UIViewController {
     private func configViews() {
         _ = self.skipKeyboard
         searchBar.setValue(NSLocalizedString("cancel", comment: "cancel"), forKey: "cancelButtonText")
-        view.backgroundColor = .ypWhiteDay
+        view.backgroundColor = .ypWhite
         view.addSubview(navigationBar)
         view.addSubview(trackerLabel)
         view.addSubview(searchBar)
@@ -568,6 +566,7 @@ extension TrackersViewController {
         do {
             try trackerStore.deleteTrackers(tracker: tracker)
             try fetchACategory()
+            statisticsListener()
         } catch {
             throw StorageError.failedActionDelete
         }
@@ -624,11 +623,11 @@ extension TrackersViewController: FilterViewControllerProtocol {
         searchBar.text = ""
         switch filter {
         case .allTrackers:
-            filterButton.setTitleColor(.ypWhiteDay, for: .normal)
+            filterButton.setTitleColor(.ypWhite, for: .normal)
         case .todayTrackers:
             datePicker.setDate(Date(), animated: false)
             selectedDate = datePicker.date
-            filterButton.setTitleColor(.ypWhiteDay, for: .normal)
+            filterButton.setTitleColor(.ypWhite, for: .normal)
         case .completedTrackers:
             filterButton.setTitleColor(.ypRed, for: .normal)
         case .uncompletedTrackers:

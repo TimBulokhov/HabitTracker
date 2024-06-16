@@ -34,7 +34,7 @@ final class TrackerCategoryViewController: UIViewController {
     private lazy var habitLabel: UILabel = {
         let label = UILabel()
         label.text = NSLocalizedString("category", comment: "category")
-        label.textColor = .ypBlackDay
+        label.textColor = .ypBlack
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -61,9 +61,9 @@ final class TrackerCategoryViewController: UIViewController {
     private lazy var creatingHabitButton: UIButton = {
         let button = UIButton()
         button.setTitle(NSLocalizedString("addCategory", comment: "addCategory"), for: .normal)
-        button.setTitleColor(.ypWhiteDay, for: .normal)
+        button.setTitleColor(.ypWhite, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-        button.backgroundColor = .ypBlackDay
+        button.backgroundColor = .ypBlack
         button.layer.cornerRadius = 16
         button.layer.masksToBounds = true
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -131,7 +131,7 @@ final class TrackerCategoryViewController: UIViewController {
     private func configViews() {
         tableView.delegate = self
         tableView.dataSource = self
-        view.backgroundColor = .ypWhiteDay
+        view.backgroundColor = .ypWhite
         view.addSubview(habitLabel)
         view.addSubview(creatingHabitButton)
         view.addSubview(mainStarImageStub)
@@ -214,8 +214,8 @@ extension TrackerCategoryViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
         guard let count = viewModel?.categoriesCount() else { return UITableViewCell() }
         cell.textLabel?.text = viewModel?.categories[indexPath.row].title
-        cell.textLabel?.textColor = .ypBlackDay
-        cell.backgroundColor = .backgroundDay
+        cell.textLabel?.textColor = .ypBlack
+        cell.backgroundColor = .ypWhite
         cell.layer.masksToBounds = true
         cell.layer.cornerRadius = 16
         cell.separatorInset = separatorInsetForCell(index: indexPath.row, numberOfLines: count)
