@@ -1,0 +1,70 @@
+PODS:
+  - AppMetricaCore (5.4.0):
+    - AppMetricaCoreUtils (= 5.4.0)
+    - AppMetricaEncodingUtils (= 5.4.0)
+    - AppMetricaFMDB (= 5.4.0)
+    - AppMetricaHostState (= 5.4.0)
+    - AppMetricaLog (= 5.4.0)
+    - AppMetricaNetwork (= 5.4.0)
+    - AppMetricaPlatform (= 5.4.0)
+    - AppMetricaProtobuf (= 5.4.0)
+    - AppMetricaProtobufUtils (= 5.4.0)
+    - AppMetricaStorageUtils (= 5.4.0)
+  - AppMetricaCoreUtils (5.4.0):
+    - AppMetricaLog (= 5.4.0)
+  - AppMetricaEncodingUtils (5.4.0):
+    - AppMetricaCoreUtils (= 5.4.0)
+    - AppMetricaLog (= 5.4.0)
+    - AppMetricaPlatform (= 5.4.0)
+  - AppMetricaFMDB (5.4.0)
+  - AppMetricaHostState (5.4.0):
+    - AppMetricaCoreUtils (= 5.4.0)
+    - AppMetricaLog (= 5.4.0)
+  - AppMetricaLog (5.4.0)
+  - AppMetricaNetwork (5.4.0):
+    - AppMetricaCoreUtils (= 5.4.0)
+    - AppMetricaLog (= 5.4.0)
+    - AppMetricaPlatform (= 5.4.0)
+  - AppMetricaPlatform (5.4.0):
+    - AppMetricaCoreUtils (= 5.4.0)
+    - AppMetricaLog (= 5.4.0)
+  - AppMetricaProtobuf (5.4.0)
+  - AppMetricaProtobufUtils (5.4.0):
+    - AppMetricaProtobuf (= 5.4.0)
+  - AppMetricaStorageUtils (5.4.0):
+    - AppMetricaCoreUtils (= 5.4.0)
+    - AppMetricaLog (= 5.4.0)
+
+DEPENDENCIES:
+  - AppMetricaCore (~> 5.4.0)
+
+SPEC REPOS:
+  trunk:
+    - AppMetricaCore
+    - AppMetricaCoreUtils
+    - AppMetricaEncodingUtils
+    - AppMetricaFMDB
+    - AppMetricaHostState
+    - AppMetricaLog
+    - AppMetricaNetwork
+    - AppMetricaPlatform
+    - AppMetricaProtobuf
+    - AppMetricaProtobufUtils
+    - AppMetricaStorageUtils
+
+SPEC CHECKSUMS:
+  AppMetricaCore: e09156721e819f9cb8ea6b32d2bf2db3cf92c684
+  AppMetricaCoreUtils: 973e6cf7ff7817a8bcbe5f863089bcc86140a436
+  AppMetricaEncodingUtils: 111dd8ca791f6f67b1308834c10b676e16c9931c
+  AppMetricaFMDB: e3db8b3677625809d6b6c08356caa12fcd79fd5d
+  AppMetricaHostState: aa28e374dce11fe21f0841ff4a3649e6118ae61f
+  AppMetricaLog: 0a75f0c6e5871ab01946dfdb598fe492a7ed4de5
+  AppMetricaNetwork: 67bb3ee309c6f37482fb1d10bd7bf18663ba1b4a
+  AppMetricaPlatform: 7182b6fee9a0ff020584e22ca8eb6135f0a15b64
+  AppMetricaProtobuf: 610f762627e6ac724408b29464f0b355e9222839
+  AppMetricaProtobufUtils: 0fb940bf63222b0c256df9cdba52e13414d4b63b
+  AppMetricaStorageUtils: 1bcb65bb0ad584dc6b0b1bc62d0a18b773791d48
+
+PODFILE CHECKSUM: d08eddb0859e11f183223da4981c7fe8a8a361f9
+
+COCOAPODS: 1.15.2

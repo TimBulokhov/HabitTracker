@@ -1,0 +1,76 @@
+/* 
+  Localizable.strings
+  HabitTracker
+
+  Created by Timofey Bulokhov on 08.06.2024.
+  
+*/
+
+"trackerTitle" = "Трекеры";
+"statisticsTitle" = "Статистика";
+"filterButton" = "Фильтры";
+"search" = "Поиск";
+"cancel" = "Отменить";
+"schedule" = "Расписание";
+"ready" = "Готово";
+"category" = "Категория";
+"create" = "Создать";
+"save" = "Сохранить";
+
+"pinTracker" = "Закрепить";
+"unpinTracker" = "Открепить";
+"editTracker" = "Редактировать";
+"deleteTracker" = "Удалить";
+"addCategory" = "Добавить категорию";
+"deleteCategory" = "Удалить";
+"newCategory" = "Новая категория";
+"nameOfCategory" = "Введите название категории";
+"trackerCreation" = "Создание трекера";
+"habit" = "Привычка";
+"irrEvent" = "Нерегулярное событие";
+"newHabit" = "Новая привычка";
+"nameOfTracker" = "Введите название трекера";
+"limit" = "Ограничение 38 символов";
+"everyDay" = "Каждый день";
+"color" = "Цвет";
+"newIrrEvent" = "Новое нерегулярное событие";
+"editing" = "Редактирование привычки";
+
+"pinnedTrackers" = "Закрепленные";
+"showDeleteAlert" = "Уверены что хотите удалить трекер?";
+
+"searchErrorStub" = "Ничего не найдено";
+"emptyErrorStub" = "Что будем отслеживать?";
+"nothingToAnalyze" = "Анализировать пока нечего";
+"descriptionPlaceholderStub" = "Привычки и события можно\nобъединить по смыслу";
+
+
+"blueOnboardingText" = "Отслеживайте только то, что хотите";
+"redOnboardingText" = "Даже если это не литры воды и йога";
+"onboardingButton" = "Вот это технологии!";
+
+"Monday" = "Понедельник";
+"Tuesday" = "Вторник";
+"Wednesday" = "Среда";
+"Thursday" = "Четверг";
+"Friday" = "Пятница";
+"Saturday" = "Суббота";
+"Sunday" = "Воскресенье";
+
+"Mon" = "Пн";
+"Tue" = "Вт";
+"Wed" = "Ср";
+"Thu" = "Чт";
+"Fri" = "Пт";
+"Sat" = "Сб";
+"Sun" = "Вс";
+
+"allTrackers" = "Все трекеры";
+"todayTrackers" = "Трекеры на сегодня";
+"completedTrackers" = "Завершенные";
+"uncompletedTrackers" = "Незавершенные";
+
+"bestPeriod" = "Лучший период";
+"idealDays" = "Идеальные дни";
+"trackersCompletedStats" = "Трекеров завершено";
+"averageValue" = "Среднее значение";

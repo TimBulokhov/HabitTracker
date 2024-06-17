@@ -18,7 +18,7 @@ final class ScheduleCell: UITableViewCell {
     
     private lazy var scheduleLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .ypBlackDay
+        label.textColor = .ypBlack
         label.textAlignment = .left
         label.font = .systemFont(ofSize: 17, weight: .regular)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -42,12 +42,11 @@ final class ScheduleCell: UITableViewCell {
     
     private lazy var uiView: UIView = {
         let view = UIView()
-        view.backgroundColor = .ypBackgroundDay
+        view.backgroundColor = .ypWhite
         view.layer.masksToBounds = true
         view.layer.cornerRadius = 16
         view.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scheduleLabel)
-        view.addSubview(switchDay)
         view.addSubview(switchDay)
         view.addSubview(separator)
         NSLayoutConstraint.activate([

@@ -1,0 +1,76 @@
+/* 
+  Localizable.strings
+  HabitTracker
+
+  Created by Timofey Bulokhov on 08.06.2024.
+  
+*/
+
+"trackerTitle" = "Seuranta";
+"statisticsTitle" = "Tilasto";
+"filterButton" = "Suodattimet";
+"search" = "Etsiä";
+"cancel" = "Peruuttaa";
+"schedule" = "Aikataulu";
+"ready" = "Valmis";
+"category" = "Kategoria";
+"create" = "Luoda";
+"save" = "Tallentaa";
+
+"pinTracker" = "Kiinnittää";
+"unpinTracker" = "Irrotta";
+"editTracker" = "Muokkaa";
+"deleteTracker" = "Poistaa";
+"addCategory" = "Lisää kategoria";
+"deleteCategory" = "Poistaa";
+"newCategory" = "Uusi kategoria";
+"nameOfCategory" = "Kirjoita kategoria nimi";
+"trackerCreation" = "Seuranta luominen";
+"habit" = "Tavaksi";
+"irrEvent" = "Epäsäännöllinen tapahtuma";
+"newHabit" = "Uusi tavaksi";
+"nameOfTracker" = "Kirjoita seurantalaitteen nimi";
+"limit" = "Raja on 38 merkkiä";
+"everyDay" = "Päivittäinen";
+"color" = "Väri";
+"newIrrEvent" = "Uusi epäsäännöllinen tapahtuma";
+"editing" = "Muokkaus tavaksi";
+
+"pinnedTrackers" = "Kiinnitetty";
+"showDeleteAlert" = "Haluatko varmasti poistaa seurannan?";
+
+"searchErrorStub" = "Mitään ei löytynyt";
+"emptyErrorStub" = "Mitä me jäljitämme?";
+"nothingToAnalyze" = "Vielä ei ole mitään analysoitavaa";
+"descriptionPlaceholderStub" = "Tottumukset ja tapahtumat voidaan\nyhdistää merkitykseltään";
+
+
+"blueOnboardingText" = "Seuraa vain mitä haluat";
+"redOnboardingText" = "Vaikka kyse ei ole vedestä ja joogasta";
+"onboardingButton" = "Nämä ovat teknologioita!";
+
+"Monday" = "Maanantai";
+"Tuesday" = "Tiistai";
+"Wednesday" = "Keskiviikko";
+"Thursday" = "Torstai";
+"Friday" = "Perjantai";
+"Saturday" = "Lauantai";
+"Sunday" = "Sunnuntai";
+
+"Mon" = "Maa";
+"Tue" = "Tii";
+"Wed" = "Kes";
+"Thu" = "Tor";
+"Fri" = "Per";
+"Sat" = "Lau";
+"Sun" = "Sun";
+
+"allTrackers" = "Kaikki seurantalaitteet";
+"todayTrackers" = "Seurantalaitteet tänään";
+"completedTrackers" = "Valmis";
+"uncompletedTrackers" = "Keskeneräiset";
+
+"bestPeriod" = "Paras kausi";
+"idealDays" = "Täydelliset päivät";
+"trackersCompletedStats" = "Seurantalaitteet valmistuneet";
+"averageValue" = "Keskiarvo";

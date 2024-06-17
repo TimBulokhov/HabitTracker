@@ -34,6 +34,7 @@ final class TrackersStorage {
         newTracker.color = UIColorSorting.hexString(from: tracker.color)
         newTracker.emoji = tracker.emoji
         newTracker.dateEvents = tracker.dateEvents as NSArray?
+        newTracker.isPinned = tracker.isPinned
         return newTracker
     }
     
@@ -53,7 +54,8 @@ final class TrackersStorage {
                     name: trackerCoreData.name ?? "",
                     color: UIColorSorting.color(from: trackerCoreData.color ?? ""),
                     emoji: trackerCoreData.emoji ?? "",
-                    dateEvents: trackerCoreData.dateEvents as? [Int]
+                    dateEvents: trackerCoreData.dateEvents as? [Int],
+                    isPinned: trackerCoreData.isPinned
                 )
             }
             return trackers
@@ -75,8 +77,48 @@ final class TrackersStorage {
             name: name,
             color: UIColorSorting.color(from: color),
             emoji: emoji,
-            dateEvents: trackersCoreData.dateEvents as? [Int]
+            dateEvents: trackersCoreData.dateEvents as? [Int],
+            isPinned: trackersCoreData.isPinned
         )
     }
+    
+    func deleteTrackers(tracker: Tracker) throws {
+        let fetchRequest = NSFetchRequest<TrackerCoreData>(entityName: "TrackerCoreData")
+        fetchRequest.predicate = NSPredicate(format: "id == %@", tracker.id as CVarArg)
+        do {
+            let tracker = try context.fetch(fetchRequest)
+            
+            if let trackerToDelete = tracker.first {
+                context.delete(trackerToDelete)
+                try context.save()
+            } else {
+                throw StorageError.failedGettingTitle
+            }
+        } catch {
+            throw StorageError.failedActionDelete
+        }
+    }
+    
+    func updateTracker(with tracker: Tracker) throws {
+        let fetchRequest = NSFetchRequest<TrackerCoreData>(entityName: "TrackerCoreData")
+        fetchRequest.predicate = NSPredicate(format: "id == %@", tracker.id as CVarArg)
+        do {
+            let existingTrackers = try context.fetch(fetchRequest)
+            
+            if let existingTracker = existingTrackers.first {
+                existingTracker.name = tracker.name
+                existingTracker.color = UIColorSorting.hexString(from: tracker.color)
+                existingTracker.emoji = tracker.emoji
+                existingTracker.dateEvents = tracker.dateEvents as NSArray?
+                existingTracker.isPinned = tracker.isPinned
+                try context.save()
+            } else {
+                throw StorageError.trackerNotFound
+            }
+        } catch {
+            throw StorageError.failedActionUpdate
+        }
+    }
 }
+
 

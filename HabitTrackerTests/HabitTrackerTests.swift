@@ -6,31 +6,69 @@
 //
 
 import XCTest
+import SnapshotTesting
 @testable import HabitTracker
 
 final class HabitTrackerTests: XCTestCase {
-
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+    
+    func testTabBarController() {
+        let viewController = TabBarController()
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .dark)))
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .light)))
     }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+    
+    func testTrackersViewController() {
+        let viewController = TrackersViewController()
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .dark)))
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .light)))
     }
-
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
+    
+    func testStatisticsViewController() {
+        let viewController = StatisticsViewController()
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .dark)))
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .light)))
+        
     }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+    
+    func testFilterViewController() {
+        let viewController = FilterViewController()
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .dark)))
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .light)))
     }
-
+    
+    func testNewTrackerViewController() {
+        let viewController = NewTrackerViewController()
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .dark)))
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .light)))
+    }
+    
+    func testNewHabitViewController() {
+        let viewController = NewHabitViewController()
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .dark)))
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .light)))
+    }
+    
+    func testNewSingleHabitViewController() {
+        let viewController = NewSingleHabitViewController()
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .dark)))
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .light)))
+    }
+    
+    func testTrackerCategoryViewController() {
+        let viewController = TrackerCategoryViewController()
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .dark)))
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .light)))
+    }
+    
+    func testCreatingCategoryViewController() {
+        let viewController = CreatingCategoryViewController()
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .dark)))
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .light)))
+    }
+    
+    func testScheduleViewController() {
+        let viewController = ScheduleViewController()
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .dark)))
+        assertSnapshot(of: viewController, as: .image(traits: UITraitCollection(userInterfaceStyle: .light)))
+    }
 }

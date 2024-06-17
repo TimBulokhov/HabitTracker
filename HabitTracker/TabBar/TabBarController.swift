@@ -23,15 +23,20 @@ final class TabBarController: UITabBarController {
     // MARK: - Private methods
     
     private func generateTabBar() {
+        let trackerViewController = TrackersViewController()
+        let statisticsViewController = StatisticsViewController()
+        let statisticsViewModel = StatsViewModel()
+        statisticsViewController.initialize(viewModel: statisticsViewModel)
+        trackerViewController.delegateStatistic = statisticsViewModel
         viewControllers = [
             generateVC(
-                viewController: TrackersViewController(),
-                title: "Trackers",
+                viewController: trackerViewController,
+                title: NSLocalizedString("trackerTitle", comment: "trackerTitle"),
                 image: UIImage(named: "trackersIcon")
             ),
             generateVC(
-                viewController: StatsViewController(),
-                title: "Statistic",
+                viewController: statisticsViewController,
+                title: NSLocalizedString("statisticsTitle", comment: "statisticsTitle"),
                 image: UIImage(named: "statsIcon")
             )
         ]

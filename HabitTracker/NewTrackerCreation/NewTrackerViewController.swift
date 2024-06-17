@@ -11,27 +11,28 @@ import UIKit
 
 final class NewTrackerViewController: UIViewController {
     weak var delegate: TrackerCreationDelegate?
+    private let analyticsService = AnalyticsService()
     
     //MARK: - UiElements
     
     private lazy var creatingTrackerLabel: UILabel = {
         let trackerLabel = UILabel()
-        trackerLabel.text = "Creation of the tracker"
-        trackerLabel.textColor = .ypBlackDay
+        trackerLabel.text = NSLocalizedString("trackerCreation", comment: "trackerCreation")
+        trackerLabel.textColor = .ypBlack
         trackerLabel.font = .systemFont(ofSize: 16, weight: .medium)
         trackerLabel.translatesAutoresizingMaskIntoConstraints = false
         return trackerLabel
     }()
     
     private lazy var creatingHabitButton: UIButton = {
-        let title = "Habit"
+        let title = NSLocalizedString("habit", comment: "habit")
         let button = addActionsForButton(title: title, action: #selector(creatingHabit))
         button.accessibilityIdentifier = "creatingHabitButton"
         return button
     }()
     
     private lazy var creatingIrregularEventButton: UIButton = {
-        let title = "Irregular event"
+        let title = NSLocalizedString("irrEvent", comment: "irrEvent")
         let button = addActionsForButton(title: title, action: #selector(creatingIrregularEvent))
         button.accessibilityIdentifier = "createIrregularEventButton"
         return button
@@ -43,6 +44,12 @@ final class NewTrackerViewController: UIViewController {
         super.viewDidLoad()
         configViews()
         configConstraints()
+        analyticsService.report(event: .open, params: ["Screen" : "NewTracker"])
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        analyticsService.report(event: .close, params: ["Screen" : "NewTracker"])
     }
     
     // MARK: - Actions
@@ -53,6 +60,7 @@ final class NewTrackerViewController: UIViewController {
         createHabitViewController.delegate = self.delegate
         let navigationController = UINavigationController(rootViewController: createHabitViewController)
         present(navigationController, animated: true)
+        analyticsService.report(event: .click, params: ["Screen" : "NewHabitViewController"])
     }
     
     @objc
@@ -60,13 +68,14 @@ final class NewTrackerViewController: UIViewController {
         let createIrregularEventViewController = NewSingleHabitViewController()
         createIrregularEventViewController.delegate = self.delegate
         let navigationController = UINavigationController(rootViewController: createIrregularEventViewController)
+        analyticsService.report(event: .click, params: ["Screen" : "NewSingleHabitViewController"])
         present(navigationController, animated: true)
     }
     
     //MARK: - Private methods
     
     private func configViews() {
-        view.backgroundColor = .ypWhiteDay
+        view.backgroundColor = .ypWhite
         view.addSubview(creatingTrackerLabel)
         view.addSubview(creatingHabitButton)
         view.addSubview(creatingIrregularEventButton)
@@ -76,10 +85,12 @@ final class NewTrackerViewController: UIViewController {
         NSLayoutConstraint.activate([
             creatingTrackerLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             creatingTrackerLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 27),
+            
             creatingHabitButton.heightAnchor.constraint(equalToConstant: 60),
             creatingHabitButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             creatingHabitButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             creatingHabitButton.topAnchor.constraint(equalTo: creatingTrackerLabel.bottomAnchor, constant: 281),
+            
             creatingIrregularEventButton.topAnchor.constraint(equalTo: creatingHabitButton.bottomAnchor, constant: 16),
             creatingIrregularEventButton.heightAnchor.constraint(equalToConstant: 60),
             creatingIrregularEventButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
@@ -90,9 +101,9 @@ final class NewTrackerViewController: UIViewController {
     private func addActionsForButton(title: String, action: Selector) -> UIButton {
         let button = UIButton()
         button.setTitle(title, for: .normal)
-        button.setTitleColor(.ypWhiteDay, for: .normal)
+        button.setTitleColor(.ypWhite, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-        button.backgroundColor = .ypBlackDay
+        button.backgroundColor = .ypBlack
         button.layer.cornerRadius = 16
         button.layer.masksToBounds = true
         button.translatesAutoresizingMaskIntoConstraints = false

@@ -12,7 +12,7 @@ var dateFormatter: DateFormatter = {
     dateFormatter.dateStyle = .long
     dateFormatter.timeStyle = .none
     dateFormatter.dateFormat = "MM/dd/YY"
-    dateFormatter.locale = Locale(identifier: "en_EN")
+    dateFormatter.locale = Locale.current
     dateFormatter.dateFormat = "E"
     return dateFormatter
 }()
