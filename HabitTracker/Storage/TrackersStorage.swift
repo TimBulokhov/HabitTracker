@@ -33,8 +33,10 @@ final class TrackersStorage {
         newTracker.name = tracker.name
         newTracker.color = UIColorSorting.hexString(from: tracker.color)
         newTracker.emoji = tracker.emoji
-        newTracker.dateEvents = tracker.dateEvents as NSArray?
+        newTracker.dateEvents = (tracker.dateEvents ?? []) as NSArray
         newTracker.isPinned = tracker.isPinned
+        newTracker.pinDate = tracker.pinDate
+        newTracker.createdAt = tracker.createdAt ?? Date()
         return newTracker
     }
     
@@ -48,6 +50,17 @@ final class TrackersStorage {
         
         do {
             let trackerCoreDataArray = try managedContext.fetch(fetchRequest)
+            // Автозаполнение pinDate для закреплённых трекеров без даты
+            var needSave = false
+            for trackerCoreData in trackerCoreDataArray {
+                if trackerCoreData.isPinned && trackerCoreData.pinDate == nil {
+                    trackerCoreData.pinDate = Date()
+                    needSave = true
+                }
+            }
+            if needSave {
+                try managedContext.save()
+            }
             let trackers = trackerCoreDataArray.map { trackerCoreData in
                 return Tracker(
                     id: trackerCoreData.id ?? UUID(),
@@ -55,7 +68,9 @@ final class TrackersStorage {
                     color: UIColorSorting.color(from: trackerCoreData.color ?? ""),
                     emoji: trackerCoreData.emoji ?? "",
                     dateEvents: trackerCoreData.dateEvents as? [Int],
-                    isPinned: trackerCoreData.isPinned
+                    isPinned: trackerCoreData.isPinned,
+                    pinDate: trackerCoreData.pinDate,
+                    createdAt: trackerCoreData.createdAt
                 )
             }
             return trackers
@@ -72,13 +87,17 @@ final class TrackersStorage {
         else {
             throw StorageError.failedDecoding
         }
+        let rawDateEvents = trackersCoreData.dateEvents as? [Int]
+        let dateEvents = (rawDateEvents?.isEmpty == true) ? nil : rawDateEvents
         return Tracker(
             id: id,
             name: name,
             color: UIColorSorting.color(from: color),
             emoji: emoji,
-            dateEvents: trackersCoreData.dateEvents as? [Int],
-            isPinned: trackersCoreData.isPinned
+            dateEvents: dateEvents,
+            isPinned: trackersCoreData.isPinned,
+            pinDate: trackersCoreData.pinDate,
+            createdAt: trackersCoreData.createdAt
         )
     }
     
@@ -109,8 +128,12 @@ final class TrackersStorage {
                 existingTracker.name = tracker.name
                 existingTracker.color = UIColorSorting.hexString(from: tracker.color)
                 existingTracker.emoji = tracker.emoji
-                existingTracker.dateEvents = tracker.dateEvents as NSArray?
+                existingTracker.dateEvents = (tracker.dateEvents ?? []) as NSArray
                 existingTracker.isPinned = tracker.isPinned
+                existingTracker.pinDate = tracker.pinDate
+                if let createdAt = tracker.createdAt {
+                    existingTracker.createdAt = createdAt
+                }
                 try context.save()
             } else {
                 throw StorageError.trackerNotFound

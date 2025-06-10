@@ -113,6 +113,18 @@ final class TrackerCell: UICollectionViewCell {
         updatePlusButton(trackerCompleted: completed)
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        pinnedImage.isHidden = true
+        isCompletedToday = false
+        trackerId = nil
+        backgroundCellView.backgroundColor = .clear
+        accomplishedButton.backgroundColor = .clear
+        descriptionLabel.text = nil
+        emojiLabel.text = nil
+        daysCounterLabel.text = nil
+    }
+    
     // MARK: - Private methods
     
     private func formatDaysText(forDays days: Int) -> String {

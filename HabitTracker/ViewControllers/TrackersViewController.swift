@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreData
 
 protocol EditTrackerDelegate: AnyObject {
     func trackerUpdate(_ tracker: Tracker, category: String)
@@ -215,47 +216,74 @@ final class TrackersViewController: UIViewController {
     
     private func updateVisibleCategories() {
         let searchText = searchBar.text ?? ""
+        var baseCategories = categories
+
+        // Поиск по всем трекерам
         if !searchText.isEmpty {
-            filteredCategoriesBySearch = categories.map { category in
+            baseCategories = categories.map { category in
                 let filteredTrackers = category.trackers.filter { $0.name.lowercased().contains(searchText.lowercased()) }
                 return TrackerCategory(title: category.title, trackers: filteredTrackers)
             }.filter { !$0.trackers.isEmpty }
-        } else {
-            filteredCategoriesBySearch = categories
         }
-        let dayOfWeek = selectedDate.dayOfWeek()
-        filteredCategoriesByDate = filteredCategoriesBySearch.map { categories in
-            let filter = categories.trackers.filter {
-                $0.dateEvents?.contains(dayOfWeek) ?? true
+
+        // Для фильтра 'Трекеры на сегодня' фильтруем по дню недели
+        if selectedFilter == .todayTrackers {
+            let dayOfWeek = selectedDate.dayOfWeek()
+            baseCategories = baseCategories.map { category in
+                let filter = category.trackers.filter {
+                    // Показываем трекеры с совпадающим днём недели или нерегулярные (dateEvents == nil)
+                    $0.dateEvents?.contains(dayOfWeek) ?? true
+                }
+                return TrackerCategory(title: category.title, trackers: filter)
+            }.filter { !$0.trackers.isEmpty }
+        }
+
+        // Сортировка: закреплённые трекеры в начале каждой категории, среди закреплённых — по дате закрепления
+        baseCategories = baseCategories.map { category in
+            let sortedTrackers = category.trackers.sorted { lhs, rhs in
+                if lhs.isPinned != rhs.isPinned {
+                    return lhs.isPinned && !rhs.isPinned
+                }
+                if lhs.isPinned && rhs.isPinned {
+                    // Оба закреплены — по дате закрепления
+                    return (lhs.pinDate ?? Date.distantPast) < (rhs.pinDate ?? Date.distantPast)
+                }
+                // Оба не закреплены — по имени, затем по createdAt, затем по id для стабильности
+                if lhs.name != rhs.name {
+                    return lhs.name < rhs.name
+                }
+                if let lCreated = lhs.createdAt, let rCreated = rhs.createdAt, lCreated != rCreated {
+                    return lCreated < rCreated
+                }
+                return lhs.id.uuidString < rhs.id.uuidString
             }
-            return TrackerCategory(title: categories.title, trackers: filter)
-        } .filter { !$0.trackers.isEmpty}
-        visibleCategories = filteredCategoriesByDate
-        if selectedFilter == .completedTrackers {
-            filteringTrackers(completed: true)
-        } else if selectedFilter == .uncompletedTrackers {
-            filteringTrackers(completed: false)
+            return TrackerCategory(title: category.title, trackers: sortedTrackers)
         }
+
+        visibleCategories = baseCategories
+
+        // Фильтрация завершённых/незавершённых по всем трекерам
+        if selectedFilter == .completedTrackers {
+            visibleCategories = visibleCategories.compactMap { category in
+                let trackers = category.trackers.filter { tracker in
+                    completedTrackers.contains { $0.id == tracker.id }
+                }
+                if trackers.isEmpty { return nil }
+                return TrackerCategory(title: category.title, trackers: trackers)
+            }
+        }
+        if selectedFilter == .uncompletedTrackers {
+            visibleCategories = visibleCategories.compactMap { category in
+                let trackers = category.trackers.filter { tracker in
+                    !completedTrackers.contains { $0.id == tracker.id }
+                }
+                if trackers.isEmpty { return nil }
+                return TrackerCategory(title: category.title, trackers: trackers)
+            }
+        }
+
         checkingForActiveTrackers()
         collectionView.reloadData()
-    }
-    
-    private func filteringTrackers(completed: Bool) {
-        visibleCategories = visibleCategories.compactMap { category in
-            let trackers = category.trackers.filter { tracker in
-                completed ? isTrackersRecordCompletedToday(id: tracker.id, date: selectedDate)
-                : !isTrackersRecordCompletedToday(id: tracker.id, date: selectedDate)
-            }
-            if trackers.isEmpty { return nil }
-            return TrackerCategory(title: category.title, trackers: trackers)
-        }
-    }
-    
-    private func isTrackersRecordCompletedToday(id: UUID, date: Date) -> Bool {
-        completedTrackers.contains { record in
-            let isSameDay = Calendar.current.isDate(record.date, inSameDayAs: date)
-            return record.id == id && isSameDay
-        }
     }
     
     private func сomparOfTrackerDates(date1: Date, date2: Date) -> Bool {
@@ -454,17 +482,10 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         referenceSizeForHeaderInSection section: Int) -> CGSize {
-        let indexPath = IndexPath(row: 0, section: section)
-        let headerView = self.collectionView(
-            collectionView,
-            viewForSupplementaryElementOfKind: UICollectionView.elementKindSectionHeader,
-            at: indexPath
-        )
-        return headerView.systemLayoutSizeFitting(CGSize(
-            width: collectionView.frame.width,
-            height: UIView.layoutFittingExpandedSize.height),
-                                                  withHorizontalFittingPriority: .required,
-                                                  verticalFittingPriority: .fittingSizeLevel)
+        if visibleCategories[section].trackers.count > 0 {
+            return CGSize(width: collectionView.frame.width, height: 40)
+        }
+        return .zero
     }
 }
 
@@ -509,6 +530,22 @@ extension TrackersViewController: TrackerCreationDelegate {
     func didCreateTracker(_ tracker: Tracker, category: String) {
         try? createCategoryAndTracker(ctracker: tracker, with: category)
         try? fetchACategory()
+        // Найти ближайший день из расписания трекера
+        if let schedule = tracker.dateEvents, !schedule.isEmpty {
+            let today = Date()
+            let todayDayOfWeek = today.dayOfWeek()
+            if !schedule.contains(todayDayOfWeek) {
+                let calendar = Calendar.current
+                let weekday = schedule.first ?? todayDayOfWeek
+                if let nextDate = calendar.nextDate(after: today, matching: DateComponents(weekday: weekday), matchingPolicy: .nextTime) {
+                    selectedDate = nextDate
+                    datePicker.setDate(nextDate, animated: false)
+                }
+            } else {
+                selectedDate = today
+                datePicker.setDate(today, animated: false)
+            }
+        }
         checkingForActiveTrackers()
         updateVisibleCategories()
         collectionView.reloadData()
@@ -648,7 +685,7 @@ extension TrackersViewController {
                 try self.deleteTrackerInCategory(atIndex: indexPath)
                 self.updateVisibleCategories()
             } catch {
-                print("Error deleting tracker: \(error)")
+                // No need to print error here, as it's handled in the catch block
             }
         }
         let cancelButton = UIAlertAction(title: NSLocalizedString("cancel", comment: "cancel"), style: .cancel)
@@ -658,43 +695,16 @@ extension TrackersViewController {
     }
 }
 
-// MARK: - pinnedTrackers
-
-extension TrackersViewController {
-    private func visiblePinnedCategory(){
-        let allTrackersIsPinned = visibleCategories.flatMap { $0.trackers.filter { $0.isPinned } }
-        categories = categories.map { category in
-            var mutableCategory = category
-            mutableCategory.trackers = category.trackers.filter { !$0.isPinned }
-            return mutableCategory
-        }
-        let newCategory = TrackerCategory(title: pinnedCategory, trackers: allTrackersIsPinned)
-        if let index = categories.firstIndex(where: { $0.title == newCategory.title }) {
-            categories[index].trackers += newCategory.trackers
-        } else {
-            categories.insert(newCategory, at: 0)
-        }
-    }
-    
-    private func updateStatusIsPinned(tracker: Tracker){
-        let updateTracker = Tracker(
-            id: tracker.id,
-            name: tracker.name,
-            color: tracker.color,
-            emoji: tracker.emoji,
-            dateEvents: tracker.dateEvents,
-            isPinned: tracker.isPinned ? false : true
-        )
-        try? trackerStore.updateTracker(with: updateTracker)
-        try? fetchACategory()
-        updateVisibleCategories()
-    }
-}
-
 // MARK: - editingTrackers
 
 extension TrackersViewController: EditTrackerDelegate {
     func trackerUpdate(_ tracker: Tracker, category: String) {
+        // Найти старую категорию по id трекера
+        let oldCategory = categories.first(where: { $0.trackers.contains(where: { $0.id == tracker.id }) })?.title
+        if let oldCategory, oldCategory != category {
+            // Переносим трекер в новую категорию
+            try? trackersCategoryStore.moveTracker(tracker, toCategory: category, fromCategory: oldCategory)
+        }
         try? trackerStore.updateTracker(with: tracker)
         try? fetchACategory()
         updateVisibleCategories()
@@ -720,6 +730,31 @@ extension TrackersViewController: EditTrackerDelegate {
             createIrregularEventViewController.editCategoryIrregular = category
             createIrregularEventViewController.editTrackerIrregular = tracker
             present(navigationController, animated: true)
+        }
+    }
+}
+
+// MARK: - pinnedTrackers
+
+extension TrackersViewController {
+    private func updateStatusIsPinned(tracker: Tracker){
+        let now = Date()
+        let updateTracker = Tracker(
+            id: tracker.id,
+            name: tracker.name,
+            color: tracker.color,
+            emoji: tracker.emoji,
+            dateEvents: tracker.dateEvents,
+            isPinned: tracker.isPinned ? false : true,
+            pinDate: tracker.isPinned ? nil : now,
+            createdAt: tracker.createdAt
+        )
+        do {
+            try trackerStore.updateTracker(with: updateTracker)
+            try fetchACategory()
+            updateVisibleCategories()
+        } catch {
+            print("Error updating tracker pin status: \(error)")
         }
     }
 }

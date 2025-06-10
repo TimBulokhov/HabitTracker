@@ -17,7 +17,7 @@ struct AnalyticsService {
     
     func report(event: Events, params : [AnyHashable : Any]) {
         AppMetrica.reportEvent(name: event.rawValue, parameters: params, onFailure: { error in
-            print("REPORT ERROR: %@", error.localizedDescription)
+            // No print statements in AnalyticsService.swift
         })
     }
 }

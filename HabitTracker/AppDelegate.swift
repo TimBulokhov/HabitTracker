@@ -12,6 +12,7 @@ import CoreData
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        print("AppDelegate didFinishLaunchingWithOptions called")
         AnalyticsService.activate()
         return true
     }
@@ -29,7 +30,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let container = NSPersistentContainer(name: "TrackerModel")
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
-                print("Unresolved error \(error), \(error.userInfo)")
+                // print("Unresolved error \(error), \(error.userInfo)")
             }
         })
         
@@ -44,8 +45,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             do {
                 try context.save()
             } catch {
-                let nserror = error as NSError
-                print("Unresolved error \(nserror), \(nserror.userInfo)")
+                _ = error as NSError
+                // print("Unresolved error \(error), \((error as NSError).userInfo)")
             }
         }
     }

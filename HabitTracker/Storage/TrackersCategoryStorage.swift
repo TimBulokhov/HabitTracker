@@ -94,24 +94,71 @@ extension TrackersCategoryStorage {
         guard let trackers = trackerCategoryCoreData.trackers else {
             throw StorageError.failedReading
         }
-        return TrackerCategory(title: title, trackers: trackers.compactMap { coreDataTracker -> Tracker? in
-            if let coreDataTracker = coreDataTracker as? TrackerCoreData {
-                return try? trackerStore.decodingTrackers(from: coreDataTracker)
+        let trackerList: [Tracker] = trackers.compactMap { coreDataTracker in
+            guard let coreDataTracker = coreDataTracker as? TrackerCoreData else { return nil }
+            // Автозаполнение pinDate для закреплённых трекеров без даты
+            if coreDataTracker.isPinned && coreDataTracker.pinDate == nil {
+                coreDataTracker.pinDate = Date()
+                try? context.save()
             }
-            return nil
-        })
+            return try? trackerStore.decodingTrackers(from: coreDataTracker)
+        }
+        return TrackerCategory(title: title, trackers: trackerList)
     }
     
     func createCategoryAndTracker(tracker: Tracker, with titleCategory: String) throws {
-        guard let trackerCoreData = try trackerStore.addNewTracker(from: tracker) else {
-            throw StorageError.failedToWrite
+        // Проверяем, есть ли уже трекер с таким id в базе
+        let fetchRequest = NSFetchRequest<TrackerCoreData>(entityName: "TrackerCoreData")
+        fetchRequest.predicate = NSPredicate(format: "id == %@", tracker.id as CVarArg)
+        let found = try context.fetch(fetchRequest)
+        let trackerCoreData: TrackerCoreData
+        if let existing = found.first {
+            trackerCoreData = existing
+        } else {
+            guard let created = try trackerStore.addNewTracker(from: tracker) else {
+                throw StorageError.failedToWrite
+            }
+            trackerCoreData = created
         }
         guard let existingCategory = try fetchCategory(with: titleCategory) else {
             throw StorageError.failedReading
         }
         var existingTrackers = existingCategory.trackers?.allObjects as? [TrackerCoreData] ?? []
+        // Удаляем дубликаты по id
+        existingTrackers.removeAll { $0.id == tracker.id }
         existingTrackers.append(trackerCoreData)
         existingCategory.trackers = NSSet(array: existingTrackers)
+        try context.save()
+    }
+    
+    // Перенос трекера между категориями
+    func moveTracker(_ tracker: Tracker, toCategory newCategory: String, fromCategory oldCategory: String) throws {
+        // Найти старую категорию
+        guard let oldCategoryCoreData = try fetchCategory(with: oldCategory) else {
+            throw StorageError.failedReading
+        }
+        // Найти новую категорию
+        guard let newCategoryCoreData = try fetchCategory(with: newCategory) else {
+            throw StorageError.failedReading
+        }
+        // Найти трекер в базе по id
+        let fetchRequest = NSFetchRequest<TrackerCoreData>(entityName: "TrackerCoreData")
+        fetchRequest.predicate = NSPredicate(format: "id == %@", tracker.id as CVarArg)
+        let found = try context.fetch(fetchRequest)
+        guard let trackerCoreData = found.first else {
+            throw StorageError.trackerNotFound
+        }
+        // Удалить из старой категории
+        var oldTrackers = oldCategoryCoreData.trackers?.allObjects as? [TrackerCoreData] ?? []
+        oldTrackers.removeAll { $0.id == tracker.id }
+        oldCategoryCoreData.trackers = NSSet(array: oldTrackers)
+        // Добавить в новую категорию (без дубликатов)
+        var newTrackers = newCategoryCoreData.trackers?.allObjects as? [TrackerCoreData] ?? []
+        newTrackers.removeAll { $0.id == tracker.id }
+        // Обновить дату перемещения
+        trackerCoreData.createdAt = Date()
+        newTrackers.append(trackerCoreData)
+        newCategoryCoreData.trackers = NSSet(array: newTrackers)
         try context.save()
     }
     

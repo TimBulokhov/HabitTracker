@@ -14,4 +14,6 @@ struct Tracker {
     let emoji: String
     let dateEvents: [Int]?
     let isPinned: Bool
+    let pinDate: Date?
+    let createdAt: Date?
 }
