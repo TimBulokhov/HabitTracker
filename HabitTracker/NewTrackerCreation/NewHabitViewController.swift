@@ -21,7 +21,7 @@ protocol NewHabitViewControllerDelegate: AnyObject {
 final class NewHabitViewController: UIViewController {
     weak var delegate: TrackerCreationDelegate?
     weak var delegateEdit: EditTrackerDelegate?
-    var numberOfDaysCompletedHabit: Int?
+    var deadlineDaysLeft: Int?
     var editCategoryHabit: String?
     var editTrackerHabit: Tracker?
     private let analyticsService = AnalyticsService()
@@ -32,8 +32,7 @@ final class NewHabitViewController: UIViewController {
     private let colors: [UIColor] = UIColor.colorSelection
     private var dateEvents = [Int]()
     private var creatingTrackersModel: [CreatingTrackersModel] = [
-        CreatingTrackersModel(titleLabelText: NSLocalizedString("category", comment: "category"), subTitleLabel: ""),
-        CreatingTrackersModel(titleLabelText: NSLocalizedString("schedule", comment: "schedule"), subTitleLabel: "")
+        CreatingTrackersModel(titleLabelText: NSLocalizedString("category", comment: "category"), subTitleLabel: "")
     ]
     
     private let emojiList = [
@@ -166,6 +165,15 @@ final class NewHabitViewController: UIViewController {
         return collectionView
     }()
     
+    private lazy var deadlinePicker: UIDatePicker = {
+        let picker = UIDatePicker()
+        picker.datePickerMode = .dateAndTime
+        picker.preferredDatePickerStyle = .compact
+        picker.translatesAutoresizingMaskIntoConstraints = false
+        picker.minimumDate = Date()
+        return picker
+    }()
+    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -173,7 +181,10 @@ final class NewHabitViewController: UIViewController {
         configViews()
         configConstraints()
         clearDataStorege()
-        trackerEditing()
+        deadlinePicker.addTarget(self, action: #selector(deadlineChanged), for: .valueChanged)
+        if let _ = editTrackerHabit, let _ = editCategoryHabit, let daysLeft = deadlineDaysLeft {
+            trackerEditing(daysLeft: daysLeft)
+        }
         analyticsService.report(event: .open, params: ["Screen" : "NewHabit"])
     }
     
@@ -218,6 +229,13 @@ final class NewHabitViewController: UIViewController {
         dismiss(animated: true)
     }
     
+    @objc private func deadlineChanged() {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let deadlineDay = calendar.startOfDay(for: deadlinePicker.date)
+        let daysLeft = calendar.dateComponents([.day], from: today, to: deadlineDay).day ?? 0
+        completedDaysLabel.text = formatDeadlineDaysLeft(daysLeft)
+    }
     
     // MARK: - Private methods
     private func collectingDataForTheTracker(newTracker: Bool) -> Tracker? {
@@ -226,27 +244,26 @@ final class NewHabitViewController: UIViewController {
               let selectedColorIndexPath = isSelectedColor else { return nil }
         let emoji = emojiList[selectedEmojiIndexPath.row]
         let color = colors[selectedColorIndexPath.row]
+        let deadline = deadlinePicker.date
         if newTracker {
-            return Tracker(id: UUID(), name: text, color: color, emoji: emoji, dateEvents: dateEvents, isPinned: false, pinDate: nil, createdAt: Date())
+            return Tracker(id: UUID(), name: text, color: color, emoji: emoji, isPinned: false, pinDate: nil, createdAt: Date(), deadline: deadline, isIrregular: false)
         } else {
             guard let id = editTrackerHabit?.id else { return nil }
             guard let isPinned = editTrackerHabit?.isPinned else { return nil }
-            return Tracker(id: id, name: text, color: color, emoji: emoji, dateEvents: dateEvents, isPinned: isPinned, pinDate: editTrackerHabit?.pinDate, createdAt: editTrackerHabit?.createdAt)
+            return Tracker(id: id, name: text, color: color, emoji: emoji, isPinned: isPinned, pinDate: editTrackerHabit?.pinDate, createdAt: editTrackerHabit?.createdAt, deadline: deadline, isIrregular: false)
         }
     }
     
-    private func trackerEditing() {
-        guard let daysLabel = numberOfDaysCompletedHabit else { return }
+    private func trackerEditing(daysLeft: Int) {
         guard let trackerForEditing = editTrackerHabit else { return }
         guard let categiryForEditing = editCategoryHabit else { return }
         newHabitLabel.text = NSLocalizedString("editing", comment: "editing")
         completedDaysLabel.isHidden = false
         creatingButton.setTitle(NSLocalizedString("save", comment: "save"), for: .normal)
         creatingButton.addTarget(self, action: #selector(self.update), for: .touchUpInside)
-        completedDaysLabel.text = formatDaysText(forDays: daysLabel)
+        completedDaysLabel.text = standardEditDeadline(daysLeft: daysLeft)
         nameTrackerTextField.text = trackerForEditing.name
         updateSubitle(nameSubitle: categiryForEditing)
-        convertToDateFormatterInDay(trackerForEditing.dateEvents ?? [])
         if let emojiIndex = emojiList.firstIndex(of: trackerForEditing.emoji) {
             let emojieIndexPath = IndexPath(row: emojiIndex, section: 0)
             collectionView.selectItem(at: emojieIndexPath, animated: false, scrollPosition: [])
@@ -257,41 +274,77 @@ final class NewHabitViewController: UIViewController {
             collectionView.selectItem(at: colorIndexPath, animated: false, scrollPosition: [])
             collectionView.delegate?.collectionView?(collectionView, didSelectItemAt: colorIndexPath)
         }
+        deadlinePicker.date = trackerForEditing.deadline ?? Date()
         updateCreatingButton()
     }
     
-    private func formatDaysText(forDays days: Int) -> String {
-        if days > 10 && days < 20 {
-            return "\(days) дней"
+    private func standardEditDeadline(daysLeft: Int) -> String {
+        let now = Date()
+        let deadline = deadlinePicker.date
+        let calendar = Calendar.current
+        let hoursLeft = calendar.dateComponents([.hour], from: now, to: deadline).hour ?? 0
+        if daysLeft == 0 {
+            return "До дедлайна: \(hoursLeft) " + declensionHours(hoursLeft)
+        } else if daysLeft == 1 {
+            return "До дедлайна: 1 день"
+        } else if daysLeft > 1 {
+            return "До дедлайна: \(daysLeft) " + declensionDays(daysLeft)
+        } else {
+            return "Дата в прошлом"
+        }
+    }
+    
+    private func declensionHours(_ hours: Int) -> String {
+        let lastDigit = hours % 10
+        let lastTwoDigits = hours % 100
+        if lastTwoDigits >= 11 && lastTwoDigits <= 14 {
+            return "часов"
+        }
+        switch lastDigit {
+        case 1: return "час"
+        case 2, 3, 4: return "часа"
+        default: return "часов"
+        }
+    }
+    
+    private func declensionDays(_ days: Int) -> String {
+        let lastDigit = days % 10
+        let lastTwoDigits = days % 100
+        if lastTwoDigits >= 11 && lastTwoDigits <= 14 {
+            return "дней"
+        }
+        switch lastDigit {
+        case 1: return "день"
+        case 2, 3, 4: return "дня"
+        default: return "дней"
+        }
+    }
+    
+    private func formatDeadlineDaysLeft(_ days: Int) -> String {
+        if days == 0 {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "HH:mm"
+            let timeString = formatter.string(from: deadlinePicker.date)
+            return "Дедлайн сегодня в \(timeString)"
+        } else if days > 10 && days < 20 {
+            return "До дедлайна: \(days) дней"
         } else {
             switch days % 10 {
             case 1:
-                return "\(days) день"
+                return "До дедлайна: \(days) день"
             case 2, 3, 4:
-                return "\(days) дня"
+                return "До дедлайна: \(days) дня"
             default:
-                return "\(days) дней"
+                return "До дедлайна: \(days) дней"
             }
         }
     }
     
-    private func convertToDateFormatterInDay(_ indices: [Int]) {
-        let orderedDays = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
-        let resultArray = indices.compactMap { (index: Int) -> String? in
-            guard (1...orderedDays.count).contains(index) else { return nil }
-            return NSLocalizedString(orderedDays[index - 1], comment: "")
-        }
-        updateDate(days: resultArray)
-    }
-
-    
-    
     private func updateCreatingButton() {
         let categoryForActiveButton = creatingTrackersModel[0].subTitleLabel
-        let weekDayForActiveButton = creatingTrackersModel[1].subTitleLabel
         guard let selectedEmojiIndexPathHabbit = isSelectedEmoji else { return }
         guard let selectedColorIndexPathHabbit = isSelectedColor else { return }
-        creatingButton.isEnabled = nameTrackerTextField.text?.isEmpty == false && categoryForActiveButton.isEmpty == false && weekDayForActiveButton.isEmpty == false && selectedEmojiIndexPathHabbit.isEmpty == false && selectedColorIndexPathHabbit.isEmpty == false
+        creatingButton.isEnabled = nameTrackerTextField.text?.isEmpty == false && categoryForActiveButton.isEmpty == false && selectedEmojiIndexPathHabbit.isEmpty == false && selectedColorIndexPathHabbit.isEmpty == false
         if creatingButton.isEnabled {
             creatingButton.backgroundColor = .ypBlack
         } else {
@@ -315,6 +368,7 @@ final class NewHabitViewController: UIViewController {
         scrollView.addSubview(contentView)
         contentView.addSubview(stackViewForTextField)
         contentView.addSubview(tableView)
+        contentView.addSubview(deadlinePicker)
         contentView.addSubview(collectionView)
         contentView.addSubview(cancelButton)
         contentView.addSubview(creatingButton)
@@ -323,58 +377,46 @@ final class NewHabitViewController: UIViewController {
     
     private func configConstraints() {
         let nameTrackerTextFieldConstant: CGFloat = editTrackerHabit == nil ? 28 : 106
-        let scrollHeightAnchor: CGFloat = editTrackerHabit == nil ? 32 : 102
         let collectionViewHeight: CGFloat = 420
-        let screenHeight = UIScreen.main.bounds.height
-        let safeArea = view.safeAreaInsets.top + view.safeAreaInsets.bottom
-        let scrollViewHeight = screenHeight - safeArea
         NSLayoutConstraint.activate([
+            newHabitLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
             newHabitLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            newHabitLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 27),
-            
+            scrollView.topAnchor.constraint(equalTo: newHabitLabel.bottomAnchor, constant: 8),
             scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            
             contentView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
             contentView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
-            contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
-            contentView.heightAnchor.constraint(equalToConstant: view.frame.height + scrollHeightAnchor),
-            
-            completedDaysLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 28),
+            completedDaysLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
             completedDaysLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            completedDaysLabel.heightAnchor.constraint(equalToConstant: 38),
-            
-            nameTrackerTextField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: nameTrackerTextFieldConstant),
-            nameTrackerTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            nameTrackerTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            nameTrackerTextField.heightAnchor.constraint(equalToConstant: 75),
-            
+            stackViewForTextField.topAnchor.constraint(equalTo: completedDaysLabel.bottomAnchor, constant: nameTrackerTextFieldConstant),
+            stackViewForTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            stackViewForTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            stackViewForTextField.heightAnchor.constraint(equalToConstant: 75),
             errorLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            
             tableView.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 24),
             tableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            tableView.heightAnchor.constraint(equalToConstant: 149),
-            
-            scrollView.heightAnchor.constraint(equalToConstant: scrollViewHeight),
-            collectionView.topAnchor.constraint(equalTo: tableView.bottomAnchor, constant: 32),
+            tableView.heightAnchor.constraint(equalToConstant: 75),
+            deadlinePicker.topAnchor.constraint(equalTo: tableView.bottomAnchor, constant: 16),
+            deadlinePicker.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            deadlinePicker.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            collectionView.topAnchor.constraint(equalTo: deadlinePicker.bottomAnchor, constant: 32),
             collectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             collectionView.heightAnchor.constraint(equalToConstant: collectionViewHeight),
-            
             cancelButton.topAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: 16),
             cancelButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             cancelButton.heightAnchor.constraint(equalToConstant: 60),
             cancelButton.widthAnchor.constraint(equalToConstant: 168),
-            
             creatingButton.leadingAnchor.constraint(equalTo: cancelButton.trailingAnchor, constant: 8),
             creatingButton.topAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: 16),
             creatingButton.heightAnchor.constraint(equalToConstant: 60),
-            creatingButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20)
+            creatingButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            creatingButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16)
         ])
     }
 }
@@ -391,11 +433,9 @@ extension NewHabitViewController: NewHabitViewControllerDelegate {
     func updateDate(days: [String]) {
         if !days.isEmpty {
             if days.count == 7 {
-                creatingTrackersModel[1].subTitleLabel = NSLocalizedString("everyDay", comment: "everyDay")
-                convertToDayInDateFormatter(days)
+                creatingTrackersModel[0].subTitleLabel = NSLocalizedString("everyDay", comment: "everyDay")
             } else {
-                creatingTrackersModel[1].subTitleLabel = days.joined(separator: ", ")
-                convertToDayInDateFormatter(days)
+                creatingTrackersModel[0].subTitleLabel = days.joined(separator: ", ")
             }
         }
         tableView.reloadData()
@@ -406,12 +446,6 @@ extension NewHabitViewController: NewHabitViewControllerDelegate {
         creatingTrackersModel[0].subTitleLabel = nameSubitle
         tableView.reloadData()
         updateCreatingButton()
-    }
-    
-    private func convertToDayInDateFormatter(_ days: [String]){
-        let orderedDays = ["\(NSLocalizedString("Mon", comment: "Mon"))", "\(NSLocalizedString("Tue", comment: "Tue"))", "\(NSLocalizedString("Wed", comment: "Wed"))", "\(NSLocalizedString("Thu", comment: "Thu"))", "\(NSLocalizedString("Fri", comment: "Fri"))", "\(NSLocalizedString("Sat", comment: "Sat"))", "\(NSLocalizedString("Sun", comment: "Sun"))"]
-        let resultArray = days.compactMap { orderedDays.firstIndex(of: $0)?.advanced(by: 1) }
-        dateEvents = resultArray
     }
 }
 
@@ -437,11 +471,6 @@ extension NewHabitViewController: UITableViewDelegate {
             categoryViewModel.delegateHabbit = self
             let navigationController = UINavigationController(rootViewController: categoryViewController)
             present(navigationController, animated: true)
-        case 1:
-            let scheduleViewController = ScheduleViewController()
-            scheduleViewController.delegate = self
-            let navigationController = UINavigationController(rootViewController: scheduleViewController)
-            present(navigationController, animated: true)
         default:
             break
         }
@@ -456,7 +485,7 @@ extension NewHabitViewController: UITableViewDelegate {
 
 extension NewHabitViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 2
+        return 1
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

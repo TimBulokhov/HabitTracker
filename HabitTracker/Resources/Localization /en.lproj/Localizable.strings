@@ -76,3 +76,11 @@
 "averageValue" = "Average value";
 
 "emoji" = "Emoji";
+
+"repeat" = "Repeat";
+"everyWeek" = "Every week";
+"everyMonth" = "Every month";
+"everyNDays" = "Every %d days";
+"selectInterval" = "Select interval";
+"numberOfDays" = "Number of days";
+"ok" = "OK";

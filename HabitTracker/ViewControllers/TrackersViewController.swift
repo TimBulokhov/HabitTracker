@@ -228,14 +228,7 @@ final class TrackersViewController: UIViewController {
 
         // Для фильтра 'Трекеры на сегодня' фильтруем по дню недели
         if selectedFilter == .todayTrackers {
-            let dayOfWeek = selectedDate.dayOfWeek()
-            baseCategories = baseCategories.map { category in
-                let filter = category.trackers.filter {
-                    // Показываем трекеры с совпадающим днём недели или нерегулярные (dateEvents == nil)
-                    $0.dateEvents?.contains(dayOfWeek) ?? true
-                }
-                return TrackerCategory(title: category.title, trackers: filter)
-            }.filter { !$0.trackers.isEmpty }
+            // Просто показываем все трекеры на выбранную дату (без dateEvents)
         }
 
         // Сортировка: закреплённые трекеры в начале каждой категории, среди закреплённых — по дате закрепления
@@ -270,18 +263,21 @@ final class TrackersViewController: UIViewController {
                 }
                 if trackers.isEmpty { return nil }
                 return TrackerCategory(title: category.title, trackers: trackers)
-            }
+    }
         }
         if selectedFilter == .uncompletedTrackers {
-            visibleCategories = visibleCategories.compactMap { category in
-                let trackers = category.trackers.filter { tracker in
+        visibleCategories = visibleCategories.compactMap { category in
+            let trackers = category.trackers.filter { tracker in
                     !completedTrackers.contains { $0.id == tracker.id }
-                }
-                if trackers.isEmpty { return nil }
-                return TrackerCategory(title: category.title, trackers: trackers)
             }
+            if trackers.isEmpty { return nil }
+            return TrackerCategory(title: category.title, trackers: trackers)
         }
-
+    }
+    
+        // Финальная фильтрация: только категории с трекерами
+        visibleCategories = visibleCategories.filter { !$0.trackers.isEmpty }
+    
         checkingForActiveTrackers()
         collectionView.reloadData()
     }
@@ -363,11 +359,7 @@ extension TrackersViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "TrackerCell", for: indexPath) as? TrackerCell else { return UICollectionViewCell() }
         let tracker = visibleCategories[indexPath.section].trackers[indexPath.row]
-        let daysCount = completedTrackers.filter { $0.id == tracker.id }.count
-        let IsCompleted = completedTrackers.contains {$0.id == tracker.id && сomparOfTrackerDates(date1: $0.date, date2: selectedDate)}
-        cell.delegate = self
         cell.setupCell(tracker: tracker)
-        cell.completeTracker(days: daysCount, completed: IsCompleted)
         return cell
     }
     func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -458,7 +450,7 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout {
         return UIEdgeInsets(
             top: collectionSettings.topDistance,
             left: collectionSettings.leftDistance,
-            bottom: collectionSettings.leftDistance,
+            bottom: 8,
             right: collectionSettings.rightDistance
         )
     }
@@ -530,52 +522,11 @@ extension TrackersViewController: TrackerCreationDelegate {
     func didCreateTracker(_ tracker: Tracker, category: String) {
         try? createCategoryAndTracker(ctracker: tracker, with: category)
         try? fetchACategory()
-        // Найти ближайший день из расписания трекера
-        if let schedule = tracker.dateEvents, !schedule.isEmpty {
-            let today = Date()
-            let todayDayOfWeek = today.dayOfWeek()
-            if !schedule.contains(todayDayOfWeek) {
-                let calendar = Calendar.current
-                let weekday = schedule.first ?? todayDayOfWeek
-                if let nextDate = calendar.nextDate(after: today, matching: DateComponents(weekday: weekday), matchingPolicy: .nextTime) {
-                    selectedDate = nextDate
-                    datePicker.setDate(nextDate, animated: false)
-                }
-            } else {
-                selectedDate = today
-                datePicker.setDate(today, animated: false)
-            }
-        }
-        checkingForActiveTrackers()
         updateVisibleCategories()
         collectionView.reloadData()
     }
 }
 
-// MARK: - TrackerCellDelegate
-
-extension TrackersViewController: TrackerCellDelegate {
-    
-    func trackerCompleted(id: UUID) {
-        let record = TrackerRecord(id: id, date: selectedDate)
-        if selectedDate <= Date() {
-            if !completedTrackers.contains(where: { $0.id == id && Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }) {
-                try? createARecord(record: record)
-            }
-            analyticsService.report(event: .click, params: ["Screen" : "Main", "Item" : Items.trackerCompleted.rawValue])
-            collectionView.reloadData()
-        }
-    }
-
-    func trackerNotCompleted(id: UUID) {
-        if let index = completedTrackers.firstIndex(where: { $0.id == id && Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }) {
-            try? deleteARecord(atIndex: index)
-        }
-        try? fetchARecord()
-        analyticsService.report(event: .click, params: ["Screen" : "Main", "Item" : Items.trackerNotCompleted.rawValue])
-        collectionView.reloadData()
-    }
-}
 // MARK: - CategoryStore
 
 extension TrackersViewController {
@@ -713,22 +664,29 @@ extension TrackersViewController: EditTrackerDelegate {
     private func editingTrackers(indexPath: IndexPath) {
         let tracker = visibleCategories[indexPath.section].trackers[indexPath.row]
         let category = visibleCategories[indexPath.section].title
-        let daysCount = completedTrackers.filter { $0.id == tracker.id }.count
-        if tracker.dateEvents != nil {
+        // вычисляем количество дней до дедлайна
+        var deadlineDaysLeft: Int? = nil
+        if let deadline = tracker.deadline {
+            let calendar = Calendar.current
+            let today = calendar.startOfDay(for: Date())
+            let deadlineDay = calendar.startOfDay(for: deadline)
+            deadlineDaysLeft = calendar.dateComponents([.day], from: today, to: deadlineDay).day
+        }
+        if tracker.deadline != nil {
             let createHabitViewController = NewHabitViewController()
             let navigationController = UINavigationController(rootViewController: createHabitViewController)
             createHabitViewController.delegateEdit = self
-            createHabitViewController.numberOfDaysCompletedHabit = daysCount
             createHabitViewController.editCategoryHabit = category
             createHabitViewController.editTrackerHabit = tracker
+            createHabitViewController.deadlineDaysLeft = deadlineDaysLeft
             present(navigationController, animated: true)
         } else {
             let createIrregularEventViewController = NewSingleHabitViewController()
             let navigationController = UINavigationController(rootViewController: createIrregularEventViewController)
             createIrregularEventViewController.delegateEdit = self
-            createIrregularEventViewController.numberOfDaysCompletedIrregular = daysCount
             createIrregularEventViewController.editCategoryIrregular = category
             createIrregularEventViewController.editTrackerIrregular = tracker
+            createIrregularEventViewController.deadlineDaysLeft = deadlineDaysLeft
             present(navigationController, animated: true)
         }
     }
@@ -744,10 +702,11 @@ extension TrackersViewController {
             name: tracker.name,
             color: tracker.color,
             emoji: tracker.emoji,
-            dateEvents: tracker.dateEvents,
             isPinned: tracker.isPinned ? false : true,
             pinDate: tracker.isPinned ? nil : now,
-            createdAt: tracker.createdAt
+            createdAt: tracker.createdAt,
+            deadline: tracker.deadline,
+            isIrregular: tracker.isIrregular
         )
         do {
             try trackerStore.updateTracker(with: updateTracker)

@@ -139,12 +139,18 @@ extension OnboardViewController: UIPageViewControllerDataSource {
 
 extension OnboardViewController: ContentViewControllerDelegate {
     func didTapButton() {
-        
-        guard let window = UIApplication.shared.windows.first else {
-            fatalError("Invalid Configuration")
+        if #available(iOS 15.0, *) {
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first {
+                window.rootViewController = TabBarController()
+                dataStorage.firstLaunchApplication = true
+            }
+        } else {
+            if let window = UIApplication.shared.windows.first {
+                window.rootViewController = TabBarController()
+                dataStorage.firstLaunchApplication = true
+            }
         }
-        window.rootViewController = TabBarController()
-        dataStorage.firstLaunchApplication = true
     }
 }
 

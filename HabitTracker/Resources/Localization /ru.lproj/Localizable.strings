@@ -76,3 +76,11 @@
 "averageValue" = "Среднее значение";
 
 "emoji" = "Эмодзи";
+
+"repeat" = "Повтор";
+"everyWeek" = "Каждую неделю";
+"everyMonth" = "Каждый месяц";
+"everyNDays" = "Каждые %d дней";
+"selectInterval" = "Выберите интервал";
+"numberOfDays" = "Количество дней";
+"ok" = "OK";

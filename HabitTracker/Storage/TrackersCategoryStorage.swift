@@ -96,13 +96,8 @@ extension TrackersCategoryStorage {
         }
         let trackerList: [Tracker] = trackers.compactMap { coreDataTracker in
             guard let coreDataTracker = coreDataTracker as? TrackerCoreData else { return nil }
-            // Автозаполнение pinDate для закреплённых трекеров без даты
-            if coreDataTracker.isPinned && coreDataTracker.pinDate == nil {
-                coreDataTracker.pinDate = Date()
-                try? context.save()
+                return try? trackerStore.decodingTrackers(from: coreDataTracker)
             }
-            return try? trackerStore.decodingTrackers(from: coreDataTracker)
-        }
         return TrackerCategory(title: title, trackers: trackerList)
     }
     
@@ -116,7 +111,7 @@ extension TrackersCategoryStorage {
             trackerCoreData = existing
         } else {
             guard let created = try trackerStore.addNewTracker(from: tracker) else {
-                throw StorageError.failedToWrite
+            throw StorageError.failedToWrite
             }
             trackerCoreData = created
         }

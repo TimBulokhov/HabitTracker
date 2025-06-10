@@ -69,7 +69,7 @@ final class TrackerCell: UICollectionViewCell {
         button.layer.cornerRadius = 17
         button.layer.masksToBounds = true
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
+        button.isHidden = true
         return button
     }()
     
@@ -105,12 +105,77 @@ final class TrackerCell: UICollectionViewCell {
         emojiLabel.text = tracker.emoji
         pinnedImage.isHidden = !tracker.isPinned
         self.trackerId = tracker.id
+        if let deadline = tracker.deadline {
+            if tracker.isIrregular {
+                daysCounterLabel.text = irregularDeadlineText(deadline: deadline)
+            } else {
+                daysCounterLabel.text = standardDeadlineText(deadline: deadline)
+            }
+        } else {
+            daysCounterLabel.text = ""
+        }
     }
     
-    func completeTracker(days: Int, completed: Bool) {
-        self.isCompletedToday = completed
-        daysCounterLabel.text = formatDaysText(forDays: days)
-        updatePlusButton(trackerCompleted: completed)
+    private func isIrregular(tracker: Tracker) -> Bool {
+        // Считаем нерегулярным, если createdAt и deadline не совпадают по дню
+        guard let createdAt = tracker.createdAt, let deadline = tracker.deadline else { return false }
+        let calendar = Calendar.current
+        return calendar.compare(createdAt, to: deadline, toGranularity: .day) != .orderedSame
+    }
+    
+    private func standardDeadlineText(deadline: Date) -> String {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let deadlineDay = calendar.startOfDay(for: deadline)
+        let daysLeft = calendar.dateComponents([.day], from: today, to: deadlineDay).day ?? 0
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "HH:mm"
+        let timeString = timeFormatter.string(from: deadline)
+        if daysLeft == 0 {
+            return "Дедлайн сегодня в \(timeString)"
+        } else if daysLeft == 1 {
+            return "Дедлайн завтра в \(timeString)"
+        } else if daysLeft > 1 {
+            return "Дедлайн через \(daysLeft) " + declensionDays(daysLeft) + " в \(timeString)"
+        } else {
+            return "Дата в прошлом"
+        }
+    }
+    
+    private func irregularDeadlineText(deadline: Date) -> String {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let deadlineDay = calendar.startOfDay(for: deadline)
+        let daysLeft = calendar.dateComponents([.day], from: today, to: deadlineDay).day ?? 0
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "HH:mm"
+        let timeString = timeFormatter.string(from: deadline)
+        if daysLeft == 0 {
+            return "Сегодня в \(timeString)"
+        } else if daysLeft == 1 {
+            return "Завтра в \(timeString)"
+        } else if daysLeft > 1 {
+            let dateFormatter = DateFormatter()
+            dateFormatter.locale = Locale.current
+            dateFormatter.setLocalizedDateFormatFromTemplate("d MMMM")
+            let dateString = dateFormatter.string(from: deadline)
+            return "\(dateString) в \(timeString)"
+        } else {
+            return "Дата в прошлом"
+        }
+    }
+    
+    private func declensionDays(_ days: Int) -> String {
+        let lastDigit = days % 10
+        let lastTwoDigits = days % 100
+        if lastTwoDigits >= 11 && lastTwoDigits <= 14 {
+            return "дней"
+        }
+        switch lastDigit {
+        case 1: return "день"
+        case 2, 3, 4: return "дня"
+        default: return "дней"
+        }
     }
     
     override func prepareForReuse() {
@@ -126,18 +191,6 @@ final class TrackerCell: UICollectionViewCell {
     }
     
     // MARK: - Private methods
-    
-    private func formatDaysText(forDays days: Int) -> String {
-        let daysCounter = String.localizedStringWithFormat(NSLocalizedString("numberOfDay", comment: "numberOfDay"), days)
-        return daysCounter
-    }
-    
-    private func updatePlusButton(trackerCompleted: Bool) {
-        let image: UIImage = (trackerCompleted ? UIImage(systemName: "checkmark") : UIImage(systemName: "plus"))!
-        accomplishedButton.setImage(image, for: .normal)
-        let buttonOpacity: Float = trackerCompleted ? 0.3 : 1
-        accomplishedButton.layer.opacity = buttonOpacity
-    }
     
     private func setupViews() {
         self.backgroundColor = .clear
