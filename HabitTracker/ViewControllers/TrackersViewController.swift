@@ -152,6 +152,16 @@ final class TrackersViewController: UIViewController {
         analyticsService.report(event: .close, params: ["Screen" : "Main"])
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        startDeadlineTimer()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        stopDeadlineTimer()
+    }
+    
     // MARK: - Actions
     
     @objc
@@ -215,71 +225,102 @@ final class TrackersViewController: UIViewController {
     }
     
     private func updateVisibleCategories() {
-        let searchText = searchBar.text ?? ""
-        var baseCategories = categories
-
-        // Поиск по всем трекерам
-        if !searchText.isEmpty {
-            baseCategories = categories.map { category in
-                let filteredTrackers = category.trackers.filter { $0.name.lowercased().contains(searchText.lowercased()) }
-                return TrackerCategory(title: category.title, trackers: filteredTrackers)
-            }.filter { !$0.trackers.isEmpty }
-        }
-
-        // Для фильтра 'Трекеры на сегодня' фильтруем по дню недели
-        if selectedFilter == .todayTrackers {
-            // Просто показываем все трекеры на выбранную дату (без dateEvents)
-        }
-
-        // Сортировка: закреплённые трекеры в начале каждой категории, среди закреплённых — по дате закрепления
-        baseCategories = baseCategories.map { category in
-            let sortedTrackers = category.trackers.sorted { lhs, rhs in
-                if lhs.isPinned != rhs.isPinned {
-                    return lhs.isPinned && !rhs.isPinned
+        if selectedFilter == nil {
+            let filteredCategories = categories.compactMap { category -> TrackerCategory? in
+                let filteredTrackers = category.trackers.filter { tracker in
+                    let isDone = tracker.status == "done"
+                    let isCompletedEvent = tracker.isIrregular &&
+                        tracker.deadline != nil &&
+                        tracker.deadline! < Date()
+                    if isDone || isCompletedEvent {
+                        return false
+                    }
+                    return true
                 }
-                if lhs.isPinned && rhs.isPinned {
-                    // Оба закреплены — по дате закрепления
-                    return (lhs.pinDate ?? Date.distantPast) < (rhs.pinDate ?? Date.distantPast)
+                if filteredTrackers.isEmpty { return nil }
+                // Сортируем: закреплённые сверху, остальные по дате создания
+                let sortedTrackers = filteredTrackers.sorted { (first: Tracker, second: Tracker) -> Bool in
+                    if first.isPinned && !second.isPinned { return true }
+                    if !first.isPinned && second.isPinned { return false }
+                    return (first.createdAt ?? Date.distantPast) < (second.createdAt ?? Date.distantPast)
                 }
-                // Оба не закреплены — по имени, затем по createdAt, затем по id для стабильности
-                if lhs.name != rhs.name {
-                    return lhs.name < rhs.name
-                }
-                if let lCreated = lhs.createdAt, let rCreated = rhs.createdAt, lCreated != rCreated {
-                    return lCreated < rCreated
-                }
-                return lhs.id.uuidString < rhs.id.uuidString
+                return TrackerCategory(title: category.title, trackers: sortedTrackers)
             }
-            return TrackerCategory(title: category.title, trackers: sortedTrackers)
-        }
-
-        visibleCategories = baseCategories
-
-        // Фильтрация завершённых/незавершённых по всем трекерам
-        if selectedFilter == .completedTrackers {
-            visibleCategories = visibleCategories.compactMap { category in
-                let trackers = category.trackers.filter { tracker in
-                    completedTrackers.contains { $0.id == tracker.id }
+            visibleCategories = filteredCategories
+        } else {
+            let filteredCategories = categories.compactMap { category -> TrackerCategory? in
+                var filteredTrackers: [Tracker] = []
+                for tracker in category.trackers {
+                    if !searchBar.text!.isEmpty {
+                        let searchTextLowercased = searchBar.text!.lowercased()
+                        if !tracker.name.lowercased().contains(searchTextLowercased) {
+                            continue
+                        }
+                    }
+                    if let selectedFilter = selectedFilter {
+                        switch selectedFilter {
+                        case .overdue:
+                            if tracker.isIrregular { continue }
+                            if tracker.status == "done" { continue }
+                            if let deadline = tracker.deadline {
+                                if !(deadline < Date()) { continue }
+                            } else { continue }
+                            filteredTrackers.append(tracker)
+                            continue
+                        case .completedTrackers:
+                            if tracker.status == "done" {
+                                filteredTrackers.append(tracker)
+                                continue
+                            }
+                            if tracker.isIrregular,
+                               let deadline = tracker.deadline,
+                               deadline < Date() {
+                                filteredTrackers.append(tracker)
+                                continue
+                            }
+                            continue
+                        case .pinned:
+                            if !tracker.isPinned { continue }
+                            filteredTrackers.append(tracker)
+                            continue
+                        case .todayTrackers:
+                            if !(tracker.deadline?.isToday ?? false) { continue }
+                        case .tasksByDate:
+                            if !(tracker.deadline?.isSameDay(as: selectedDate) ?? false) { continue }
+                        case .completed:
+                            if tracker.status != "completed" { continue }
+                        case .created:
+                            if tracker.status != "created" { continue }
+                        case .inProgress:
+                            if tracker.status != "in_progress" { continue }
+                        case .testing:
+                            if tracker.status != "testing" { continue }
+                        case .readyForRelease:
+                            if tracker.status != "ready_for_release" { continue }
+                        }
+                    }
+                    if selectedFilter != .completedTrackers && selectedFilter != .overdue && selectedFilter != .pinned {
+                        filteredTrackers.append(tracker)
+                    }
                 }
-                if trackers.isEmpty { return nil }
-                return TrackerCategory(title: category.title, trackers: trackers)
-    }
-        }
-        if selectedFilter == .uncompletedTrackers {
-        visibleCategories = visibleCategories.compactMap { category in
-            let trackers = category.trackers.filter { tracker in
-                    !completedTrackers.contains { $0.id == tracker.id }
+                if filteredTrackers.isEmpty { return nil }
+                // Сортируем: закреплённые сверху, остальные по дате создания
+                let sortedTrackers = filteredTrackers.sorted { (first: Tracker, second: Tracker) -> Bool in
+                    if first.isPinned && !second.isPinned { return true }
+                    if !first.isPinned && second.isPinned { return false }
+                    return (first.createdAt ?? Date.distantPast) < (second.createdAt ?? Date.distantPast)
+                }
+                return TrackerCategory(title: category.title, trackers: sortedTrackers)
             }
-            if trackers.isEmpty { return nil }
-            return TrackerCategory(title: category.title, trackers: trackers)
+            visibleCategories = filteredCategories
         }
-    }
-    
-        // Финальная фильтрация: только категории с трекерами
-        visibleCategories = visibleCategories.filter { !$0.trackers.isEmpty }
-    
-        checkingForActiveTrackers()
         collectionView.reloadData()
+        if selectedFilter == .tasksByDate {
+            datePicker.isHidden = false
+            datePicker.date = selectedDate
+        } else {
+            datePicker.isHidden = true
+        }
     }
     
     private func сomparOfTrackerDates(date1: Date, date2: Date) -> Bool {
@@ -346,6 +387,20 @@ final class TrackersViewController: UIViewController {
             filterButton.widthAnchor.constraint(equalToConstant: 114),
             filterButton.heightAnchor.constraint(equalToConstant: 50)
         ])
+    }
+
+    private var deadlineTimer: Timer?
+
+    private func startDeadlineTimer() {
+        deadlineTimer?.invalidate()
+        deadlineTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+            self?.collectionView.reloadData()
+        }
+    }
+
+    private func stopDeadlineTimer() {
+        deadlineTimer?.invalidate()
+        deadlineTimer = nil;
     }
 }
 
@@ -606,20 +661,27 @@ extension TrackersViewController: TrackersCategoryStorageDelegate {
 // MARK: - FilterViewControllerProtocol
 
 extension TrackersViewController: FilterViewControllerProtocol {
-    func filterSelected(filter: FilterName) {
+    func filterSelected(filter: FilterName?) {
         selectedFilter = filter
         searchBar.text = ""
-        switch filter {
-        case .allTrackers:
+        if let filter = filter {
+            switch filter {
+            case .todayTrackers:
+                datePicker.setDate(Date(), animated: false)
+                selectedDate = Date()
+                filterButton.setTitleColor(.ypWhite, for: .normal)
+            case .tasksByDate:
+                datePicker.setDate(selectedDate, animated: false)
+                filterButton.setTitleColor(.ypWhite, for: .normal)
+            case .completedTrackers, .overdue:
+                filterButton.setTitleColor(.ypRed, for: .normal)
+            case .completed:
+                filterButton.setTitleColor(UIColor(red: 102/255, green: 0/255, blue: 153/255, alpha: 1), for: .normal)
+            default:
+                filterButton.setTitleColor(.ypWhite, for: .normal)
+            }
+        } else {
             filterButton.setTitleColor(.ypWhite, for: .normal)
-        case .todayTrackers:
-            datePicker.setDate(Date(), animated: false)
-            selectedDate = datePicker.date
-            filterButton.setTitleColor(.ypWhite, for: .normal)
-        case .completedTrackers:
-            filterButton.setTitleColor(.ypRed, for: .normal)
-        case .uncompletedTrackers:
-            filterButton.setTitleColor(.ypRed, for: .normal)
         }
         updateVisibleCategories()
     }
@@ -659,12 +721,12 @@ extension TrackersViewController: EditTrackerDelegate {
         try? trackerStore.updateTracker(with: tracker)
         try? fetchACategory()
         updateVisibleCategories()
+        collectionView.reloadData()
     }
     
     private func editingTrackers(indexPath: IndexPath) {
         let tracker = visibleCategories[indexPath.section].trackers[indexPath.row]
-        let category = visibleCategories[indexPath.section].title
-        // вычисляем количество дней до дедлайна
+        let category = categories.first(where: { $0.trackers.contains(where: { $0.id == tracker.id }) })?.title ?? ""
         var deadlineDaysLeft: Int? = nil
         if let deadline = tracker.deadline {
             let calendar = Calendar.current
@@ -672,21 +734,21 @@ extension TrackersViewController: EditTrackerDelegate {
             let deadlineDay = calendar.startOfDay(for: deadline)
             deadlineDaysLeft = calendar.dateComponents([.day], from: today, to: deadlineDay).day
         }
-        if tracker.deadline != nil {
-            let createHabitViewController = NewHabitViewController()
-            let navigationController = UINavigationController(rootViewController: createHabitViewController)
-            createHabitViewController.delegateEdit = self
-            createHabitViewController.editCategoryHabit = category
-            createHabitViewController.editTrackerHabit = tracker
-            createHabitViewController.deadlineDaysLeft = deadlineDaysLeft
-            present(navigationController, animated: true)
-        } else {
+        if tracker.isIrregular {
             let createIrregularEventViewController = NewSingleHabitViewController()
             let navigationController = UINavigationController(rootViewController: createIrregularEventViewController)
             createIrregularEventViewController.delegateEdit = self
             createIrregularEventViewController.editCategoryIrregular = category
             createIrregularEventViewController.editTrackerIrregular = tracker
             createIrregularEventViewController.deadlineDaysLeft = deadlineDaysLeft
+            present(navigationController, animated: true)
+        } else {
+            let createHabitViewController = NewHabitViewController()
+            let navigationController = UINavigationController(rootViewController: createHabitViewController)
+            createHabitViewController.delegateEdit = self
+            createHabitViewController.editCategoryHabit = category
+            createHabitViewController.editTrackerHabit = tracker
+            createHabitViewController.deadlineDaysLeft = deadlineDaysLeft
             present(navigationController, animated: true)
         }
     }
@@ -696,17 +758,16 @@ extension TrackersViewController: EditTrackerDelegate {
 
 extension TrackersViewController {
     private func updateStatusIsPinned(tracker: Tracker){
-        let now = Date()
         let updateTracker = Tracker(
             id: tracker.id,
             name: tracker.name,
             color: tracker.color,
             emoji: tracker.emoji,
-            isPinned: tracker.isPinned ? false : true,
-            pinDate: tracker.isPinned ? nil : now,
+            isPinned: !tracker.isPinned,
             createdAt: tracker.createdAt,
             deadline: tracker.deadline,
-            isIrregular: tracker.isIrregular
+            isIrregular: tracker.isIrregular,
+            status: tracker.status
         )
         do {
             try trackerStore.updateTracker(with: updateTracker)
@@ -714,6 +775,145 @@ extension TrackersViewController {
             updateVisibleCategories()
         } catch {
             print("Error updating tracker pin status: \(error)")
+        }
+    }
+}
+
+// MARK: - TrackerCellDelegate
+extension TrackersViewController: TrackerCellDelegate {
+    func trackerCompleted(id: UUID) {
+        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        if let trackerEntity = try? context.fetch(TrackerCoreData.fetchRequest()).first(where: { $0.id == id }) {
+            let record = TrackerRecordCoreData(context: context)
+            record.date = Date()
+            record.tracker = trackerEntity
+            try? context.save()
+            updateVisibleCategories()
+        }
+    }
+    
+    func trackerNotCompleted(id: UUID) {
+        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        if let trackerEntity = try? context.fetch(TrackerCoreData.fetchRequest()).first(where: { $0.id == id }),
+           let record = try? context.fetch(TrackerRecordCoreData.fetchRequest()).first(where: { $0.tracker?.id == id && Calendar.current.isDateInToday($0.date ?? Date()) }) {
+            context.delete(record)
+            try? context.save()
+            updateVisibleCategories()
+        }
+    }
+    
+    func pinButtonTapped(for tracker: Tracker) {
+        let updateTracker = Tracker(
+            id: tracker.id,
+            name: tracker.name,
+            color: tracker.color,
+            emoji: tracker.emoji,
+            isPinned: !tracker.isPinned,
+            createdAt: tracker.createdAt,
+            deadline: tracker.deadline,
+            isIrregular: tracker.isIrregular,
+            status: tracker.status
+        )
+        do {
+            try trackerStore.updateTracker(with: updateTracker)
+            try fetchACategory()
+            updateVisibleCategories()
+        } catch {
+            print("Error updating tracker pin status: \(error)")
+        }
+    }
+    
+    func editButtonTapped(for tracker: Tracker) {
+        let category = categories.first(where: { $0.trackers.contains(where: { $0.id == tracker.id }) })?.title ?? ""
+        var deadlineDaysLeft: Int? = nil
+        if let deadline = tracker.deadline {
+            let calendar = Calendar.current
+            let today = calendar.startOfDay(for: Date())
+            let deadlineDay = calendar.startOfDay(for: deadline)
+            deadlineDaysLeft = calendar.dateComponents([.day], from: today, to: deadlineDay).day
+        }
+        if tracker.isIrregular {
+            let createIrregularEventViewController = NewSingleHabitViewController()
+            let navigationController = UINavigationController(rootViewController: createIrregularEventViewController)
+            createIrregularEventViewController.delegateEdit = self
+            createIrregularEventViewController.editCategoryIrregular = category
+            createIrregularEventViewController.editTrackerIrregular = tracker
+            createIrregularEventViewController.deadlineDaysLeft = deadlineDaysLeft
+            present(navigationController, animated: true)
+        } else {
+            let createHabitViewController = NewHabitViewController()
+            let navigationController = UINavigationController(rootViewController: createHabitViewController)
+            createHabitViewController.delegateEdit = self
+            createHabitViewController.editCategoryHabit = category
+            createHabitViewController.editTrackerHabit = tracker
+            createHabitViewController.deadlineDaysLeft = deadlineDaysLeft
+            present(navigationController, animated: true)
+        }
+    }
+    
+    func deleteButtonTapped(for tracker: Tracker) {
+        let alert = UIAlertController(
+            title: "Удалить трекер?",
+            message: nil,
+            preferredStyle: .actionSheet
+        )
+        
+        let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { [weak self] _ in
+            self?.deleteTracker(tracker)
+        }
+        
+        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel)
+        
+        alert.addAction(deleteAction)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true)
+    }
+    
+    func statusButtonTapped(for tracker: Tracker) {
+        let alert = UIAlertController(
+            title: "Изменить статус",
+            message: nil,
+            preferredStyle: .actionSheet
+        )
+        
+        let statuses = [
+            ("Создана", "created"),
+            ("В работе", "in_progress"),
+            ("Выполнена", "completed"),
+            ("Тестируется", "testing"),
+            ("Готова к релизу", "ready_for_release"),
+            ("Завершена", "done")
+        ]
+        
+        for (title, status) in statuses {
+            let action = UIAlertAction(title: title, style: .default) { [weak self] _ in
+                self?.updateTrackerStatus(tracker, newStatus: status)
+            }
+            alert.addAction(action)
+        }
+        
+        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true)
+    }
+    
+    private func deleteTracker(_ tracker: Tracker) {
+        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        if let trackerEntity = try? context.fetch(TrackerCoreData.fetchRequest()).first(where: { $0.id == tracker.id }) {
+            context.delete(trackerEntity)
+            try? context.save()
+            updateVisibleCategories()
+        }
+    }
+    
+    private func updateTrackerStatus(_ tracker: Tracker, newStatus: String) {
+        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        if let trackerEntity = try? context.fetch(TrackerCoreData.fetchRequest()).first(where: { $0.id == tracker.id }) {
+            trackerEntity.status = newStatus
+            try? context.save()
+            updateVisibleCategories()
         }
     }
 }

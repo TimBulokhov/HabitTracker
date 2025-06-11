@@ -29,4 +29,18 @@ extension Date {
             return weekDay - 1
         }
     }
+    
+    var isToday: Bool {
+        let calendar = Calendar.current
+        return calendar.isDateInToday(self)
+    }
+    
+    func isSameDay(as other: Date) -> Bool {
+        let calendar = Calendar.current
+        return calendar.isDate(self, inSameDayAs: other)
+    }
+    
+    var isInPast: Bool {
+        return self < Calendar.current.startOfDay(for: Date())
+    }
 }

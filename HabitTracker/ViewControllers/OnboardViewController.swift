@@ -147,8 +147,8 @@ extension OnboardViewController: ContentViewControllerDelegate {
             }
         } else {
             if let window = UIApplication.shared.windows.first {
-                window.rootViewController = TabBarController()
-                dataStorage.firstLaunchApplication = true
+        window.rootViewController = TabBarController()
+        dataStorage.firstLaunchApplication = true
             }
         }
     }

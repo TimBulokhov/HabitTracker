@@ -73,6 +73,14 @@ final class TrackerCell: UICollectionViewCell {
         return button
     }()
     
+    private let statusLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
+        label.textColor = .white
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
     // MARK: - Lifecycle
     
     override init(frame: CGRect) {
@@ -105,14 +113,55 @@ final class TrackerCell: UICollectionViewCell {
         emojiLabel.text = tracker.emoji
         pinnedImage.isHidden = !tracker.isPinned
         self.trackerId = tracker.id
+        
+        // Скрываем статус, если он пустой или nil
+        if tracker.status.isEmpty {
+            statusLabel.isHidden = true
+        } else {
+            statusLabel.isHidden = false
+            // Set status text and color
+            let statusText: String
+            let statusColor: UIColor
+            switch tracker.status {
+            case "created":
+                statusText = "Создана"
+                statusColor = UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1)
+            case "in_progress":
+                statusText = "В процессе"
+                statusColor = UIColor(red: 255/255, green: 215/255, blue: 0/255, alpha: 1)
+            case "completed":
+                statusText = "Выполнена"
+                statusColor = UIColor(red: 66/255, green: 170/255, blue: 255/255, alpha: 1)
+            case "testing":
+                statusText = "Тестируется"
+                statusColor = UIColor(red: 247/255, green: 148/255, blue: 60/255, alpha: 1)
+            case "ready_for_release":
+                statusText = "Готово к релизу"
+                statusColor = UIColor(red: 0/255, green: 165/255, blue: 80/255, alpha: 1)
+            case "done":
+                statusText = "Завершена"
+                statusColor = UIColor(red: 102/255, green: 0/255, blue: 153/255, alpha: 1)
+            default:
+                statusText = ""
+                statusColor = .clear
+            }
+            statusLabel.text = statusText
+            statusLabel.textColor = statusColor
+        }
+        
         if let deadline = tracker.deadline {
             if tracker.isIrregular {
-                daysCounterLabel.text = irregularDeadlineText(deadline: deadline)
+                let text = irregularDeadlineText(deadline: deadline)
+                daysCounterLabel.text = text.replacingOccurrences(of: "[done]", with: "")
+                daysCounterLabel.textColor = text.contains("Событие завершено") ? .label : .label
             } else {
-                daysCounterLabel.text = standardDeadlineText(deadline: deadline)
+                let text = standardDeadlineText(deadline: deadline)
+                daysCounterLabel.text = text.replacingOccurrences(of: "[overdue]", with: "")
+                daysCounterLabel.textColor = text.contains("Просрочено") ? .systemRed : .label
             }
         } else {
             daysCounterLabel.text = ""
+            daysCounterLabel.textColor = .label
         }
     }
     
@@ -132,13 +181,20 @@ final class TrackerCell: UICollectionViewCell {
         timeFormatter.dateFormat = "HH:mm"
         let timeString = timeFormatter.string(from: deadline)
         if daysLeft == 0 {
-            return "Дедлайн сегодня в \(timeString)"
+            if deadline < Date() {
+                return "Просрочено сегодня"
+            } else {
+                return "Дедлайн сегодня в \(timeString)"
+            }
         } else if daysLeft == 1 {
             return "Дедлайн завтра в \(timeString)"
         } else if daysLeft > 1 {
             return "Дедлайн через \(daysLeft) " + declensionDays(daysLeft) + " в \(timeString)"
+        } else if daysLeft < 0 {
+            let overdueDays = abs(daysLeft)
+            return "Просрочено на \(overdueDays) " + declensionDays(overdueDays)
         } else {
-            return "Дата в прошлом"
+            return ""
         }
     }
     
@@ -151,7 +207,11 @@ final class TrackerCell: UICollectionViewCell {
         timeFormatter.dateFormat = "HH:mm"
         let timeString = timeFormatter.string(from: deadline)
         if daysLeft == 0 {
-            return "Сегодня в \(timeString)"
+            if deadline < Date() {
+                return "Событие завершено"
+            } else {
+                return "Сегодня в \(timeString)"
+            }
         } else if daysLeft == 1 {
             return "Завтра в \(timeString)"
         } else if daysLeft > 1 {
@@ -160,8 +220,10 @@ final class TrackerCell: UICollectionViewCell {
             dateFormatter.setLocalizedDateFormatFromTemplate("d MMMM")
             let dateString = dateFormatter.string(from: deadline)
             return "\(dateString) в \(timeString)"
+        } else if daysLeft < 0 {
+            return "Событие завершено"
         } else {
-            return "Дата в прошлом"
+            return ""
         }
     }
     
@@ -188,6 +250,7 @@ final class TrackerCell: UICollectionViewCell {
         descriptionLabel.text = nil
         emojiLabel.text = nil
         daysCounterLabel.text = nil
+        statusLabel.text = nil
     }
     
     // MARK: - Private methods
@@ -200,6 +263,7 @@ final class TrackerCell: UICollectionViewCell {
         backgroundCellView.addSubview(emojiLabel)
         backgroundCellView.addSubview(descriptionLabel)
         backgroundCellView.addSubview(pinnedImage)
+        backgroundCellView.addSubview(statusLabel)
     }
     
     private func setupConstraints() {
@@ -213,6 +277,10 @@ final class TrackerCell: UICollectionViewCell {
             emojiLabel.leadingAnchor.constraint(equalTo: backgroundCellView.leadingAnchor, constant: 12),
             emojiLabel.heightAnchor.constraint(equalToConstant: 24),
             emojiLabel.widthAnchor.constraint(equalToConstant: 24),
+            
+            statusLabel.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor, constant: 8),
+            statusLabel.leadingAnchor.constraint(equalTo: backgroundCellView.leadingAnchor, constant: 12),
+            statusLabel.trailingAnchor.constraint(equalTo: backgroundCellView.trailingAnchor, constant: -12),
             
             descriptionLabel.leadingAnchor.constraint(equalTo: backgroundCellView.leadingAnchor, constant: 12),
             descriptionLabel.trailingAnchor.constraint(equalTo: backgroundCellView.trailingAnchor, constant: -12),

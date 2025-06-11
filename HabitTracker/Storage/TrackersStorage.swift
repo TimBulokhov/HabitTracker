@@ -34,9 +34,10 @@ final class TrackersStorage {
         newTracker.color = UIColorSorting.hexString(from: tracker.color)
         newTracker.emoji = tracker.emoji
         newTracker.isPinned = tracker.isPinned
-        newTracker.pinDate = tracker.pinDate
         newTracker.createdAt = tracker.createdAt ?? Date()
         newTracker.deadline = tracker.deadline
+        newTracker.status = tracker.status
+        newTracker.isIrregular = tracker.isIrregular
         return newTracker
     }
     
@@ -50,17 +51,6 @@ final class TrackersStorage {
         
         do {
             let trackerCoreDataArray = try managedContext.fetch(fetchRequest)
-            // Автозаполнение pinDate для закреплённых трекеров без даты
-            var needSave = false
-            for trackerCoreData in trackerCoreDataArray {
-                if trackerCoreData.isPinned && trackerCoreData.pinDate == nil {
-                    trackerCoreData.pinDate = Date()
-                    needSave = true
-                }
-            }
-            if needSave {
-                try managedContext.save()
-            }
             let trackers = trackerCoreDataArray.map { trackerCoreData in
                 return Tracker(
                     id: trackerCoreData.id ?? UUID(),
@@ -68,10 +58,10 @@ final class TrackersStorage {
                     color: UIColorSorting.color(from: trackerCoreData.color ?? ""),
                     emoji: trackerCoreData.emoji ?? "",
                     isPinned: trackerCoreData.isPinned,
-                    pinDate: trackerCoreData.pinDate,
                     createdAt: trackerCoreData.createdAt,
                     deadline: trackerCoreData.deadline,
-                    isIrregular: false
+                    isIrregular: trackerCoreData.isIrregular,
+                    status: trackerCoreData.status ?? "created"
                 )
             }
             return trackers
@@ -94,10 +84,10 @@ final class TrackersStorage {
             color: UIColorSorting.color(from: color),
             emoji: emoji,
             isPinned: trackersCoreData.isPinned,
-            pinDate: trackersCoreData.pinDate,
             createdAt: trackersCoreData.createdAt,
             deadline: trackersCoreData.deadline,
-            isIrregular: false
+            isIrregular: trackersCoreData.isIrregular,
+            status: trackersCoreData.status ?? "created"
         )
     }
     
@@ -129,11 +119,12 @@ final class TrackersStorage {
                 existingTracker.color = UIColorSorting.hexString(from: tracker.color)
                 existingTracker.emoji = tracker.emoji
                 existingTracker.isPinned = tracker.isPinned
-                existingTracker.pinDate = tracker.pinDate
                 if let createdAt = tracker.createdAt {
                     existingTracker.createdAt = createdAt
                 }
                 existingTracker.deadline = tracker.deadline
+                existingTracker.status = tracker.status
+                existingTracker.isIrregular = tracker.isIrregular
                 try context.save()
             } else {
                 throw StorageError.trackerNotFound

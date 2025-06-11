@@ -12,10 +12,21 @@ final class ColorsCollectionViewCell: UICollectionViewCell {
         let view = UIView()
         view.layer.cornerRadius = 8
         view.layer.masksToBounds = true
-        view.backgroundColor = .lightGray
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
+    
+    private var cellColor: UIColor = .lightGray {
+        didSet {
+            colorView.backgroundColor = cellColor
+        }
+    }
+    
+    // MARK: - Public
+    func configure(with color: UIColor) {
+        self.cellColor = color
+        colorView.backgroundColor = color
+    }
     
     // MARK: - Lifecycle
     
@@ -38,6 +49,14 @@ final class ColorsCollectionViewCell: UICollectionViewCell {
             colorView.heightAnchor.constraint(equalToConstant: 40),
             colorView.widthAnchor.constraint(equalToConstant: 40)
         ])
+    }
+    
+    override var isSelected: Bool {
+        didSet {
+            layer.borderWidth = isSelected ? 3 : 0
+            layer.borderColor = isSelected ? cellColor.withAlphaComponent(0.3).cgColor : UIColor.clear.cgColor
+            layer.cornerRadius = 8
+        }
     }
 }
 

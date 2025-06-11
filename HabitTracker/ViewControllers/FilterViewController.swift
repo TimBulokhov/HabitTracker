@@ -8,15 +8,20 @@
 import UIKit
 
 enum FilterName: String, CaseIterable {
-    case allTrackers = "Все трекеры"
-    case todayTrackers = "Трекеры на сегодня"
-    case completedTrackers = "Завершенные"
-    case uncompletedTrackers = "Незавершенные"
-    
+    case todayTrackers = "На сегодня"
+    case tasksByDate = "Задачи по дате"
+    case completed = "Выполненные"
+    case created = "Созданные"
+    case inProgress = "В работе"
+    case testing = "Тестирование"
+    case readyForRelease = "Готово к релизу"
+    case overdue = "Просроченные"
+    case completedTrackers = "Завершённые"
+    case pinned = "Закреплённые"
 }
 
 protocol FilterViewControllerProtocol: AnyObject {
-    func filterSelected(filter: FilterName)
+    func filterSelected(filter: FilterName?)
 }
 
 // MARK: - FilterViewController
@@ -38,6 +43,16 @@ final class FilterViewController: UIViewController {
         return trackerLabel
     }()
     
+    private lazy var resetButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Сбросить", for: .normal)
+        button.setTitleColor(.systemRed, for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 17)
+        button.addTarget(self, action: #selector(resetFilters), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     private lazy var tableView: UITableView = {
         let tableView = UITableView()
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
@@ -45,7 +60,7 @@ final class FilterViewController: UIViewController {
         tableView.dataSource = self
         tableView.layer.cornerRadius = 16
         tableView.layer.masksToBounds = true
-        tableView.isScrollEnabled = false
+        tableView.isScrollEnabled = true
         tableView.backgroundColor = .ypWhite
         tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -66,23 +81,37 @@ final class FilterViewController: UIViewController {
         analyticsService.report(event: .close, params: ["Screen" : "FilterView"])
     }
     
+    // MARK: - Actions
+    
+    @objc private func resetFilters() {
+        print("[DEBUG] Кнопка сбросить нажата")
+        selectedFilter = nil
+        delegate?.filterSelected(filter: nil)
+        dismiss(animated: true)
+    }
+    
     // MARK: - Private methods
     
     private func configViews() {
         view.backgroundColor = .ypWhite
         view.addSubview(filterLabel)
         view.addSubview(tableView)
+        view.addSubview(resetButton)
     }
     
     private func configConstraints() {
+        let tableHeight = CGFloat(filters.count * 75)
         NSLayoutConstraint.activate([
             filterLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             filterLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 27),
-            
-            tableView.topAnchor.constraint(equalTo: filterLabel.bottomAnchor, constant: 38),
+            tableView.topAnchor.constraint(equalTo: filterLabel.bottomAnchor, constant: 16),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            tableView.heightAnchor.constraint(equalToConstant: 298)
+            tableView.heightAnchor.constraint(equalToConstant: tableHeight),
+            resetButton.topAnchor.constraint(equalTo: tableView.bottomAnchor, constant: 24),
+            resetButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            resetButton.heightAnchor.constraint(equalToConstant: 44),
+            resetButton.bottomAnchor.constraint(lessThanOrEqualTo: view.bottomAnchor, constant: -24)
         ])
     }
 }
@@ -100,19 +129,51 @@ extension FilterViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        var filter = filters[indexPath.row].rawValue
-        if filter == "Все трекеры" {
-            filter = NSLocalizedString("allTrackers", comment: "allTrackers")
-        } else if filter == "Трекеры на сегодня" {
-            filter = NSLocalizedString("todayTrackers", comment: "todayTrackers")
-        } else if filter == "Завершенные" {
-            filter = NSLocalizedString("completedTrackers", comment: "completedTrackers")
-        } else if filter == "Незавершенные" {
-            filter = NSLocalizedString("uncompletedTrackers", comment: "uncompletedTrackers")
+        let filter = filters[indexPath.row]
+        var filterText = filter.rawValue
+        
+        // Локализация названий фильтров
+        switch filter {
+        case .todayTrackers:
+            filterText = NSLocalizedString("todayTrackers", comment: "todayTrackers")
+        case .tasksByDate:
+            filterText = "Задачи на дату"
+        case .completed:
+            filterText = "Выполнена"
+        case .created:
+            filterText = "Создана"
+        case .inProgress:
+            filterText = "В процессе"
+        case .testing:
+            filterText = "Тестируется"
+        case .readyForRelease:
+            filterText = "Готово к релизу"
+        case .overdue:
+            filterText = "Просроченные"
+        case .completedTrackers:
+            filterText = "Завершённые"
+        case .pinned:
+            filterText = "Закреплённые"
         }
-        cell.textLabel?.text = filter
+        
+        cell.textLabel?.text = filterText
         cell.backgroundColor = .ypLightGray
-        cell.accessoryType = filter == selectedFilter?.rawValue ? .checkmark : .none
+        cell.accessoryType = filter == selectedFilter ? .checkmark : .none
+        
+        // Добавляем разделители между группами фильтров
+        if indexPath.row == 0 || indexPath.row == 2 || indexPath.row == 7 {
+            let separatorView = UIView()
+            separatorView.backgroundColor = .ypGray
+            cell.addSubview(separatorView)
+            separatorView.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                separatorView.leadingAnchor.constraint(equalTo: cell.leadingAnchor),
+                separatorView.trailingAnchor.constraint(equalTo: cell.trailingAnchor),
+                separatorView.topAnchor.constraint(equalTo: cell.topAnchor),
+                separatorView.heightAnchor.constraint(equalToConstant: 1)
+            ])
+        }
+        
         return cell
     }
 }

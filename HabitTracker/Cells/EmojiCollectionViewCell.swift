@@ -35,4 +35,12 @@ final class EmojiCollectionViewCell: UICollectionViewCell {
               titleLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)]
         )
     }
+    
+    override var isSelected: Bool {
+        didSet {
+            layer.borderWidth = isSelected ? 3 : 0
+            layer.borderColor = isSelected ? UIColor.ypBlue.cgColor : UIColor.clear.cgColor
+            layer.cornerRadius = 16
+        }
+    }
 }

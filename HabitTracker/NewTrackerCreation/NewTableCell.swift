@@ -52,10 +52,15 @@ final class NewTableCell: UITableViewCell {
     
     // MARK: - Methods
     
-    func configureCell(title: String, subTitle: String) {
+    func configureCell(title: String, subTitle: String, subTitleColor: UIColor? = nil) {
         categoryLabel.text = title
         subTitleLabel.text = subTitle
         subTitleLabel.isHidden = subTitle.isEmpty ? true: false
+        if let color = subTitleColor {
+            subTitleLabel.textColor = color
+        } else {
+            subTitleLabel.textColor = .ypGray
+        }
     }
     
     // MARK: - Private methods

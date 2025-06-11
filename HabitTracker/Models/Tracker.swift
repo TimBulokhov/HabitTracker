@@ -13,8 +13,8 @@ struct Tracker {
     let color: UIColor
     let emoji: String
     let isPinned: Bool
-    let pinDate: Date?
     let createdAt: Date?
     let deadline: Date?
     let isIrregular: Bool
+    let status: String
 }

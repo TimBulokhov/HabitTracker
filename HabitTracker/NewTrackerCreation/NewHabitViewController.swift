@@ -32,13 +32,23 @@ final class NewHabitViewController: UIViewController {
     private let colors: [UIColor] = UIColor.colorSelection
     private var dateEvents = [Int]()
     private var creatingTrackersModel: [CreatingTrackersModel] = [
-        CreatingTrackersModel(titleLabelText: NSLocalizedString("category", comment: "category"), subTitleLabel: "")
+        CreatingTrackersModel(titleLabelText: NSLocalizedString("category", comment: "category"), subTitleLabel: ""),
+        CreatingTrackersModel(titleLabelText: NSLocalizedString("status", comment: "status"), subTitleLabel: "Создана")
     ]
     
     private let emojiList = [
         "🙂", "😻", "🌺", "🐶", "❤️", "😱",
         "😇", "😡", "🥶", "🤔", "🙌", "🍔",
         "🥦", "🏓", "🥇", "🎸", "🏝", "😪"
+    ]
+    
+    private let statusOptions = [
+        ("created", "Создана", UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1)),
+        ("in_progress", "В процессе", UIColor(red: 255/255, green: 215/255, blue: 0/255, alpha: 1)),
+        ("completed", "Выполнена", UIColor(red: 66/255, green: 170/255, blue: 255/255, alpha: 1)),
+        ("testing", "Тестируется", UIColor(red: 247/255, green: 148/255, blue: 60/255, alpha: 1)),
+        ("ready_for_release", "Готово к релизу", UIColor(red: 0/255, green: 165/255, blue: 80/255, alpha: 1)),
+        ("done", "Завершена", UIColor(red: 102/255, green: 0/255, blue: 153/255, alpha: 1))
     ]
     
     // MARK: - UiElements
@@ -170,11 +180,15 @@ final class NewHabitViewController: UIViewController {
         picker.datePickerMode = .dateAndTime
         picker.preferredDatePickerStyle = .compact
         picker.translatesAutoresizingMaskIntoConstraints = false
-        picker.minimumDate = Date()
+        if editTrackerHabit == nil {
+            picker.minimumDate = Date()
+        }
         return picker
     }()
     
     // MARK: - Lifecycle
+    
+    private var deadlineTimer: Timer?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -186,11 +200,18 @@ final class NewHabitViewController: UIViewController {
             trackerEditing(daysLeft: daysLeft)
         }
         analyticsService.report(event: .open, params: ["Screen" : "NewHabit"])
+        completedDaysLabel.textColor = .label
+        updateDeadlineLabel()
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        analyticsService.report(event: .close, params: ["Screen" : "NewHabit"])
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        startDeadlineTimer()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        stopDeadlineTimer()
     }
     
     // MARK: - Actions
@@ -234,7 +255,14 @@ final class NewHabitViewController: UIViewController {
         let today = calendar.startOfDay(for: Date())
         let deadlineDay = calendar.startOfDay(for: deadlinePicker.date)
         let daysLeft = calendar.dateComponents([.day], from: today, to: deadlineDay).day ?? 0
-        completedDaysLabel.text = formatDeadlineDaysLeft(daysLeft)
+        let deadlineText = formatDeadlineDaysLeft(daysLeft)
+        if deadlineText.hasPrefix("[overdue]") {
+            completedDaysLabel.text = String(deadlineText.dropFirst(9))
+            completedDaysLabel.textColor = .systemRed
+        } else {
+            completedDaysLabel.text = deadlineText
+            completedDaysLabel.textColor = .label
+        }
     }
     
     // MARK: - Private methods
@@ -245,12 +273,13 @@ final class NewHabitViewController: UIViewController {
         let emoji = emojiList[selectedEmojiIndexPath.row]
         let color = colors[selectedColorIndexPath.row]
         let deadline = deadlinePicker.date
+        let statusTitle = creatingTrackersModel[1].subTitleLabel
+        let status = statusOptions.first(where: { $0.1 == statusTitle })?.0 ?? "created"
         if newTracker {
-            return Tracker(id: UUID(), name: text, color: color, emoji: emoji, isPinned: false, pinDate: nil, createdAt: Date(), deadline: deadline, isIrregular: false)
+            return Tracker(id: UUID(), name: text, color: color, emoji: emoji, isPinned: false, createdAt: Date(), deadline: deadline, isIrregular: false, status: status)
         } else {
-            guard let id = editTrackerHabit?.id else { return nil }
-            guard let isPinned = editTrackerHabit?.isPinned else { return nil }
-            return Tracker(id: id, name: text, color: color, emoji: emoji, isPinned: isPinned, pinDate: editTrackerHabit?.pinDate, createdAt: editTrackerHabit?.createdAt, deadline: deadline, isIrregular: false)
+            guard let editTracker = editTrackerHabit else { return nil }
+            return Tracker(id: editTracker.id, name: text, color: color, emoji: emoji, isPinned: editTracker.isPinned, createdAt: editTracker.createdAt, deadline: deadline, isIrregular: editTracker.isIrregular, status: status)
         }
     }
     
@@ -261,49 +290,55 @@ final class NewHabitViewController: UIViewController {
         completedDaysLabel.isHidden = false
         creatingButton.setTitle(NSLocalizedString("save", comment: "save"), for: .normal)
         creatingButton.addTarget(self, action: #selector(self.update), for: .touchUpInside)
-        completedDaysLabel.text = standardEditDeadline(daysLeft: daysLeft)
+        let deadlineText = standardEditDeadline(daysLeft: daysLeft)
+        if deadlineText.hasPrefix("[overdue]") {
+            completedDaysLabel.text = String(deadlineText.dropFirst(9))
+            completedDaysLabel.textColor = .systemRed
+        } else {
+            completedDaysLabel.text = deadlineText
+            completedDaysLabel.textColor = .label
+        }
         nameTrackerTextField.text = trackerForEditing.name
         updateSubitle(nameSubitle: categiryForEditing)
+        if let statusTuple = statusOptions.first(where: { $0.0 == trackerForEditing.status }) {
+            creatingTrackersModel[1].subTitleLabel = statusTuple.1
+        } else {
+            creatingTrackersModel[1].subTitleLabel = "Создана"
+        }
         if let emojiIndex = emojiList.firstIndex(of: trackerForEditing.emoji) {
             let emojieIndexPath = IndexPath(row: emojiIndex, section: 0)
             collectionView.selectItem(at: emojieIndexPath, animated: false, scrollPosition: [])
             collectionView.delegate?.collectionView?(collectionView, didSelectItemAt: emojieIndexPath)
         }
-        if let colorIndex = colors.firstIndex(where: { UIColor.colorComparison(colorFromSet: $0, trackerColor: trackerForEditing.color) }) {
+        if let colorIndex = colors.firstIndex(where: { $0 == trackerForEditing.color }) {
             let colorIndexPath = IndexPath(row: colorIndex, section: 1)
-            collectionView.selectItem(at: colorIndexPath, animated: false, scrollPosition: [])
-            collectionView.delegate?.collectionView?(collectionView, didSelectItemAt: colorIndexPath)
+            isSelectedColor = colorIndexPath
+            collectionView.reloadData()
         }
         deadlinePicker.date = trackerForEditing.deadline ?? Date()
         updateCreatingButton()
     }
     
     private func standardEditDeadline(daysLeft: Int) -> String {
-        let now = Date()
         let deadline = deadlinePicker.date
-        let calendar = Calendar.current
-        let hoursLeft = calendar.dateComponents([.hour], from: now, to: deadline).hour ?? 0
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        let timeString = formatter.string(from: deadline)
         if daysLeft == 0 {
-            return "До дедлайна: \(hoursLeft) " + declensionHours(hoursLeft)
+            if deadline < Date() {
+                return "Просрочено сегодня"
+            } else {
+                return "Дедлайн сегодня в \(timeString)"
+            }
         } else if daysLeft == 1 {
             return "До дедлайна: 1 день"
         } else if daysLeft > 1 {
             return "До дедлайна: \(daysLeft) " + declensionDays(daysLeft)
+        } else if daysLeft < 0 {
+            let overdueDays = abs(daysLeft)
+            return "Просрочено на \(overdueDays) " + declensionDays(overdueDays)
         } else {
-            return "Дата в прошлом"
-        }
-    }
-    
-    private func declensionHours(_ hours: Int) -> String {
-        let lastDigit = hours % 10
-        let lastTwoDigits = hours % 100
-        if lastTwoDigits >= 11 && lastTwoDigits <= 14 {
-            return "часов"
-        }
-        switch lastDigit {
-        case 1: return "час"
-        case 2, 3, 4: return "часа"
-        default: return "часов"
+            return ""
         }
     }
     
@@ -321,14 +356,14 @@ final class NewHabitViewController: UIViewController {
     }
     
     private func formatDeadlineDaysLeft(_ days: Int) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        let timeString = formatter.string(from: deadlinePicker.date)
         if days == 0 {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "HH:mm"
-            let timeString = formatter.string(from: deadlinePicker.date)
             return "Дедлайн сегодня в \(timeString)"
         } else if days > 10 && days < 20 {
             return "До дедлайна: \(days) дней"
-        } else {
+        } else if days > 0 {
             switch days % 10 {
             case 1:
                 return "До дедлайна: \(days) день"
@@ -337,6 +372,11 @@ final class NewHabitViewController: UIViewController {
             default:
                 return "До дедлайна: \(days) дней"
             }
+        } else if days < 0 {
+            let overdueDays = abs(days)
+            return "[overdue]Просрочено на \(overdueDays) " + declensionDays(overdueDays)
+        } else {
+            return ""
         }
     }
     
@@ -400,7 +440,7 @@ final class NewHabitViewController: UIViewController {
             tableView.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 24),
             tableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            tableView.heightAnchor.constraint(equalToConstant: 75),
+            tableView.heightAnchor.constraint(equalToConstant: 150),
             deadlinePicker.topAnchor.constraint(equalTo: tableView.bottomAnchor, constant: 16),
             deadlinePicker.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             deadlinePicker.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
@@ -418,6 +458,31 @@ final class NewHabitViewController: UIViewController {
             creatingButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             creatingButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16)
         ])
+    }
+    
+    private func startDeadlineTimer() {
+        deadlineTimer?.invalidate()
+        deadlineTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+            self?.updateDeadlineLabel()
+        }
+    }
+
+    private func stopDeadlineTimer() {
+        deadlineTimer?.invalidate()
+        deadlineTimer = nil
+    }
+
+    private func updateDeadlineLabel() {
+        if let _ = editTrackerHabit, let _ = editCategoryHabit, let daysLeft = deadlineDaysLeft {
+            let deadlineText = standardEditDeadline(daysLeft: daysLeft)
+            if deadlineText.contains("Просрочено") {
+                completedDaysLabel.text = deadlineText
+                completedDaysLabel.textColor = .systemRed
+            } else {
+                completedDaysLabel.text = deadlineText
+                completedDaysLabel.textColor = .label
+            }
+        }
     }
 }
 
@@ -461,39 +526,47 @@ extension NewHabitViewController: UITextFieldDelegate {
 
 // MARK: - CreatingHabitViewController
 
-extension NewHabitViewController: UITableViewDelegate {
+extension NewHabitViewController: UITableViewDelegate, UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return creatingTrackersModel.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "NewTableCell", for: indexPath) as? NewTableCell else { return UITableViewCell() }
+        let data = creatingTrackersModel[indexPath.row]
+        if indexPath.row == 1 {
+            // статус
+            let color = statusOptions.first(where: { $0.1 == data.subTitleLabel })?.2 ?? UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1)
+            cell.configureCell(title: data.titleLabelText, subTitle: data.subTitleLabel, subTitleColor: color)
+        } else {
+            cell.configureCell(title: data.titleLabelText, subTitle: data.subTitleLabel)
+        }
+        return cell
+    }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        switch indexPath.row {
-        case 0:
+        tableView.deselectRow(at: indexPath, animated: true)
+        if indexPath.row == 0 {
             let categoryViewController = TrackerCategoryViewController()
             let categoryViewModel = TrackerCategoryViewModel()
             categoryViewController.initialize(viewModel: categoryViewModel)
             categoryViewModel.delegateHabbit = self
             let navigationController = UINavigationController(rootViewController: categoryViewController)
             present(navigationController, animated: true)
-        default:
-            break
+        } else if indexPath.row == 1 {
+            // статус
+            let alertController = UIAlertController(title: "Выберите статус", message: nil, preferredStyle: .actionSheet)
+            for (_, title, _) in statusOptions {
+                let action = UIAlertAction(title: title, style: .default) { [weak self] _ in
+                    self?.creatingTrackersModel[1].subTitleLabel = title
+                    tableView.reloadRows(at: [indexPath], with: .automatic)
+                }
+                alertController.addAction(action)
+            }
+            let cancelAction = UIAlertAction(title: "Отмена", style: .cancel)
+            alertController.addAction(cancelAction)
+            present(alertController, animated: true)
         }
-    }
-    
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 75
-    }
-}
-
-// MARK: - UITableViewDataSource
-
-extension NewHabitViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "NewTableCell", for: indexPath) as? NewTableCell
-        else { fatalError() }
-        let data = creatingTrackersModel[indexPath.row]
-        cell.configureCell(title: data.titleLabelText, subTitle: data.subTitleLabel)
-        return cell
     }
 }
 
@@ -517,7 +590,6 @@ extension NewHabitViewController: UICollectionViewDelegate {
             if let selectedCell = isSelectedColor {
                 let cell = collectionView.cellForItem(at: selectedCell)
                 cell?.layer.borderWidth = 0
-                collectionView.deselectItem(at: selectedCell, animated: true)
             }
             let cell = collectionView.cellForItem(at: indexPath)
             cell?.layer.cornerRadius = 8
@@ -548,7 +620,7 @@ extension NewHabitViewController: UICollectionViewDataSource {
                 for: indexPath
             ) as? EmojiCollectionViewCell else { return UICollectionViewCell()}
             cell.titleLabel.text = emojiList[indexPath.row]
-            cell.backgroundColor = cell.isSelected ? UIColor.ypLightGray : .clear
+            cell.backgroundColor = .clear
             return cell
         case 1:
             guard let cell = collectionView.dequeueReusableCell(
@@ -556,7 +628,7 @@ extension NewHabitViewController: UICollectionViewDataSource {
                 for: indexPath
             ) as? ColorsCollectionViewCell else { return UICollectionViewCell()}
             cell.sizeToFit()
-            cell.colorView.backgroundColor = colors[indexPath.row]
+            cell.configure(with: colors[indexPath.row])
             return cell
         default: return UICollectionViewCell()
         }

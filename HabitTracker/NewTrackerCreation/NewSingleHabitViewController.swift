@@ -151,7 +151,9 @@ final class NewSingleHabitViewController: UIViewController {
         picker.datePickerMode = .dateAndTime
         picker.preferredDatePickerStyle = .compact
         picker.translatesAutoresizingMaskIntoConstraints = false
-        picker.minimumDate = Date()
+        if editTrackerIrregular == nil {
+            picker.minimumDate = Date()
+        }
         return picker
     }()
     
@@ -178,16 +180,24 @@ final class NewSingleHabitViewController: UIViewController {
         configConstraints()
         deadlinePicker.addTarget(self, action: #selector(deadlineChanged), for: .valueChanged)
         if let _ = editTrackerIrregular, let _ = editCategoryIrregular, let daysLeft = deadlineDaysLeft {
+            selectedDate = editTrackerIrregular?.deadline ?? Date()
             trackerEditing(daysLeft: daysLeft)
         } else {
+            selectedDate = Date()
             updatePlannedEventLabel()
         }
         analyticsService.report(event: .open, params: ["Screen" : "NewSingleHabit"])
+        updateDeadlineLabel()
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        analyticsService.report(event: .close, params: ["Screen" : "NewSingleHabit"])
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        startDeadlineTimer()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        stopDeadlineTimer()
     }
     
     // MARK: - Actions
@@ -228,11 +238,23 @@ final class NewSingleHabitViewController: UIViewController {
     
     @objc
     private func deadlineChanged() {
+        selectedDate = deadlinePicker.date
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         let deadlineDay = calendar.startOfDay(for: deadlinePicker.date)
         let daysLeft = calendar.dateComponents([.day], from: today, to: deadlineDay).day ?? 0
-        completedDaysLabel.text = formatScheduledTime(daysLeft)
+        if editTrackerIrregular != nil {
+            let deadlineText = irregularEditDeadline(daysLeft: daysLeft)
+            if deadlineText.hasPrefix("[done]") {
+                completedDaysLabel.text = String(deadlineText.dropFirst(6))
+                completedDaysLabel.textColor = .white
+            } else {
+                completedDaysLabel.text = deadlineText
+                completedDaysLabel.textColor = .white
+            }
+        } else {
+            completedDaysLabel.text = formatScheduledTime(daysLeft)
+        }
     }
     
     private func updatePlannedEventLabel() {
@@ -243,14 +265,16 @@ final class NewSingleHabitViewController: UIViewController {
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = "HH:mm"
         let timeString = timeFormatter.string(from: selectedDate)
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale.current
+        dateFormatter.setLocalizedDateFormatFromTemplate("d MMMM yyyy")
+        let dateString = dateFormatter.string(from: selectedDate)
         if daysLeft == 0 {
-            completedDaysLabel.text = "Событие запланировано сегодня в \(timeString)"
+            completedDaysLabel.text = "Сегодня, \(timeString)"
         } else if daysLeft == 1 {
-            completedDaysLabel.text = "Событие запланировано завтра в \(timeString)"
-        } else if daysLeft > 1 {
-            completedDaysLabel.text = "Событие запланировано через \(daysLeft) " + declensionDays(daysLeft) + " в \(timeString)"
+            completedDaysLabel.text = "Завтра, \(timeString)"
         } else {
-            completedDaysLabel.text = "Дата в прошлом"
+            completedDaysLabel.text = "\(dateString), \(timeString)"
         }
     }
 
@@ -271,20 +295,16 @@ final class NewSingleHabitViewController: UIViewController {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         let timeString = formatter.string(from: deadlinePicker.date)
-        
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale.current
+        dateFormatter.setLocalizedDateFormatFromTemplate("d MMMM yyyy")
+        let dateString = dateFormatter.string(from: deadlinePicker.date)
         if days == 0 {
-            return "Событие запланировано сегодня в \(timeString)"
+            return "Сегодня, \(timeString)"
         } else if days == 1 {
-            return "Событие запланировано завтра в \(timeString)"
+            return "Завтра, \(timeString)"
         } else {
-            switch days % 10 {
-            case 1:
-                return "Событие запланировано через \(days) день в \(timeString)"
-            case 2, 3, 4:
-                return "Событие запланировано через \(days) дня в \(timeString)"
-            default:
-                return "Событие запланировано через \(days) дней в \(timeString)"
-            }
+            return "\(dateString), \(timeString)"
         }
     }
     
@@ -296,12 +316,13 @@ final class NewSingleHabitViewController: UIViewController {
               let selectedColorIndexPath = isSelectedColor else { return nil }
         let emoji = emojiList[selectedEmojiIndexPath.row]
         let color = colors[selectedColorIndexPath.row]
+        let deadline = selectedDate
         if newTracker {
-            return Tracker(id: UUID(), name: text, color: color, emoji: emoji, isPinned: false, pinDate: nil, createdAt: Date(), deadline: selectedDate, isIrregular: true)
+            return Tracker(id: UUID(), name: text, color: color, emoji: emoji, isPinned: false, createdAt: Date(), deadline: deadline, isIrregular: true, status: "")
         } else {
             guard let id = editTrackerIrregular?.id else { return nil }
             guard let isPinned = editTrackerIrregular?.isPinned else { return nil }
-            return Tracker(id: id, name: text, color: color, emoji: emoji, isPinned: isPinned, pinDate: editTrackerIrregular?.pinDate, createdAt: editTrackerIrregular?.createdAt, deadline: editTrackerIrregular?.deadline, isIrregular: true)
+            return Tracker(id: id, name: text, color: color, emoji: emoji, isPinned: isPinned, createdAt: editTrackerIrregular?.createdAt, deadline: deadline, isIrregular: true, status: "")
         }
     }
     
@@ -312,7 +333,14 @@ final class NewSingleHabitViewController: UIViewController {
         completedDaysLabel.isHidden = false
         creatingButton.setTitle(NSLocalizedString("save", comment: "save"), for: .normal)
         creatingButton.addTarget(self, action: #selector(self.update), for: .touchUpInside)
-        completedDaysLabel.text = irregularEditDeadline(daysLeft: daysLeft)
+        let deadlineText = irregularEditDeadline(daysLeft: daysLeft)
+        if deadlineText.hasPrefix("[done]") {
+            completedDaysLabel.text = String(deadlineText.dropFirst(6))
+            completedDaysLabel.textColor = .white
+        } else {
+            completedDaysLabel.text = deadlineText
+            completedDaysLabel.textColor = .white
+        }
         nameTrackerTextField.text = trackerForEditing.name
         updateSubitle(nameSubitle: categiryForEditing)
         if let emojiIndex = emojiList.firstIndex(of: trackerForEditing.emoji) {
@@ -320,7 +348,7 @@ final class NewSingleHabitViewController: UIViewController {
             collectionView.selectItem(at: emojieIndexPath, animated: false, scrollPosition: [])
             collectionView.delegate?.collectionView?(collectionView, didSelectItemAt: emojieIndexPath)
         }
-        if let colorIndex = colors.firstIndex(where: { UIColor.colorComparison(colorFromSet: $0, trackerColor: trackerForEditing.color) }) {
+        if let colorIndex = colors.firstIndex(where: { $0 == trackerForEditing.color }) {
             let colorIndexPath = IndexPath(row: colorIndex, section: 1)
             collectionView.selectItem(at: colorIndexPath, animated: false, scrollPosition: [])
             collectionView.delegate?.collectionView?(collectionView, didSelectItemAt: colorIndexPath)
@@ -328,23 +356,32 @@ final class NewSingleHabitViewController: UIViewController {
         if let deadline = trackerForEditing.deadline {
             selectedDate = deadline
             deadlinePicker.date = deadline
+        } else {
+            selectedDate = Date()
+            deadlinePicker.date = Date()
         }
         updateCreatingButton()
     }
     
     private func irregularEditDeadline(daysLeft: Int) -> String {
-        let now = Date()
         let deadline = deadlinePicker.date
-        let calendar = Calendar.current
-        let hoursLeft = calendar.dateComponents([.hour], from: now, to: deadline).hour ?? 0
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        let timeString = formatter.string(from: deadline)
         if daysLeft == 0 {
-            return "До события: \(hoursLeft) " + declensionHours(hoursLeft)
+            if deadline < Date() {
+                return "Событие завершено"
+            } else {
+                return "Сегодня в \(timeString)"
+            }
         } else if daysLeft == 1 {
             return "До события: 1 день"
         } else if daysLeft > 1 {
             return "До события: \(daysLeft) " + declensionDays(daysLeft)
+        } else if daysLeft < 0 {
+            return "Событие завершено"
         } else {
-            return "Дата в прошлом"
+            return ""
         }
     }
 
@@ -437,6 +474,29 @@ final class NewSingleHabitViewController: UIViewController {
             creatingButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16)
         ])
     }
+    
+    private var selectedDate: Date = Date()
+    private var deadlineTimer: Timer?
+
+    private func startDeadlineTimer() {
+        deadlineTimer?.invalidate()
+        deadlineTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+            self?.updateDeadlineLabel()
+        }
+    }
+
+    private func stopDeadlineTimer() {
+        deadlineTimer?.invalidate()
+        deadlineTimer = nil
+    }
+
+    private func updateDeadlineLabel() {
+        if let tracker = editTrackerIrregular, let _ = editCategoryIrregular, let daysLeft = deadlineDaysLeft {
+            let deadlineText = irregularEditDeadline(daysLeft: daysLeft)
+            completedDaysLabel.text = deadlineText
+            completedDaysLabel.textColor = .label
+        }
+    }
 }
 
 extension NewSingleHabitViewController: UIScrollViewDelegate {
@@ -522,7 +582,6 @@ extension NewSingleHabitViewController: UICollectionViewDelegate {
             if let selectedCell = isSelectedColor {
                 let cell = collectionView.cellForItem(at: selectedCell)
                 cell?.layer.borderWidth = 0
-                collectionView.deselectItem(at: selectedCell, animated: true)
             }
             let cell = collectionView.cellForItem(at: indexPath)
             cell?.layer.cornerRadius = 8
@@ -553,7 +612,7 @@ extension NewSingleHabitViewController: UICollectionViewDataSource {
                 for: indexPath
             ) as? EmojiCollectionViewCell else { return UICollectionViewCell()}
             cell.titleLabel.text = emojiList[indexPath.row]
-            cell.backgroundColor = cell.isSelected ? UIColor.ypWhite : .clear
+            cell.backgroundColor = .clear
             return cell
         case 1:
             guard let cell = collectionView.dequeueReusableCell(
@@ -561,7 +620,7 @@ extension NewSingleHabitViewController: UICollectionViewDataSource {
                 for: indexPath
             ) as? ColorsCollectionViewCell else { return UICollectionViewCell()}
             cell.sizeToFit()
-            cell.colorView.backgroundColor = colors[indexPath.row]
+            cell.configure(with: colors[indexPath.row])
             return cell
         default: return UICollectionViewCell()
         }
@@ -593,19 +652,6 @@ extension NewSingleHabitViewController: UICollectionViewDelegateFlowLayout {
         guard let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as? SupplementaryView else { return UICollectionReusableView()}
         view.titleLabel.text = indexPath.section == 0 ? NSLocalizedString("emoji", comment: "emoji") : NSLocalizedString("color", comment: "color")
         return view
-    }
-}
-
-// MARK: - Additional Variables
-
-extension NewSingleHabitViewController {
-    private var selectedDate: Date {
-        get {
-            return Date()
-        }
-        set {
-            // This is a read-only property, so we don't need to do anything when it's set
-        }
     }
 }
 
