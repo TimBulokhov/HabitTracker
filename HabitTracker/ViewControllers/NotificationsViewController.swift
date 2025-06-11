@@ -98,10 +98,8 @@ final class NotificationsViewController: UIViewController {
         let trackersCategoryStore = TrackersCategoryStorage()
         let coreDataCategories = (try? trackersCategoryStore.fetchAllCategories()) ?? []
         existingCategoryTitles = coreDataCategories.compactMap { $0.titleCategory?.trimmingCharacters(in: .whitespacesAndNewlines) }
-        print("[Notifications] Категории из CoreData: \(existingCategoryTitles)")
         let allNotifications = NotificationStore.shared.notifications.sorted { $0.date > $1.date }
         let notificationCategories = Set(allNotifications.map { $0.category.trimmingCharacters(in: .whitespacesAndNewlines) })
-        print("[Notifications] Категории из уведомлений: \(notificationCategories)")
         notificationsByCategory = [:]
         archiveNotifications = []
         for category in existingCategoryTitles {

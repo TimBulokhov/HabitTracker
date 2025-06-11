@@ -57,22 +57,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     // Сохраняем уведомление во внутренний список, не показываем alert
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         let content = notification.request.content
-        print("[DEBUG] willPresent notification: userInfo=\(content.userInfo)")
         let rawCategory = content.userInfo["category"] as? String ?? content.subtitle
-        print("[DEBUG] willPresent notification: rawCategory='\(rawCategory)'")
         let normalizedCategory = rawCategory.trimmingCharacters(in: .whitespacesAndNewlines)
-        print("[DEBUG] willPresent notification: normalizedCategory='\(normalizedCategory)'")
         NotificationStore.shared.addNotification(title: content.title, body: content.body, category: normalizedCategory, notificationId: notification.request.identifier)
         completionHandler([]) // Не показывать системный баннер
     }
     // Сохраняем уведомление во внутренний список даже если оно пришло в background
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         let content = response.notification.request.content
-        print("[DEBUG] didReceive notification: userInfo=\(content.userInfo)")
         let rawCategory = content.userInfo["category"] as? String ?? content.subtitle
-        print("[DEBUG] didReceive notification: rawCategory='\(rawCategory)'")
         let normalizedCategory = rawCategory.trimmingCharacters(in: .whitespacesAndNewlines)
-        print("[DEBUG] didReceive notification: normalizedCategory='\(normalizedCategory)'")
         NotificationStore.shared.addNotification(title: content.title, body: content.body, category: normalizedCategory, notificationId: response.notification.request.identifier)
         completionHandler()
     }

@@ -9,7 +9,6 @@ final class NotificationManager {
     
     private func normalizeCategory(_ category: String) -> String {
         let normalized = category.trimmingCharacters(in: .whitespacesAndNewlines)
-        print("[DEBUG] normalizeCategory: input='\(category)', output='\(normalized)'")
         return normalized
     }
     
@@ -25,7 +24,6 @@ final class NotificationManager {
     // Универсальный метод для дедлайна/начала события
     func scheduleOrUpdateDeadlineOrEventNotification(for tracker: Tracker, category: String) {
         let normalizedCategory = normalizeCategory(category)
-        print("[DEBUG] scheduleOrUpdateDeadlineOrEventNotification: category = '", normalizedCategory, "'")
         let id: String
         if tracker.isIrregular {
             id = "tracker-\(tracker.id)-eventStarted"
@@ -68,7 +66,6 @@ final class NotificationManager {
     
     func scheduleCreationNotification(for tracker: Tracker, category: String) {
         let normalizedCategory = normalizeCategory(category)
-        print("[DEBUG] scheduleCreationNotification: category = '", normalizedCategory, "'")
         let id = "tracker-\(tracker.id)-created"
         center.removePendingNotificationRequests(withIdentifiers: [id])
         let content = UNMutableNotificationContent()
@@ -89,7 +86,6 @@ final class NotificationManager {
     
     func scheduleStatusChangedNotification(for tracker: Tracker, category: String) {
         let normalizedCategory = normalizeCategory(category)
-        print("[DEBUG] scheduleStatusChangedNotification: category = '", normalizedCategory, "'")
         let id = "tracker-\(tracker.id)-status"
         center.removePendingNotificationRequests(withIdentifiers: [id])
         let content = UNMutableNotificationContent()
@@ -111,7 +107,6 @@ final class NotificationManager {
     func scheduleCategoryChangedNotification(for tracker: Tracker, newCategory: String, oldCategory: String) {
         let normalizedNewCategory = normalizeCategory(newCategory)
         let normalizedOldCategory = normalizeCategory(oldCategory)
-        print("[DEBUG] scheduleCategoryChangedNotification: newCategory='\(normalizedNewCategory)', oldCategory='\(normalizedOldCategory)'")
         let id = "tracker-\(tracker.id)-category"
         center.removePendingNotificationRequests(withIdentifiers: [id])
         let content = UNMutableNotificationContent()
@@ -136,7 +131,6 @@ final class NotificationManager {
     
     func scheduleOverdueNotification(for tracker: Tracker, category: String) {
         let normalizedCategory = normalizeCategory(category)
-        print("[DEBUG] scheduleOverdueNotification: category = '", normalizedCategory, "'")
         let id = "tracker-\(tracker.id)-overdue"
         center.removePendingNotificationRequests(withIdentifiers: [id])
         let content = UNMutableNotificationContent()
@@ -185,15 +179,11 @@ final class NotificationStore {
     }
     
     func addNotification(title: String, body: String, category: String, notificationId: String) {
-        print("[DEBUG] NotificationStore.addNotification: category='\(category)'")
-        // Не добавлять, если уже есть уведомление с таким notificationId
         if notifications.contains(where: { $0.notificationId == notificationId }) {
-            print("[DEBUG] NotificationStore.addNotification: notification already exists with id=\(notificationId)")
             return
         }
         let notification = InternalNotification(id: UUID(), notificationId: notificationId, title: title, body: body, date: Date(), category: category, isRead: false)
         notifications.append(notification)
-        print("[DEBUG] NotificationStore.addNotification: added notification with category='\(category)'")
         save()
         NotificationCenter.default.post(name: NSNotification.Name("InternalNotificationStoreChanged"), object: nil)
     }
@@ -229,22 +219,17 @@ final class NotificationStore {
     }
     
     private func save() {
-        print("[DEBUG] NotificationStore.save: saving \(notifications.count) notifications")
         if let data = try? JSONEncoder().encode(notifications) {
             UserDefaults.standard.set(data, forKey: userDefaultsKey)
-            print("[DEBUG] NotificationStore.save: saved successfully")
         } else {
             print("[DEBUG] NotificationStore.save: failed to encode notifications")
         }
     }
     
     private func load() {
-        print("[DEBUG] NotificationStore.load: loading notifications")
         if let data = UserDefaults.standard.data(forKey: userDefaultsKey),
            let loadedNotifications = try? JSONDecoder().decode([InternalNotification].self, from: data) {
             notifications = loadedNotifications
-            print("[DEBUG] NotificationStore.load: loaded \(notifications.count) notifications")
-            print("[DEBUG] NotificationStore.load: categories=\(Set(notifications.map { $0.category }))")
         } else {
             print("[DEBUG] NotificationStore.load: no saved notifications found")
         }

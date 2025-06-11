@@ -100,7 +100,6 @@ final class FilterViewController: UIViewController {
     // MARK: - Actions
     
     @objc private func resetFilters() {
-        print("[DEBUG] Кнопка сбросить нажата")
         selectedFilter = nil
         delegate?.filterSelected(filter: nil)
         dismiss(animated: true)
