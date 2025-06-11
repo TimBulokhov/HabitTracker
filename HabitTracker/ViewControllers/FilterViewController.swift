@@ -8,7 +8,6 @@
 import UIKit
 
 enum FilterName: String, CaseIterable {
-    case todayTrackers = "На сегодня"
     case tasksByDate = "Задачи по дате"
     case completed = "Выполненные"
     case created = "Созданные"
@@ -29,7 +28,13 @@ protocol FilterViewControllerProtocol: AnyObject {
 final class FilterViewController: UIViewController {
     var selectedFilter: FilterName?
     weak var delegate: FilterViewControllerProtocol?
-    private let filters: [FilterName] = FilterName.allCases
+    // Группируем фильтры по секциям
+    private let filterSections: [[FilterName]] = [
+        [.tasksByDate], // По дате
+        [.completed, .created, .inProgress, .testing, .readyForRelease, .pinned], // По статусу
+        [.overdue, .completedTrackers] // По срокам
+    ]
+    private let sectionTitles = ["По дате", "По статусу", "По срокам"]
     private let analyticsService = AnalyticsService()
     
     // MARK: - UiElements
@@ -45,22 +50,32 @@ final class FilterViewController: UIViewController {
     
     private lazy var resetButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Сбросить", for: .normal)
-        button.setTitleColor(.systemRed, for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 17)
+        var config = UIButton.Configuration.filled()
+        config.title = "Сбросить"
+        config.baseForegroundColor = .systemRed
+        config.baseBackgroundColor = .clear
+        config.cornerStyle = .medium
+        config.background.strokeColor = .systemRed
+        config.background.strokeWidth = 1.5
+        config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attr in
+            var attr = attr
+            attr.font = .boldSystemFont(ofSize: 17)
+            return attr
+        }
+        button.configuration = config
         button.addTarget(self, action: #selector(resetFilters), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
     private lazy var tableView: UITableView = {
-        let tableView = UITableView()
+        let tableView = UITableView(frame: .zero, style: .grouped)
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         tableView.delegate = self
         tableView.dataSource = self
         tableView.layer.cornerRadius = 16
         tableView.layer.masksToBounds = true
-        tableView.isScrollEnabled = true
+        tableView.isScrollEnabled = false
         tableView.backgroundColor = .ypWhite
         tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -73,6 +88,7 @@ final class FilterViewController: UIViewController {
         super.viewDidLoad()
         configViews()
         configConstraints()
+        tableView.reloadData()
         analyticsService.report(event: .open, params: ["Screen" : "FilterView"])
     }
     
@@ -100,42 +116,40 @@ final class FilterViewController: UIViewController {
     }
     
     private func configConstraints() {
-        let tableHeight = CGFloat(filters.count * 75)
         NSLayoutConstraint.activate([
             filterLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             filterLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 27),
             tableView.topAnchor.constraint(equalTo: filterLabel.bottomAnchor, constant: 16),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            tableView.heightAnchor.constraint(equalToConstant: tableHeight),
-            resetButton.topAnchor.constraint(equalTo: tableView.bottomAnchor, constant: 24),
+            tableView.heightAnchor.constraint(equalToConstant: 600),
+            tableView.bottomAnchor.constraint(equalTo: resetButton.topAnchor, constant: -24),
             resetButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            resetButton.heightAnchor.constraint(equalToConstant: 44),
+            resetButton.heightAnchor.constraint(greaterThanOrEqualToConstant: 44),
             resetButton.bottomAnchor.constraint(lessThanOrEqualTo: view.bottomAnchor, constant: -24)
         ])
+        tableView.isScrollEnabled = true
     }
 }
 
 // MARK: - UITableViewDataSource
 
 extension FilterViewController: UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return filterSections.count
+    }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return filters.count
+        return filterSections[section].count
     }
-    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 75
+        return 48
     }
-    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        let filter = filters[indexPath.row]
+        let filter = filterSections[indexPath.section][indexPath.row]
         var filterText = filter.rawValue
-        
         // Локализация названий фильтров
         switch filter {
-        case .todayTrackers:
-            filterText = NSLocalizedString("todayTrackers", comment: "todayTrackers")
         case .tasksByDate:
             filterText = "Задачи на дату"
         case .completed:
@@ -155,26 +169,13 @@ extension FilterViewController: UITableViewDataSource {
         case .pinned:
             filterText = "Закреплённые"
         }
-        
         cell.textLabel?.text = filterText
-        cell.backgroundColor = .ypLightGray
+        cell.backgroundColor = .ypWhite
         cell.accessoryType = filter == selectedFilter ? .checkmark : .none
-        
-        // Добавляем разделители между группами фильтров
-        if indexPath.row == 0 || indexPath.row == 2 || indexPath.row == 7 {
-            let separatorView = UIView()
-            separatorView.backgroundColor = .ypGray
-            cell.addSubview(separatorView)
-            separatorView.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                separatorView.leadingAnchor.constraint(equalTo: cell.leadingAnchor),
-                separatorView.trailingAnchor.constraint(equalTo: cell.trailingAnchor),
-                separatorView.topAnchor.constraint(equalTo: cell.topAnchor),
-                separatorView.heightAnchor.constraint(equalToConstant: 1)
-            ])
-        }
-        
         return cell
+    }
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return sectionTitles[section]
     }
 }
 
@@ -187,7 +188,7 @@ extension FilterViewController: UITableViewDelegate {
         let cell = tableView.cellForRow(at: indexPath)
         cell?.accessoryType = .checkmark
         tableView.deselectRow(at: indexPath, animated: true)
-        let filter = filters[indexPath.row]
+        let filter = filterSections[indexPath.section][indexPath.row]
         delegate?.filterSelected(filter: filter)
         analyticsService.report(event: .click, params: ["Screen" : "\(filter)"])
         dismiss(animated: true)

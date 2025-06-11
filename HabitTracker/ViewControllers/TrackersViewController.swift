@@ -283,10 +283,12 @@ final class TrackersViewController: UIViewController {
                             if !tracker.isPinned { continue }
                             filteredTrackers.append(tracker)
                             continue
-                        case .todayTrackers:
-                            if !(tracker.deadline?.isToday ?? false) { continue }
                         case .tasksByDate:
+                            if tracker.status == "done" { continue }
+                            if tracker.isIrregular, let deadline = tracker.deadline, deadline < Date() { continue }
                             if !(tracker.deadline?.isSameDay(as: selectedDate) ?? false) { continue }
+                            filteredTrackers.append(tracker)
+                            continue
                         case .completed:
                             if tracker.status != "completed" { continue }
                         case .created:
@@ -299,7 +301,7 @@ final class TrackersViewController: UIViewController {
                             if tracker.status != "ready_for_release" { continue }
                         }
                     }
-                    if selectedFilter != .completedTrackers && selectedFilter != .overdue && selectedFilter != .pinned {
+                    if selectedFilter != .completedTrackers && selectedFilter != .overdue && selectedFilter != .pinned && selectedFilter != .tasksByDate {
                         filteredTrackers.append(tracker)
                     }
                 }
@@ -317,7 +319,6 @@ final class TrackersViewController: UIViewController {
         collectionView.reloadData()
         if selectedFilter == .tasksByDate {
             datePicker.isHidden = false
-            datePicker.date = selectedDate
         } else {
             datePicker.isHidden = true
         }
@@ -579,6 +580,13 @@ extension TrackersViewController: TrackerCreationDelegate {
         try? fetchACategory()
         updateVisibleCategories()
         collectionView.reloadData()
+        NotificationManager.shared.scheduleCreationNotification(for: tracker, category: category)
+        if let deadline = tracker.deadline, deadline >= Date() {
+            NotificationManager.shared.scheduleOrUpdateDeadlineOrEventNotification(for: tracker, category: category)
+        }
+        if let deadline = tracker.deadline, deadline < Date(), tracker.status != "done", !tracker.isIrregular, let createdAt = tracker.createdAt, createdAt > deadline {
+            NotificationManager.shared.scheduleOverdueNotification(for: tracker, category: category)
+        }
     }
 }
 
@@ -664,22 +672,8 @@ extension TrackersViewController: FilterViewControllerProtocol {
     func filterSelected(filter: FilterName?) {
         selectedFilter = filter
         searchBar.text = ""
-        if let filter = filter {
-            switch filter {
-            case .todayTrackers:
-                datePicker.setDate(Date(), animated: false)
-                selectedDate = Date()
-                filterButton.setTitleColor(.ypWhite, for: .normal)
-            case .tasksByDate:
-                datePicker.setDate(selectedDate, animated: false)
-                filterButton.setTitleColor(.ypWhite, for: .normal)
-            case .completedTrackers, .overdue:
-                filterButton.setTitleColor(.ypRed, for: .normal)
-            case .completed:
-                filterButton.setTitleColor(UIColor(red: 102/255, green: 0/255, blue: 153/255, alpha: 1), for: .normal)
-            default:
-                filterButton.setTitleColor(.ypWhite, for: .normal)
-            }
+        if filter != nil {
+            filterButton.setTitleColor(.systemOrange, for: .normal)
         } else {
             filterButton.setTitleColor(.ypWhite, for: .normal)
         }
@@ -712,16 +706,40 @@ extension TrackersViewController {
 
 extension TrackersViewController: EditTrackerDelegate {
     func trackerUpdate(_ tracker: Tracker, category: String) {
-        // Найти старую категорию по id трекера
+        // Найти старую категорию и трекер по id
         let oldCategory = categories.first(where: { $0.trackers.contains(where: { $0.id == tracker.id }) })?.title
-        if let oldCategory, oldCategory != category {
-            // Переносим трекер в новую категорию
-            try? trackersCategoryStore.moveTracker(tracker, toCategory: category, fromCategory: oldCategory)
+        let oldTracker = categories.compactMap { $0.trackers.first(where: { $0.id == tracker.id }) }.first
+        let oldStatus = oldTracker?.status
+        let categoryChanged = (oldCategory != nil && oldCategory != category)
+        let statusChanged = (oldStatus != nil && oldStatus != tracker.status)
+        // Если меняется только категория
+        if categoryChanged && !statusChanged {
+            try? trackersCategoryStore.moveTracker(tracker, toCategory: category, fromCategory: oldCategory!)
+            NotificationManager.shared.scheduleCategoryChangedNotification(for: tracker, newCategory: category, oldCategory: oldCategory!)
+        }
+        // Если меняется только статус
+        else if statusChanged && !categoryChanged {
+            // Для нерегулярных задач не отправлять уведомление о статусе
+            if !tracker.isIrregular {
+                NotificationManager.shared.scheduleStatusChangedNotification(for: tracker, category: oldCategory ?? category)
+            }
+        }
+        // Если меняется и категория, и статус — только уведомление о переносе
+        else if categoryChanged && statusChanged {
+            try? trackersCategoryStore.moveTracker(tracker, toCategory: category, fromCategory: oldCategory!)
+            NotificationManager.shared.scheduleCategoryChangedNotification(for: tracker, newCategory: category, oldCategory: oldCategory!)
         }
         try? trackerStore.updateTracker(with: tracker)
         try? fetchACategory()
         updateVisibleCategories()
         collectionView.reloadData()
+        if let deadline = tracker.deadline, deadline >= Date() {
+            NotificationManager.shared.scheduleOrUpdateDeadlineOrEventNotification(for: tracker, category: category)
+        }
+        // Не создавать уведомление о просрочке при переносе задачи
+        if !categoryChanged, let deadline = tracker.deadline, deadline < Date(), tracker.status != "done", !tracker.isIrregular, let createdAt = tracker.createdAt, createdAt > deadline {
+            NotificationManager.shared.scheduleOverdueNotification(for: tracker, category: category)
+        }
     }
     
     private func editingTrackers(indexPath: IndexPath) {
@@ -794,7 +812,7 @@ extension TrackersViewController: TrackerCellDelegate {
     
     func trackerNotCompleted(id: UUID) {
         let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-        if let trackerEntity = try? context.fetch(TrackerCoreData.fetchRequest()).first(where: { $0.id == id }),
+        if let _ = try? context.fetch(TrackerCoreData.fetchRequest()).first(where: { $0.id == id }),
            let record = try? context.fetch(TrackerRecordCoreData.fetchRequest()).first(where: { $0.tracker?.id == id && Calendar.current.isDateInToday($0.date ?? Date()) }) {
             context.delete(record)
             try? context.save()

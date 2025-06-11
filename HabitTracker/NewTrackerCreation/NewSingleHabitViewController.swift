@@ -491,7 +491,7 @@ final class NewSingleHabitViewController: UIViewController {
     }
 
     private func updateDeadlineLabel() {
-        if let tracker = editTrackerIrregular, let _ = editCategoryIrregular, let daysLeft = deadlineDaysLeft {
+        if let _ = editTrackerIrregular, let _ = editCategoryIrregular, let daysLeft = deadlineDaysLeft {
             let deadlineText = irregularEditDeadline(daysLeft: daysLeft)
             completedDaysLabel.text = deadlineText
             completedDaysLabel.textColor = .label

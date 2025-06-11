@@ -20,6 +20,17 @@ final class TabBarController: UITabBarController {
         tabBarSetup()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        updateNotificationsBadge()
+        NotificationCenter.default.addObserver(self, selector: #selector(updateBadgeFromStore), name: NSNotification.Name("InternalNotificationStoreChanged"), object: nil)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name("InternalNotificationStoreChanged"), object: nil)
+    }
+    
     // MARK: - Private methods
     
     private func generateTabBar() {
@@ -28,6 +39,7 @@ final class TabBarController: UITabBarController {
         let statisticsViewModel = StatsViewModel()
         statisticsViewController.initialize(viewModel: statisticsViewModel)
         trackerViewController.delegateStatistic = statisticsViewModel
+        let notificationsViewController = NotificationsViewController()
         viewControllers = [
             generateVC(
                 viewController: trackerViewController,
@@ -38,8 +50,14 @@ final class TabBarController: UITabBarController {
                 viewController: statisticsViewController,
                 title: NSLocalizedString("statisticsTitle", comment: "statisticsTitle"),
                 image: UIImage(named: "statsIcon")
+            ),
+            generateVC(
+                viewController: notificationsViewController,
+                title: NSLocalizedString("notifications", comment: "notifications"),
+                image: UIImage(systemName: "bell.badge")
             )
         ]
+        updateNotificationsBadge()
     }
     
     private func tabBarSetup() {
@@ -59,5 +77,15 @@ final class TabBarController: UITabBarController {
         let tabBarAppearance: UITabBarAppearance = UITabBarAppearance()
         tabBarAppearance.configureWithOpaqueBackground()
         tabBar.standardAppearance = tabBarAppearance
+    }
+    
+    private func updateNotificationsBadge() {
+        guard let items = tabBar.items, items.count > 2 else { return }
+        let unread = NotificationStore.shared.unreadCount()
+        items[2].badgeValue = unread > 0 ? "\(unread)" : nil
+    }
+    
+    @objc private func updateBadgeFromStore() {
+        updateNotificationsBadge()
     }
 }

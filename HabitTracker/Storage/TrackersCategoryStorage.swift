@@ -55,7 +55,7 @@ extension TrackersCategoryStorage {
             throw StorageError.failedToWrite
         }
         let categoryEntity = TrackerCategoryCoreData(entity: entity, insertInto: context)
-        categoryEntity.titleCategory = category.title
+        categoryEntity.titleCategory = category.title.trimmingCharacters(in: .whitespacesAndNewlines)
         categoryEntity.trackers = NSSet(array: [])
         try context.save()
     }
@@ -66,7 +66,8 @@ extension TrackersCategoryStorage {
     
     func deleteCategory(with title: String) throws {
         let request = fetchedResultController.fetchRequest
-        request.predicate = NSPredicate(format: "%K == %@", "titleCategory", title)
+        let normalizedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        request.predicate = NSPredicate(format: "%K == %@", "titleCategory", normalizedTitle)
         do {
             let categories = try context.fetch(request)
             if let categoryToDelete = categories.first {
@@ -161,7 +162,8 @@ extension TrackersCategoryStorage {
     
     private func fetchCategory(with title: String) throws -> TrackerCategoryCoreData? {
         let request = fetchedResultController.fetchRequest
-        request.predicate = NSPredicate(format: "titleCategory == %@", title)
+        let normalizedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        request.predicate = NSPredicate(format: "titleCategory == %@", normalizedTitle)
         return try context.fetch(request).first
     }
 }

@@ -16,6 +16,12 @@
 		125C6A692C0B96B10070F742 /* ObservableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125C6A682C0B96B10070F742 /* ObservableValue.swift */; };
 		125C6A6B2C0B9CCB0070F742 /* TrackerCategoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125C6A6A2C0B9CCB0070F742 /* TrackerCategoryViewModel.swift */; };
 		126443422C1EE84E00ABEE9A /* HabitTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12D148ED2BDEB29500AEA722 /* HabitTrackerTests.swift */; };
+		129BC4712DFA2102001A47B9 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129BC4702DFA2102001A47B9 /* NotificationManager.swift */; };
+		129BC4722DFA2102001A47B9 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129BC4702DFA2102001A47B9 /* NotificationManager.swift */; };
+		129BC4732DFA2102001A47B9 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129BC4702DFA2102001A47B9 /* NotificationManager.swift */; };
+		129BC4752DFA3917001A47B9 /* NotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129BC4742DFA3917001A47B9 /* NotificationsViewController.swift */; };
+		129BC4762DFA3917001A47B9 /* NotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129BC4742DFA3917001A47B9 /* NotificationsViewController.swift */; };
+		129BC4772DFA3917001A47B9 /* NotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129BC4742DFA3917001A47B9 /* NotificationsViewController.swift */; };
 		12C011DA2C023F700055E836 /* TrackersCategoryStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C011D92C023F700055E836 /* TrackersCategoryStorage.swift */; };
 		12C011DC2C023F810055E836 /* TrackersStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C011DB2C023F810055E836 /* TrackersStorage.swift */; };
 		12C011DE2C023F930055E836 /* TrackersRecordStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C011DD2C023F930055E836 /* TrackersRecordStorage.swift */; };
@@ -85,6 +91,8 @@
 		125C6A662C0B95F90070F742 /* OnboardContentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardContentViewController.swift; sourceTree = "<group>"; };
 		125C6A682C0B96B10070F742 /* ObservableValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableValue.swift; sourceTree = "<group>"; };
 		125C6A6A2C0B9CCB0070F742 /* TrackerCategoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCategoryViewModel.swift; sourceTree = "<group>"; };
+		129BC4702DFA2102001A47B9 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		129BC4742DFA3917001A47B9 /* NotificationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsViewController.swift; sourceTree = "<group>"; };
 		12C011D92C023F700055E836 /* TrackersCategoryStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackersCategoryStorage.swift; sourceTree = "<group>"; };
 		12C011DB2C023F810055E836 /* TrackersStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackersStorage.swift; sourceTree = "<group>"; };
 		12C011DD2C023F930055E836 /* TrackersRecordStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackersRecordStorage.swift; sourceTree = "<group>"; };
@@ -181,6 +189,7 @@
 		1292D8B92BDFA6C0004755C7 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				129BC4742DFA3917001A47B9 /* NotificationsViewController.swift */,
 				12D149062BDEB4E300AEA722 /* TrackersViewController.swift */,
 				12D149252BDEC0EA00AEA722 /* CreatingCategoryViewController.swift */,
 				12D1492B2BDEC1CF00AEA722 /* ScheduleViewController.swift */,
@@ -333,6 +342,7 @@
 		12D149172BDEBE0900AEA722 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				129BC4702DFA2102001A47B9 /* NotificationManager.swift */,
 				12D149332BDEC2B500AEA722 /* SupplementaryView.swift */,
 				12D149182BDEBE1500AEA722 /* DateFormatter.swift */,
 				12D149212BDEC04100AEA722 /* DateStorage.swift */,
@@ -579,7 +589,9 @@
 				12D1491E2BDEBE8700AEA722 /* TrackerCategory.swift in Sources */,
 				12C011E62C0247A20055E836 /* UIColorSorting.swift in Sources */,
 				12D149322BDEC28D00AEA722 /* TrackerCell.swift in Sources */,
+				129BC4732DFA2102001A47B9 /* NotificationManager.swift in Sources */,
 				12D149282BDEC15200AEA722 /* UITextField+Extension.swift in Sources */,
+				129BC4752DFA3917001A47B9 /* NotificationsViewController.swift in Sources */,
 				12D1492E2BDEC1ED00AEA722 /* ScheduleCell.swift in Sources */,
 				12D149142BDEBD6400AEA722 /* NewTableCell.swift in Sources */,
 				12D149192BDEBE1500AEA722 /* DateFormatter.swift in Sources */,
@@ -611,6 +623,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				129BC4762DFA3917001A47B9 /* NotificationsViewController.swift in Sources */,
+				129BC4722DFA2102001A47B9 /* NotificationManager.swift in Sources */,
 				126443422C1EE84E00ABEE9A /* HabitTrackerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -619,8 +633,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				129BC4712DFA2102001A47B9 /* NotificationManager.swift in Sources */,
 				12D148FA2BDEB29500AEA722 /* HabitTrackerUITestsLaunchTests.swift in Sources */,
 				12D148F82BDEB29500AEA722 /* HabitTrackerUITests.swift in Sources */,
+				129BC4772DFA3917001A47B9 /* NotificationsViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
