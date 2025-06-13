@@ -14,7 +14,7 @@ struct Tracker {
     let emoji: String
     let isPinned: Bool
     let createdAt: Date?
-    let deadline: Date?
+    var deadline: Date?
     let isIrregular: Bool
     let status: String
 }

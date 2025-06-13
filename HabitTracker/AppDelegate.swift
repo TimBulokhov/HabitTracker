@@ -12,6 +12,8 @@ import UserNotifications
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     
+    var window: UIWindow?
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         AnalyticsService.activate()
         NotificationManager.shared.requestAuthorization()
@@ -59,7 +61,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         let content = notification.request.content
         let rawCategory = content.userInfo["category"] as? String ?? content.subtitle
         let normalizedCategory = rawCategory.trimmingCharacters(in: .whitespacesAndNewlines)
-        NotificationStore.shared.addNotification(title: content.title, body: content.body, category: normalizedCategory, notificationId: notification.request.identifier)
+        let type = content.userInfo["type"] as? String ?? "unknown"
+        if ["overdue", "eventStarted", "deadline", "deadlineChanged"].contains(type) {
+            print("[AppDelegate] Adding internal notification for type: \(type), id: \(notification.request.identifier)")
+            if !NotificationStore.shared.notifications.contains(where: { $0.notificationId == notification.request.identifier }) {
+                NotificationStore.shared.addNotification(title: content.title, body: content.body, category: normalizedCategory, notificationId: notification.request.identifier, type: type)
+            }
+        }
+        NotificationCenter.default.post(name: NSNotification.Name("InternalNotificationStoreChanged"), object: nil)
         completionHandler([]) // Не показывать системный баннер
     }
     // Сохраняем уведомление во внутренний список даже если оно пришло в background
@@ -67,7 +76,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         let content = response.notification.request.content
         let rawCategory = content.userInfo["category"] as? String ?? content.subtitle
         let normalizedCategory = rawCategory.trimmingCharacters(in: .whitespacesAndNewlines)
-        NotificationStore.shared.addNotification(title: content.title, body: content.body, category: normalizedCategory, notificationId: response.notification.request.identifier)
+        let type = content.userInfo["type"] as? String ?? "unknown"
+        if ["overdue", "eventStarted", "deadline", "deadlineChanged"].contains(type) {
+            print("[AppDelegate] Adding internal notification for type: \(type), id: \(response.notification.request.identifier)")
+            if !NotificationStore.shared.notifications.contains(where: { $0.notificationId == response.notification.request.identifier }) {
+                NotificationStore.shared.addNotification(title: content.title, body: content.body, category: normalizedCategory, notificationId: response.notification.request.identifier, type: type)
+            }
+        }
+        NotificationCenter.default.post(name: NSNotification.Name("InternalNotificationStoreChanged"), object: nil)
+        
+        // Открываем экран уведомлений
+        DispatchQueue.main.async {
+            if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = scene.windows.first,
+               let tabBarController = window.rootViewController as? UITabBarController {
+                tabBarController.selectedIndex = 2 // Индекс экрана уведомлений
+            }
+        }
+        
         completionHandler()
     }
     

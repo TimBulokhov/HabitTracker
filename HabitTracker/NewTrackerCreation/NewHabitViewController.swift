@@ -377,7 +377,7 @@ final class NewHabitViewController: UIViewController {
             return "[overdue]Просрочено на \(overdueDays) " + declensionDays(overdueDays)
         } else {
             return ""
-        }
+    }
     }
     
     private func updateCreatingButton() {

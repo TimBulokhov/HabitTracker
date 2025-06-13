@@ -57,8 +57,14 @@ final class NotificationsViewController: UIViewController {
     
     private func setupPlaceholder() {
         placeholderView.translatesAutoresizingMaskIntoConstraints = false
+        placeholderImage.image = UIImage(systemName: "bell.slash")
         placeholderImage.tintColor = .ypGray
         placeholderImage.translatesAutoresizingMaskIntoConstraints = false
+        placeholderLabel.text = "Нет уведомлений"
+        placeholderLabel.textColor = .ypGray
+        placeholderLabel.font = .systemFont(ofSize: 15, weight: .medium)
+        placeholderLabel.textAlignment = .center
+        placeholderLabel.numberOfLines = 0
         placeholderLabel.translatesAutoresizingMaskIntoConstraints = false
         placeholderView.addSubview(placeholderImage)
         placeholderView.addSubview(placeholderLabel)
@@ -80,6 +86,15 @@ final class NotificationsViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         reloadNotifications()
+        if let tabBar = self.tabBarController?.tabBar {
+            let appearance = UITabBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = .ypWhite
+            tabBar.standardAppearance = appearance
+            if #available(iOS 15.0, *) {
+                tabBar.scrollEdgeAppearance = appearance
+            }
+        }
     }
     
     @objc private func clearAllNotifications(_ sender: UIButton) {
@@ -91,7 +106,11 @@ final class NotificationsViewController: UIViewController {
             }
         })
         NotificationStore.shared.clearAll()
-        reloadNotifications()
+        sortedCategories = []
+        notificationsByCategory = [:]
+        archiveNotifications = []
+        tableView.reloadData()
+        updatePlaceholder()
     }
     
     private func reloadNotifications() {
@@ -99,7 +118,6 @@ final class NotificationsViewController: UIViewController {
         let coreDataCategories = (try? trackersCategoryStore.fetchAllCategories()) ?? []
         existingCategoryTitles = coreDataCategories.compactMap { $0.titleCategory?.trimmingCharacters(in: .whitespacesAndNewlines) }
         let allNotifications = NotificationStore.shared.notifications.sorted { $0.date > $1.date }
-        let notificationCategories = Set(allNotifications.map { $0.category.trimmingCharacters(in: .whitespacesAndNewlines) })
         notificationsByCategory = [:]
         archiveNotifications = []
         for category in existingCategoryTitles {
@@ -114,6 +132,11 @@ final class NotificationsViewController: UIViewController {
             sortedCategories.append(NSLocalizedString("archive", comment: "archive"))
             notificationsByCategory[NSLocalizedString("archive", comment: "archive")] = archiveNotifications
         }
+        // Если уведомлений нет, очищаем все секции
+        if allNotifications.isEmpty {
+            sortedCategories = []
+            notificationsByCategory = [:]
+        }
         tableView.reloadData()
         NotificationStore.shared.markAllAsRead()
         if let tabBar = self.tabBarController?.tabBar, let items = tabBar.items, items.count > 2 {
@@ -126,6 +149,98 @@ final class NotificationsViewController: UIViewController {
         let isEmpty = sortedCategories.isEmpty
         placeholderView.isHidden = !isEmpty
         tableView.isHidden = isEmpty
+        clearButton.isHidden = isEmpty
+    }
+    
+    private func highlightStatus(in text: String) -> NSAttributedString {
+        let attributedString = NSMutableAttributedString(string: text)
+        
+        // Определяем статусы и их цвета
+        let statusOptions: [(status: String, color: UIColor)] = [
+            ("created", UIColor(red: 0.0, green: 0.478, blue: 1.0, alpha: 1.0)),      // Синий
+            ("in_progress", UIColor(red: 1.0, green: 0.584, blue: 0.0, alpha: 1.0)),  // Оранжевый
+            ("completed", UIColor(red: 0.0, green: 0.8, blue: 0.0, alpha: 1.0)),      // Зеленый
+            ("cancelled", UIColor(red: 0.8, green: 0.0, blue: 0.0, alpha: 1.0)),      // Красный
+            ("paused", UIColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1.0))          // Серый
+        ]
+        
+        // Ищем статусы в тексте
+        for (status, color) in statusOptions {
+            if let range = text.range(of: status) {
+                let nsRange = NSRange(range, in: text)
+                attributedString.addAttribute(.foregroundColor, value: color, range: nsRange)
+            }
+        }
+        
+        return attributedString
+    }
+    
+    private func getStatusColor(for notification: InternalNotification) -> UIColor {
+        let title = notification.title.lowercased()
+        if title.contains("перенесена") || title.contains("перенесено") {
+            return UIColor(red: 247/255, green: 148/255, blue: 60/255, alpha: 1)
+        }
+        if title.contains("создана") || title.contains("создано") {
+            return UIColor(red: 0/255, green: 165/255, blue: 80/255, alpha: 1)
+        }
+        if title.contains("просрочена") {
+            return .ypRed
+        }
+        if title.contains("началось") || title.contains("начало события") {
+            return UIColor(red: 102/255, green: 0/255, blue: 153/255, alpha: 1)
+        }
+        if title.contains("статус задачи изменён") {
+            return .ypGray
+        }
+        return .ypGray
+    }
+    
+    private func getIcon(for notification: InternalNotification) -> UIImage? {
+        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)
+        
+        // Определяем тип уведомления по его содержимому
+        let body = notification.body.lowercased()
+        if body.contains("создана") || body.contains("создано") {
+            return UIImage(systemName: "plus.circle.fill", withConfiguration: config)
+        } else if body.contains("перемещена") || body.contains("перемещено") {
+            return UIImage(systemName: "arrow.right.circle.fill", withConfiguration: config)
+        } else if body.contains("просрочена") || body.contains("просрочено") {
+            return UIImage(systemName: "exclamationmark.circle.fill", withConfiguration: config)
+        } else if body.contains("началось") {
+            return UIImage(systemName: "bell.circle.fill", withConfiguration: config)
+        } else if body.contains("статус") {
+            return UIImage(systemName: "checkmark.circle.fill", withConfiguration: config)
+        } else if body.contains("категория") {
+            return UIImage(systemName: "folder.circle.fill", withConfiguration: config)
+        }
+        
+        return UIImage(systemName: "bell.circle.fill", withConfiguration: config)
+    }
+    
+    private func highlightStatus(_ status: String) -> NSAttributedString {
+        let attributed = NSMutableAttributedString(string: status)
+        let statusOptions: [(String, UIColor)] = [
+            ("created", UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1)),
+            ("in_progress", UIColor(red: 255/255, green: 215/255, blue: 0/255, alpha: 1)),
+            ("completed", UIColor(red: 66/255, green: 170/255, blue: 255/255, alpha: 1)),
+            ("testing", UIColor(red: 247/255, green: 148/255, blue: 60/255, alpha: 1)),
+            ("ready_for_release", UIColor(red: 0/255, green: 165/255, blue: 80/255, alpha: 1)),
+            ("done", UIColor(red: 102/255, green: 0/255, blue: 153/255, alpha: 1))
+        ]
+        for (raw, color) in statusOptions {
+            if let range = status.range(of: raw) {
+                let nsRange = NSRange(range, in: status)
+                attributed.addAttribute(.foregroundColor, value: color, range: nsRange)
+                break
+            }
+        }
+        return attributed
+    }
+    
+    // MARK: - Helper Functions
+    
+    private func getTitleColor(for notification: InternalNotification) -> UIColor {
+        return notification.isRead ? .ypBlack : .ypBlack
     }
 }
 
@@ -133,10 +248,11 @@ final class NotificationsViewController: UIViewController {
 
 extension NotificationsViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return sortedCategories.count
+        return sortedCategories.isEmpty ? 0 : sortedCategories.count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if sortedCategories.isEmpty { return 0 }
         let category = sortedCategories[section]
         return notificationsByCategory[category]?.count ?? 0
     }
@@ -152,6 +268,40 @@ extension NotificationsViewController: UITableViewDataSource {
             cell.configure(with: notification)
         }
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let header = UIView()
+        header.backgroundColor = .clear
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.alignment = .center
+        stack.distribution = .equalSpacing
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        let label = UILabel()
+        label.text = sortedCategories[section]
+        label.font = .boldSystemFont(ofSize: 17)
+        label.textColor = .ypBlack
+        label.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        stack.addArrangedSubview(label)
+        if section == 0 && !sortedCategories.isEmpty {
+            stack.addArrangedSubview(clearButton)
+        }
+        header.addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.leadingAnchor.constraint(equalTo: header.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(equalTo: header.trailingAnchor, constant: -16),
+            stack.topAnchor.constraint(equalTo: header.topAnchor, constant: 16),
+            stack.bottomAnchor.constraint(equalTo: header.bottomAnchor, constant: -4)
+        ])
+        return header
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        if let header = view as? UITableViewHeaderFooterView {
+            header.textLabel?.font = .boldSystemFont(ofSize: 17)
+            header.textLabel?.textColor = .ypBlack
+        }
     }
 }
 
@@ -230,6 +380,15 @@ final class NotificationCell: UITableViewCell {
         return view
     }()
     
+    private let statusOptions: [(String, String, UIColor)] = [
+        ("created", "Создана", UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1)),
+        ("in_progress", "В процессе", UIColor(red: 255/255, green: 215/255, blue: 0/255, alpha: 1)),
+        ("completed", "Выполнена", UIColor(red: 66/255, green: 170/255, blue: 255/255, alpha: 1)),
+        ("testing", "Тестируется", UIColor(red: 247/255, green: 148/255, blue: 60/255, alpha: 1)),
+        ("ready_for_release", "Готово к релизу", UIColor(red: 0/255, green: 165/255, blue: 80/255, alpha: 1)),
+        ("done", "Завершена", UIColor(red: 102/255, green: 0/255, blue: 153/255, alpha: 1))
+    ]
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupViews()
@@ -287,41 +446,6 @@ final class NotificationCell: UITableViewCell {
         ])
     }
     
-    private func getStatusColor(for notification: InternalNotification) -> UIColor {
-        if notification.title.contains("тестируется") || notification.title.contains("перенесена") || notification.title.contains("перенесено") {
-            // Orange: Тестируется/Перенос
-            return UIColor(red: 247/255, green: 148/255, blue: 60/255, alpha: 1)
-        } else if notification.title.contains("готово к релизу") || notification.title.contains("создана") || notification.title.contains("создано") {
-            // Green: Готово к релизу/Создана
-            return UIColor(red: 0/255, green: 165/255, blue: 80/255, alpha: 1)
-        } else if notification.title.contains("завершена") || notification.title.contains("началось") {
-            // Purple: Завершена/Началось
-            return UIColor(red: 102/255, green: 0/255, blue: 153/255, alpha: 1)
-        } else if notification.title.contains("просрочена") {
-            return .ypRed
-        } else if notification.title.contains("статус") {
-            return .ypBlue
-        } else {
-            return .ypGray
-        }
-    }
-    
-    private func getIcon(for notification: InternalNotification) -> UIImage? {
-        if notification.title.contains("просрочена") {
-            return UIImage(systemName: "exclamationmark.circle.fill")
-        } else if notification.title.contains("перенесена") || notification.title.contains("перенесено") {
-            return UIImage(systemName: "arrow.right.circle.fill")
-        } else if notification.title.contains("статус") {
-            return UIImage(systemName: "checkmark.circle.fill")
-        } else if notification.title.contains("создана") || notification.title.contains("создано") {
-            return UIImage(systemName: "plus.circle.fill")
-        } else if notification.title.contains("началось") {
-            return UIImage(systemName: "play.circle.fill")
-        } else {
-            return UIImage(systemName: "bell.fill")
-        }
-    }
-    
     private func formatTime(_ date: Date) -> String {
         let calendar = Calendar.current
         let now = Date()
@@ -345,38 +469,75 @@ final class NotificationCell: UITableViewCell {
         }
     }
     
+    private func getStatusColor(for status: String) -> UIColor {
+        let statusOptions: [(String, UIColor)] = [
+            ("created", UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1)),
+            ("in_progress", UIColor(red: 255/255, green: 215/255, blue: 0/255, alpha: 1)),
+            ("completed", UIColor(red: 66/255, green: 170/255, blue: 255/255, alpha: 1)),
+            ("testing", UIColor(red: 247/255, green: 148/255, blue: 60/255, alpha: 1)),
+            ("ready_for_release", UIColor(red: 0/255, green: 165/255, blue: 80/255, alpha: 1)),
+            ("done", UIColor(red: 102/255, green: 0/255, blue: 153/255, alpha: 1))
+        ]
+        
+        return statusOptions.first { $0.0 == status }?.1 ?? .systemGray
+    }
+    
+    private func getIcon(for notification: InternalNotification) -> UIImage? {
+        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)
+        
+        // Определяем тип уведомления по его содержимому
+        let body = notification.body.lowercased()
+        if body.contains("создана") || body.contains("создано") {
+            return UIImage(systemName: "plus.circle.fill", withConfiguration: config)
+        } else if body.contains("перемещена") || body.contains("перемещено") {
+            return UIImage(systemName: "arrow.right.circle.fill", withConfiguration: config)
+        } else if body.contains("просрочена") || body.contains("просрочено") {
+            return UIImage(systemName: "exclamationmark.circle.fill", withConfiguration: config)
+        } else if body.contains("началось") {
+            return UIImage(systemName: "bell.circle.fill", withConfiguration: config)
+        } else if body.contains("статус") {
+            return UIImage(systemName: "checkmark.circle.fill", withConfiguration: config)
+        } else if body.contains("категория") {
+            return UIImage(systemName: "folder.circle.fill", withConfiguration: config)
+        }
+        
+        return UIImage(systemName: "bell.circle.fill", withConfiguration: config)
+    }
+    
     private func getTitleColor(for notification: InternalNotification) -> UIColor {
-        if notification.title.contains("создана") || notification.title.contains("создано") {
-            return .ypBlack
-        } else if notification.title.contains("тестируется") || notification.title.contains("перенесена") || notification.title.contains("перенесено") {
-            return UIColor(red: 247/255, green: 148/255, blue: 60/255, alpha: 1)
-        } else if notification.title.contains("готово к релизу") {
-            return UIColor(red: 0/255, green: 165/255, blue: 80/255, alpha: 1)
-        } else if notification.title.contains("завершена") || notification.title.contains("началось") {
-            return UIColor(red: 102/255, green: 0/255, blue: 153/255, alpha: 1)
-        } else if notification.title.contains("просрочена") {
-            return .ypRed
-        } else if notification.title.contains("статус") {
-            return .ypBlue
-        } else {
-            return .ypGray
+        return notification.isRead ? .ypBlack : .ypBlack
+    }
+    
+    private func getTypeAndColor(for notification: InternalNotification) -> (icon: String, color: UIColor) {
+        switch notification.type {
+        case "created":
+            return ("plus.circle.fill", UIColor(red: 0/255, green: 165/255, blue: 80/255, alpha: 1)) // зелёный
+        case "categoryChanged":
+            return ("arrow.right.circle.fill", UIColor(red: 247/255, green: 148/255, blue: 60/255, alpha: 1)) // оранжевый
+        case "eventStarted":
+            return ("play.circle.fill", UIColor(red: 102/255, green: 0/255, blue: 153/255, alpha: 1)) // фиолетовый
+        case "overdue":
+            return ("exclamationmark.circle.fill", .ypRed) // красный
+        case "deadline":
+            return ("clock.fill", UIColor(red: 0.0, green: 0.478, blue: 1.0, alpha: 1.0)) // синий
+        case "deadlineChanged":
+            return ("calendar.badge.clock", .ypGray)
+        default:
+            return ("bell.circle.fill", .ypGray)
         }
     }
     
     func configure(with notification: InternalNotification) {
         titleLabel.text = notification.title
-        bodyLabel.text = notification.body
+        bodyLabel.attributedText = highlightStatus(notification.body)
         timeLabel.text = formatTime(notification.date)
-        
-        statusIndicator.backgroundColor = getStatusColor(for: notification)
-        iconImageView.image = getIcon(for: notification)
-        iconImageView.tintColor = getStatusColor(for: notification)
+        let (iconName, color) = getTypeAndColor(for: notification)
+        iconImageView.image = UIImage(systemName: iconName, withConfiguration: UIImage.SymbolConfiguration(pointSize: 16, weight: .medium))
+        iconImageView.tintColor = color
+        statusIndicator.backgroundColor = color
         unreadIndicator.isHidden = notification.isRead
-        
         titleLabel.textColor = getTitleColor(for: notification)
-        
         containerView.backgroundColor = notification.isRead ? .ypWhite : UIColor.ypGray.withAlphaComponent(0.1)
-        
         if !notification.isRead {
             containerView.layer.shadowColor = UIColor.black.cgColor
             containerView.layer.shadowOffset = CGSize(width: 0, height: 2)
@@ -384,6 +545,17 @@ final class NotificationCell: UITableViewCell {
             containerView.layer.shadowOpacity = 0.1
         } else {
             containerView.layer.shadowOpacity = 0
+        }
+        updateBorderColor()
+    }
+    
+    private func updateBorderColor() {
+        containerView.layer.borderWidth = 1
+        containerView.layer.cornerRadius = 12
+        if traitCollection.userInterfaceStyle == .dark {
+            containerView.layer.borderColor = UIColor.ypGray.withAlphaComponent(0.3).cgColor
+        } else {
+            containerView.layer.borderColor = UIColor.ypGray.cgColor
         }
     }
     
@@ -397,5 +569,25 @@ final class NotificationCell: UITableViewCell {
         statusIndicator.backgroundColor = .ypGray
         containerView.backgroundColor = .ypWhite
         containerView.layer.shadowOpacity = 0
+    }
+    
+    private func highlightStatus(_ status: String) -> NSAttributedString {
+        let attributed = NSMutableAttributedString(string: status)
+        let statusOptions: [(String, UIColor)] = [
+            ("created", UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1)),
+            ("in_progress", UIColor(red: 255/255, green: 215/255, blue: 0/255, alpha: 1)),
+            ("completed", UIColor(red: 66/255, green: 170/255, blue: 255/255, alpha: 1)),
+            ("testing", UIColor(red: 247/255, green: 148/255, blue: 60/255, alpha: 1)),
+            ("ready_for_release", UIColor(red: 0/255, green: 165/255, blue: 80/255, alpha: 1)),
+            ("done", UIColor(red: 102/255, green: 0/255, blue: 153/255, alpha: 1))
+        ]
+        for (raw, color) in statusOptions {
+            if let range = status.range(of: raw) {
+                let nsRange = NSRange(range, in: status)
+                attributed.addAttribute(.foregroundColor, value: color, range: nsRange)
+                break
+            }
+        }
+        return attributed
     }
 } 

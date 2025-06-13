@@ -7,6 +7,7 @@
 
 import UIKit
 import CoreData
+import UserNotifications
 
 protocol EditTrackerDelegate: AnyObject {
     func trackerUpdate(_ tracker: Tracker, category: String)
@@ -134,6 +135,8 @@ final class TrackersViewController: UIViewController {
     }()
     // MARK: - Lifecycle
     
+    private var updateTimer: Timer?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         configViews()
@@ -145,6 +148,17 @@ final class TrackersViewController: UIViewController {
         updateVisibleCategories()
         try? fetchARecord()
         analyticsService.report(event: .open, params: ["Screen" : "Main"])
+        
+        // Запускаем таймер обновления каждые 10 секунд
+        updateTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { [weak self] _ in
+            self?.updateVisibleCategories()
+            self?.collectionView.reloadData()
+        }
+    }
+    
+    deinit {
+        updateTimer?.invalidate()
+        updateTimer = nil
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -228,23 +242,25 @@ final class TrackersViewController: UIViewController {
         if selectedFilter == nil {
             let filteredCategories = categories.compactMap { category -> TrackerCategory? in
                 let filteredTrackers = category.trackers.filter { tracker in
-                    let isDone = tracker.status == "done"
                     let isCompletedEvent = tracker.isIrregular &&
                         tracker.deadline != nil &&
                         tracker.deadline! < Date()
-                    if isDone || isCompletedEvent {
+                    if isCompletedEvent {
                         return false
+                    }
+                    // Если обычный трекер просрочен и статус не done — отправить уведомление о просрочке
+                    if !tracker.isIrregular, let deadline = tracker.deadline, deadline < Date(), tracker.status != "done" {
+                        let overdueSentKey = "overdueSent_\(tracker.id.uuidString)"
+                        let overdueSent = UserDefaults.standard.bool(forKey: overdueSentKey)
+                        if !overdueSent {
+                            NotificationManager.shared.scheduleOverdueNotification(for: tracker, category: category.title)
+                            UserDefaults.standard.set(true, forKey: overdueSentKey)
+                        }
                     }
                     return true
                 }
                 if filteredTrackers.isEmpty { return nil }
-                // Сортируем: закреплённые сверху, остальные по дате создания
-                let sortedTrackers = filteredTrackers.sorted { (first: Tracker, second: Tracker) -> Bool in
-                    if first.isPinned && !second.isPinned { return true }
-                    if !first.isPinned && second.isPinned { return false }
-                    return (first.createdAt ?? Date.distantPast) < (second.createdAt ?? Date.distantPast)
-                }
-                return TrackerCategory(title: category.title, trackers: sortedTrackers)
+                return TrackerCategory(title: category.title, trackers: filteredTrackers)
             }
             visibleCategories = filteredCategories
         } else {
@@ -394,14 +410,14 @@ final class TrackersViewController: UIViewController {
 
     private func startDeadlineTimer() {
         deadlineTimer?.invalidate()
-        deadlineTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
-            self?.collectionView.reloadData()
+        deadlineTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+            self?.updateVisibleCategories()
         }
     }
 
     private func stopDeadlineTimer() {
         deadlineTimer?.invalidate()
-        deadlineTimer = nil;
+        deadlineTimer = nil
     }
 }
 
@@ -710,8 +726,11 @@ extension TrackersViewController: EditTrackerDelegate {
         let oldCategory = categories.first(where: { $0.trackers.contains(where: { $0.id == tracker.id }) })?.title
         let oldTracker = categories.compactMap { $0.trackers.first(where: { $0.id == tracker.id }) }.first
         let oldStatus = oldTracker?.status
+        let oldDeadline = oldTracker?.deadline
         let categoryChanged = (oldCategory != nil && oldCategory != category)
         let statusChanged = (oldStatus != nil && oldStatus != tracker.status)
+        let deadlineChanged = (oldDeadline != nil && oldDeadline != tracker.deadline)
+        
         // Если меняется только категория
         if categoryChanged && !statusChanged {
             try? trackersCategoryStore.moveTracker(tracker, toCategory: category, fromCategory: oldCategory!)
@@ -729,17 +748,36 @@ extension TrackersViewController: EditTrackerDelegate {
             try? trackersCategoryStore.moveTracker(tracker, toCategory: category, fromCategory: oldCategory!)
             NotificationManager.shared.scheduleCategoryChangedNotification(for: tracker, newCategory: category, oldCategory: oldCategory!)
         }
-        try? trackerStore.updateTracker(with: tracker)
+        
+        // Если меняется дедлайн
+        if deadlineChanged, let newDeadline = tracker.deadline {
+            // Удаляем все старые уведомления для этого трекера
+            NotificationManager.shared.removeAllNotifications(for: tracker)
+            
+            // Отправляем уведомление об изменении дедлайна
+            NotificationManager.shared.scheduleDeadlineChangedNotification(for: tracker, category: category, newDeadline: newDeadline)
+            
+            // Обновляем дедлайн в трекере
+            var updatedTracker = tracker
+            updatedTracker.deadline = newDeadline
+            
+            // Планируем новые уведомления
+            if newDeadline >= Date() {
+                NotificationManager.shared.scheduleOrUpdateDeadlineOrEventNotification(for: updatedTracker, category: category)
+            } else if updatedTracker.status != "done" && !updatedTracker.isIrregular {
+                // Для просроченных задач отправляем уведомление о просрочке
+                NotificationManager.shared.scheduleOverdueNotification(for: updatedTracker, category: category)
+            }
+            
+            // Обновляем трекер в хранилище
+            try? trackerStore.updateTracker(with: updatedTracker)
+        } else {
+            try? trackerStore.updateTracker(with: tracker)
+        }
+        
         try? fetchACategory()
         updateVisibleCategories()
         collectionView.reloadData()
-        if let deadline = tracker.deadline, deadline >= Date() {
-            NotificationManager.shared.scheduleOrUpdateDeadlineOrEventNotification(for: tracker, category: category)
-        }
-        // Не создавать уведомление о просрочке при переносе задачи
-        if !categoryChanged, let deadline = tracker.deadline, deadline < Date(), tracker.status != "done", !tracker.isIrregular, let createdAt = tracker.createdAt, createdAt > deadline {
-            NotificationManager.shared.scheduleOverdueNotification(for: tracker, category: category)
-        }
     }
     
     private func editingTrackers(indexPath: IndexPath) {
@@ -917,7 +955,21 @@ extension TrackersViewController: TrackerCellDelegate {
         present(alert, animated: true)
     }
     
+    private func removeAllNotifications(for tracker: Tracker) {
+        let idPrefix = "tracker-\(tracker.id)-"
+        // Удалить все pending notification requests
+        UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+            let idsToRemove = requests
+                .filter { $0.identifier.hasPrefix(idPrefix) }
+                .map { $0.identifier }
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: idsToRemove)
+        }
+        // Удалить из NotificationStore
+        NotificationStore.shared.removeNotifications(withPrefix: idPrefix)
+    }
+
     private func deleteTracker(_ tracker: Tracker) {
+        removeAllNotifications(for: tracker)
         let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
         if let trackerEntity = try? context.fetch(TrackerCoreData.fetchRequest()).first(where: { $0.id == tracker.id }) {
             context.delete(trackerEntity)
