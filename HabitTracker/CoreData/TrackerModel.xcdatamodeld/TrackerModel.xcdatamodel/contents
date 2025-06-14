@@ -16,6 +16,7 @@
         <attribute name="name" attributeType="String"/>
         <attribute name="pinnedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="status" attributeType="String" defaultValueString="created"/>
+        <attribute name="details" optional="YES" attributeType="String"/>
         <relationship name="category" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TrackerCategoryCoreData" inverseName="trackers" inverseEntity="TrackerCategoryCoreData"/>
         <relationship name="records" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="TrackerRecordCoreData" inverseName="tracker" inverseEntity="TrackerRecordCoreData"/>
     </entity>

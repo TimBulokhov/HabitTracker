@@ -13,7 +13,7 @@ protocol NewSingleHabitViewControllerDelegate: AnyObject {
 
 // MARK: - CreatingHabitViewController
 
-final class NewSingleHabitViewController: UIViewController {
+final class NewSingleHabitViewController: UIViewController, UITextViewDelegate {
     weak var delegate: TrackerCreationDelegate?
     weak var delegateEdit: EditTrackerDelegate?
     var deadlineDaysLeft: Int?
@@ -146,6 +146,26 @@ final class NewSingleHabitViewController: UIViewController {
         return tableView
     }()
 
+    private lazy var startEventLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Начало события:"
+        label.font = .systemFont(ofSize: 17, weight: .regular)
+        label.textColor = .label
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.setContentHuggingPriority(.required, for: .horizontal)
+        return label
+    }()
+
+    private lazy var startEventStack: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [startEventLabel, deadlinePicker])
+        stack.axis = .horizontal
+        stack.spacing = 8
+        stack.alignment = .center
+        stack.distribution = .fill
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
+    }()
+    
     private lazy var deadlinePicker: UIDatePicker = {
         let picker = UIDatePicker()
         picker.datePickerMode = .dateAndTime
@@ -329,7 +349,8 @@ final class NewSingleHabitViewController: UIViewController {
                 isIrregular: true,
                 status: "",
                 assignee: "",
-                pinnedAt: nil
+                pinnedAt: nil,
+                details: nil
             )
             return tracker
         } else {
@@ -346,7 +367,8 @@ final class NewSingleHabitViewController: UIViewController {
                 isIrregular: true,
                 status: editTrackerIrregular?.status ?? "created",
                 assignee: "",
-                pinnedAt: nil
+                pinnedAt: nil,
+                details: nil
             )
         }
     }
@@ -448,7 +470,7 @@ final class NewSingleHabitViewController: UIViewController {
         scrollView.addSubview(contentView)
         contentView.addSubview(stackViewForTextField)
         contentView.addSubview(tableView)
-        contentView.addSubview(deadlinePicker)
+        contentView.addSubview(startEventStack)
         contentView.addSubview(collectionView)
         contentView.addSubview(cancelButton)
         contentView.addSubview(creatingButton)
@@ -481,10 +503,10 @@ final class NewSingleHabitViewController: UIViewController {
             tableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             tableView.heightAnchor.constraint(equalToConstant: 75),
-            deadlinePicker.topAnchor.constraint(equalTo: tableView.bottomAnchor, constant: 16),
-            deadlinePicker.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            deadlinePicker.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            collectionView.topAnchor.constraint(equalTo: deadlinePicker.bottomAnchor, constant: 16),
+            startEventStack.topAnchor.constraint(equalTo: tableView.bottomAnchor, constant: 16),
+            startEventStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            startEventStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            collectionView.topAnchor.constraint(equalTo: startEventStack.bottomAnchor, constant: 16),
             collectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             collectionView.heightAnchor.constraint(equalToConstant: collectionViewHeight),

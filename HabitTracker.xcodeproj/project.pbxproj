@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1242C5222DFE2CC30066C50D /* PlaceholderTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1242C5212DFE2CC30066C50D /* PlaceholderTextView.swift */; };
+		1242C5232DFE2CC30066C50D /* PlaceholderTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1242C5212DFE2CC30066C50D /* PlaceholderTextView.swift */; };
+		1242C5242DFE2CC30066C50D /* PlaceholderTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1242C5212DFE2CC30066C50D /* PlaceholderTextView.swift */; };
 		125B54082C17467100C4798E /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 125B54072C17467100C4798E /* SnapshotTesting */; };
 		125BEA152C15B37800D27E72 /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125BEA142C15B37800D27E72 /* AnalyticsService.swift */; };
 		125BEA172C15B38100D27E72 /* Events.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125BEA162C15B38100D27E72 /* Events.swift */; };
@@ -84,6 +87,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1242C5212DFE2CC30066C50D /* PlaceholderTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderTextView.swift; sourceTree = "<group>"; };
 		125BEA142C15B37800D27E72 /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
 		125BEA162C15B38100D27E72 /* Events.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Events.swift; sourceTree = "<group>"; };
 		125BEA182C15E4BA00D27E72 /* FilterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterViewController.swift; sourceTree = "<group>"; };
@@ -342,6 +346,7 @@
 		12D149172BDEBE0900AEA722 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				1242C5212DFE2CC30066C50D /* PlaceholderTextView.swift */,
 				129BC4702DFA2102001A47B9 /* NotificationManager.swift */,
 				12D149332BDEC2B500AEA722 /* SupplementaryView.swift */,
 				12D149182BDEBE1500AEA722 /* DateFormatter.swift */,
@@ -611,6 +616,7 @@
 				12C011DE2C023F930055E836 /* TrackersRecordStorage.swift in Sources */,
 				12C011E02C02433E0055E836 /* StorageError.swift in Sources */,
 				12CBD7342C14AEBA00242D2F /* StatsViewModel.swift in Sources */,
+				1242C5242DFE2CC30066C50D /* PlaceholderTextView.swift in Sources */,
 				12D149222BDEC04100AEA722 /* DateStorage.swift in Sources */,
 				125BEA172C15B38100D27E72 /* Events.swift in Sources */,
 				125C6A652C0B95E80070F742 /* OnboardViewController.swift in Sources */,
@@ -626,6 +632,7 @@
 				129BC4762DFA3917001A47B9 /* NotificationsViewController.swift in Sources */,
 				129BC4722DFA2102001A47B9 /* NotificationManager.swift in Sources */,
 				126443422C1EE84E00ABEE9A /* HabitTrackerTests.swift in Sources */,
+				1242C5232DFE2CC30066C50D /* PlaceholderTextView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -637,6 +644,7 @@
 				12D148FA2BDEB29500AEA722 /* HabitTrackerUITestsLaunchTests.swift in Sources */,
 				12D148F82BDEB29500AEA722 /* HabitTrackerUITests.swift in Sources */,
 				129BC4772DFA3917001A47B9 /* NotificationsViewController.swift in Sources */,
+				1242C5222DFE2CC30066C50D /* PlaceholderTextView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

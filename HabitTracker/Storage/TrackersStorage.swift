@@ -40,6 +40,7 @@ final class TrackersStorage {
         newTracker.status = tracker.status
         newTracker.isIrregular = tracker.isIrregular
         newTracker.assignee = tracker.assignee
+        newTracker.details = tracker.details
         return newTracker
     }
     
@@ -65,7 +66,8 @@ final class TrackersStorage {
                     isIrregular: trackerCoreData.isIrregular,
                     status: trackerCoreData.status ?? "created",
                     assignee: trackerCoreData.assignee ?? "",
-                    pinnedAt: trackerCoreData.pinnedAt
+                    pinnedAt: trackerCoreData.pinnedAt,
+                    details: trackerCoreData.details
                 )
             }
             return trackers
@@ -93,7 +95,8 @@ final class TrackersStorage {
             isIrregular: trackersCoreData.isIrregular,
             status: trackersCoreData.status ?? "created",
             assignee: trackersCoreData.assignee ?? "",
-            pinnedAt: trackersCoreData.pinnedAt
+            pinnedAt: trackersCoreData.pinnedAt,
+            details: trackersCoreData.details
         )
     }
     
@@ -131,6 +134,7 @@ final class TrackersStorage {
                 existingTracker.status = tracker.status
                 existingTracker.isIrregular = tracker.isIrregular
                 existingTracker.assignee = tracker.assignee
+                existingTracker.details = tracker.details
                 try context.save()
             } else {
                 throw StorageError.trackerNotFound

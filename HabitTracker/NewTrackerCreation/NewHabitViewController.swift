@@ -223,6 +223,77 @@ final class NewHabitViewController: UIViewController {
         return stackView
     }()
     
+    private lazy var detailsTextView: PlaceholderTextView = {
+        let textView = PlaceholderTextView()
+        textView.font = .systemFont(ofSize: 17)
+        textView.backgroundColor = .ypWhite
+        textView.layer.cornerRadius = 16
+        textView.layer.borderWidth = 2
+        textView.layer.borderColor = UIColor.ypBlue.cgColor
+        textView.translatesAutoresizingMaskIntoConstraints = false
+        textView.delegate = self
+        textView.textContainerInset = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+        textView.placeholder = "Подробное описание задачи..."
+        if #available(iOS 13.0, *) {
+            textView.placeholderColor = .placeholderText
+        } else {
+            textView.placeholderColor = .lightGray
+        }
+        return textView
+    }()
+    
+    private lazy var attachIcon: UIImageView = {
+        let imageView = UIImageView(image: UIImage(systemName: "paperclip"))
+        imageView.tintColor = .ypBlue
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
+    private lazy var attachLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Прикрепить вложения"
+        label.font = .systemFont(ofSize: 17, weight: .regular)
+        label.textColor = .ypBlue
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private lazy var attachButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(attachButtonTapped), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var attachStack: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [attachIcon, attachLabel])
+        stack.axis = .horizontal
+        stack.spacing = 4
+        stack.alignment = .center
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
+    }()
+    
+    private lazy var deadlineLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Крайний срок:"
+        label.font = .systemFont(ofSize: 17, weight: .regular)
+        label.textColor = .label
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.setContentHuggingPriority(.required, for: .horizontal)
+        return label
+    }()
+    
+    private lazy var deadlineStack: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [deadlineLabel, deadlinePicker])
+        stack.axis = .horizontal
+        stack.spacing = 8
+        stack.alignment = .center
+        stack.distribution = .fill
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
+    }()
+    
     // MARK: - Lifecycle
     
     private var deadlineTimer: Timer?
@@ -305,6 +376,10 @@ final class NewHabitViewController: UIViewController {
         }
     }
     
+    @objc private func attachButtonTapped() {
+        // TODO: Реализовать выбор вложений (фото, файлы, ссылки)
+    }
+    
     // MARK: - Private methods
     private func collectingDataForTheTracker(newTracker: Bool) -> Tracker? {
         guard let text = nameTrackerTextField.text,
@@ -316,6 +391,7 @@ final class NewHabitViewController: UIViewController {
         let statusTitle = creatingTrackersModel[1].subTitleLabel
         let status = statusOptions.first(where: { $0.1 == statusTitle })?.0 ?? "created"
         let assignee = assigneeTextField.text ?? ""
+        let details = detailsTextView.text
         if newTracker {
             return Tracker(
                 id: UUID(),
@@ -328,7 +404,8 @@ final class NewHabitViewController: UIViewController {
                 isIrregular: false,
                 status: status,
                 assignee: assignee,
-                pinnedAt: nil
+                pinnedAt: nil,
+                details: details
             )
         } else {
             guard let editTracker = editTrackerHabit else { return nil }
@@ -343,7 +420,8 @@ final class NewHabitViewController: UIViewController {
                 isIrregular: editTracker.isIrregular,
                 status: status,
                 assignee: assignee,
-                pinnedAt: editTracker.pinnedAt
+                pinnedAt: editTracker.pinnedAt,
+                details: details
             )
         }
     }
@@ -365,6 +443,7 @@ final class NewHabitViewController: UIViewController {
         }
         nameTrackerTextField.text = trackerForEditing.name
         assigneeTextField.text = trackerForEditing.assignee
+        detailsTextView.text = trackerForEditing.details
         updateSubitle(nameSubitle: categiryForEditing)
         if let statusTuple = statusOptions.first(where: { $0.0 == trackerForEditing.status }) {
             creatingTrackersModel[1].subTitleLabel = statusTuple.1
@@ -481,7 +560,10 @@ final class NewHabitViewController: UIViewController {
         contentView.addSubview(stackViewForTextField)
         contentView.addSubview(tableView)
         contentView.addSubview(assigneeStackView)
-        contentView.addSubview(deadlinePicker)
+        contentView.addSubview(detailsTextView)
+        contentView.addSubview(attachButton)
+        attachButton.addSubview(attachStack)
+        contentView.addSubview(deadlineStack)
         contentView.addSubview(collectionView)
         contentView.addSubview(cancelButton)
         contentView.addSubview(creatingButton)
@@ -520,10 +602,23 @@ final class NewHabitViewController: UIViewController {
             assigneeStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             assigneeStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             assigneeStackView.heightAnchor.constraint(equalToConstant: 75),
-            deadlinePicker.topAnchor.constraint(equalTo: assigneeStackView.bottomAnchor, constant: 24),
-            deadlinePicker.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            deadlinePicker.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            collectionView.topAnchor.constraint(equalTo: deadlinePicker.bottomAnchor, constant: 32),
+            detailsTextView.topAnchor.constraint(equalTo: assigneeStackView.bottomAnchor, constant: 16),
+            detailsTextView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            detailsTextView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            detailsTextView.heightAnchor.constraint(equalToConstant: 100),
+            attachButton.topAnchor.constraint(equalTo: detailsTextView.bottomAnchor, constant: 8),
+            attachButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            attachButton.heightAnchor.constraint(equalToConstant: 32),
+            attachStack.leadingAnchor.constraint(equalTo: attachButton.leadingAnchor),
+            attachStack.topAnchor.constraint(equalTo: attachButton.topAnchor),
+            attachStack.bottomAnchor.constraint(equalTo: attachButton.bottomAnchor),
+            attachStack.trailingAnchor.constraint(equalTo: attachButton.trailingAnchor),
+            attachIcon.widthAnchor.constraint(equalToConstant: 20),
+            attachIcon.heightAnchor.constraint(equalToConstant: 20),
+            deadlineStack.topAnchor.constraint(equalTo: attachButton.bottomAnchor, constant: 16),
+            deadlineStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            deadlineStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            collectionView.topAnchor.constraint(equalTo: deadlineStack.bottomAnchor, constant: 32),
             collectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             collectionView.heightAnchor.constraint(equalToConstant: collectionViewHeight),
@@ -746,4 +841,16 @@ extension NewHabitViewController: UICollectionViewDelegateFlowLayout {
         }
         return CGSize(width: collectionView.frame.width, height: 40)
     }
+}
+
+// MARK: - UITextViewDelegate
+
+extension NewHabitViewController: UITextViewDelegate {
+    func textViewDidChange(_ textView: UITextView) {
+        if let placeholderTextView = textView as? PlaceholderTextView {
+            placeholderTextView.setNeedsDisplay()
+        }
+    }
+    func textViewDidBeginEditing(_ textView: UITextView) {}
+    func textViewDidEndEditing(_ textView: UITextView) {}
 }

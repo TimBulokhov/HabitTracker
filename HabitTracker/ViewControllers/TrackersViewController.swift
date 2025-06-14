@@ -882,7 +882,8 @@ extension TrackersViewController {
             isIrregular: tracker.isIrregular,
             status: tracker.status,
             assignee: tracker.assignee,
-            pinnedAt: !tracker.isPinned ? Date() : nil
+            pinnedAt: !tracker.isPinned ? Date() : nil,
+            details: tracker.details
         )
         do {
             try trackerStore.updateTracker(with: updateTracker)
@@ -929,7 +930,8 @@ extension TrackersViewController: TrackerCellDelegate {
             isIrregular: tracker.isIrregular,
             status: tracker.status,
             assignee: tracker.assignee,
-            pinnedAt: !tracker.isPinned ? Date() : nil
+            pinnedAt: !tracker.isPinned ? Date() : nil,
+            details: tracker.details
         )
         do {
             try trackerStore.updateTracker(with: updateTracker)
