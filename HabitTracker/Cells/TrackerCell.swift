@@ -48,6 +48,16 @@ final class TrackerCell: UICollectionViewCell {
         return label
     }()
     
+    private let assigneeLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
+        label.textColor = .label
+        label.numberOfLines = 1
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.isHidden = true
+        return label
+    }()
+    
     private lazy var pinnedImage: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "pinnedIcon")
@@ -115,6 +125,14 @@ final class TrackerCell: UICollectionViewCell {
         emojiLabel.text = tracker.emoji
         pinnedImage.isHidden = !tracker.isPinned
         self.trackerId = tracker.id
+        // Assignee
+        if !tracker.assignee.isEmpty {
+            assigneeLabel.text = tracker.assignee
+            assigneeLabel.isHidden = false
+        } else {
+            assigneeLabel.text = nil
+            assigneeLabel.isHidden = true
+        }
         
         // Скрываем статус, если он пустой или nil
         if tracker.status.isEmpty {
@@ -259,6 +277,8 @@ final class TrackerCell: UICollectionViewCell {
         emojiLabel.text = nil
         daysCounterLabel.text = nil
         statusLabel.text = nil
+        assigneeLabel.text = nil
+        assigneeLabel.isHidden = true
     }
     
     // MARK: - Private methods
@@ -270,6 +290,7 @@ final class TrackerCell: UICollectionViewCell {
         contentView.addSubview(accomplishedButton)
         backgroundCellView.addSubview(emojiLabel)
         backgroundCellView.addSubview(descriptionLabel)
+        backgroundCellView.addSubview(assigneeLabel)
         backgroundCellView.addSubview(pinnedImage)
         backgroundCellView.addSubview(statusLabel)
     }
@@ -279,7 +300,7 @@ final class TrackerCell: UICollectionViewCell {
             backgroundCellView.topAnchor.constraint(equalTo: topAnchor),
             backgroundCellView.leadingAnchor.constraint(equalTo: leadingAnchor),
             backgroundCellView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            backgroundCellView.heightAnchor.constraint(equalToConstant: 90),
+            backgroundCellView.heightAnchor.constraint(equalToConstant: 110),
             
             emojiLabel.topAnchor.constraint(equalTo: backgroundCellView.topAnchor, constant: 12),
             emojiLabel.leadingAnchor.constraint(equalTo: backgroundCellView.leadingAnchor, constant: 12),
@@ -292,7 +313,12 @@ final class TrackerCell: UICollectionViewCell {
             
             descriptionLabel.leadingAnchor.constraint(equalTo: backgroundCellView.leadingAnchor, constant: 12),
             descriptionLabel.trailingAnchor.constraint(equalTo: backgroundCellView.trailingAnchor, constant: -12),
-            descriptionLabel.bottomAnchor.constraint(equalTo: backgroundCellView.bottomAnchor, constant: -12),
+            descriptionLabel.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 8),
+            
+            assigneeLabel.leadingAnchor.constraint(equalTo: backgroundCellView.leadingAnchor, constant: 12),
+            assigneeLabel.trailingAnchor.constraint(equalTo: backgroundCellView.trailingAnchor, constant: -12),
+            assigneeLabel.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 4),
+            assigneeLabel.heightAnchor.constraint(equalToConstant: 18),
             
             daysCounterLabel.topAnchor.constraint(equalTo: backgroundCellView.bottomAnchor, constant: 16),
             daysCounterLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),

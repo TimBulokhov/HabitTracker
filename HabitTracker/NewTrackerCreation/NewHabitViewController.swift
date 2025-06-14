@@ -186,6 +186,29 @@ final class NewHabitViewController: UIViewController {
         return picker
     }()
     
+    private lazy var assigneeTextField: UITextField = {
+        let textField = UITextField()
+        textField.indent(size: 16)
+        textField.placeholder = "Ответственное лицо"
+        textField.textColor = .ypBlack
+        textField.backgroundColor = .ypWhite
+        textField.layer.cornerRadius = 16
+        textField.font = .systemFont(ofSize: 17)
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.layer.borderWidth = 2
+        textField.layer.borderColor = UIColor.ypBlue.cgColor
+        return textField
+    }()
+    
+    private lazy var assigneeStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [assigneeTextField])
+        stackView.distribution = .fill
+        stackView.axis = .vertical
+        stackView.spacing = 8
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        return stackView
+    }()
+    
     // MARK: - Lifecycle
     
     private var deadlineTimer: Timer?
@@ -275,6 +298,7 @@ final class NewHabitViewController: UIViewController {
         let deadline = deadlinePicker.date
         let statusTitle = creatingTrackersModel[1].subTitleLabel
         let status = statusOptions.first(where: { $0.1 == statusTitle })?.0 ?? "created"
+        let assignee = assigneeTextField.text ?? ""
         if newTracker {
             return Tracker(
                 id: UUID(),
@@ -286,7 +310,7 @@ final class NewHabitViewController: UIViewController {
                 deadline: deadline,
                 isIrregular: false,
                 status: status,
-                assignee: "",
+                assignee: assignee,
                 pinnedAt: nil
             )
         } else {
@@ -301,7 +325,7 @@ final class NewHabitViewController: UIViewController {
                 deadline: deadline,
                 isIrregular: editTracker.isIrregular,
                 status: status,
-                assignee: editTracker.assignee,
+                assignee: assignee,
                 pinnedAt: editTracker.pinnedAt
             )
         }
@@ -323,6 +347,7 @@ final class NewHabitViewController: UIViewController {
             completedDaysLabel.textColor = .label
         }
         nameTrackerTextField.text = trackerForEditing.name
+        assigneeTextField.text = trackerForEditing.assignee
         updateSubitle(nameSubitle: categiryForEditing)
         if let statusTuple = statusOptions.first(where: { $0.0 == trackerForEditing.status }) {
             creatingTrackersModel[1].subTitleLabel = statusTuple.1
@@ -438,11 +463,13 @@ final class NewHabitViewController: UIViewController {
         scrollView.addSubview(contentView)
         contentView.addSubview(stackViewForTextField)
         contentView.addSubview(tableView)
+        contentView.addSubview(assigneeStackView)
         contentView.addSubview(deadlinePicker)
         contentView.addSubview(collectionView)
         contentView.addSubview(cancelButton)
         contentView.addSubview(creatingButton)
         contentView.addSubview(completedDaysLabel)
+        tableView.backgroundColor = .ypWhite
     }
     
     private func configConstraints() {
@@ -467,11 +494,15 @@ final class NewHabitViewController: UIViewController {
             stackViewForTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             stackViewForTextField.heightAnchor.constraint(equalToConstant: 75),
             errorLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            tableView.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 24),
+            tableView.topAnchor.constraint(equalTo: stackViewForTextField.bottomAnchor, constant: 24),
             tableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             tableView.heightAnchor.constraint(equalToConstant: 150),
-            deadlinePicker.topAnchor.constraint(equalTo: tableView.bottomAnchor, constant: 16),
+            assigneeStackView.topAnchor.constraint(equalTo: tableView.bottomAnchor, constant: 24),
+            assigneeStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            assigneeStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            assigneeStackView.heightAnchor.constraint(equalToConstant: 75),
+            deadlinePicker.topAnchor.constraint(equalTo: assigneeStackView.bottomAnchor, constant: 24),
             deadlinePicker.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             deadlinePicker.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             collectionView.topAnchor.constraint(equalTo: deadlinePicker.bottomAnchor, constant: 32),

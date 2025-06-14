@@ -325,9 +325,9 @@ final class NewSingleHabitViewController: UIViewController {
                 emoji: emoji,
                 isPinned: false,
                 createdAt: Date(),
-                deadline: nil,
+                deadline: deadline,
                 isIrregular: true,
-                status: "created",
+                status: "",
                 assignee: "",
                 pinnedAt: nil
             )
