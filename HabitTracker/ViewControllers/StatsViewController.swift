@@ -73,6 +73,11 @@ final class StatisticsViewController: UIViewController {
         analyticsService.report(event: .open, params: ["Screen" : "Statistics"])
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        try? viewModel?.fetchStatistics()
+    }
+    
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         analyticsService.report(event: .close, params: ["Screen" : "Statistics"])
@@ -90,13 +95,13 @@ final class StatisticsViewController: UIViewController {
     // MARK: - Private methods
     
     private func screenRenderingLogic() {
-        guard let completedTrackers = viewModel?.completedTrackers else { return }
-        collectionView.reloadData()
-        if completedTrackers.isEmpty {
+        guard let viewModel = viewModel else { return }
+        
+        if viewModel.statistics.isEmpty {
             placeholderDisplaySwitch(isHidden: false)
         } else {
             placeholderDisplaySwitch(isHidden: true)
-            configThereAreCategories()
+            collectionView.reloadData()
         }
     }
     
@@ -111,6 +116,7 @@ final class StatisticsViewController: UIViewController {
         view.addSubview(trackerLabel)
         view.addSubview(descriptionImage)
         view.addSubview(descriptionPlaceholder)
+        view.addSubview(collectionView)
     }
     
     private func configConstraints() {
@@ -124,7 +130,12 @@ final class StatisticsViewController: UIViewController {
             descriptionImage.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             
             descriptionPlaceholder.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            descriptionPlaceholder.topAnchor.constraint(equalTo: descriptionImage.bottomAnchor, constant: 8)
+            descriptionPlaceholder.topAnchor.constraint(equalTo: descriptionImage.bottomAnchor, constant: 8),
+            
+            collectionView.topAnchor.constraint(equalTo: trackerLabel.bottomAnchor, constant: 77),
+            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -126)
         ])
     }
     

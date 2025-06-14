@@ -84,3 +84,11 @@
 "selectInterval" = "Выберите интервал";
 "numberOfDays" = "Количество дней";
 "ok" = "OK";
+
+"totalProjects" = "Всего проектов";
+"totalTasks" = "Всего задач";
+"totalEvents" = "Всего событий";
+"completedTasks" = "Завершено задач";
+"completedEvents" = "Завершено событий";
+"completionRate" = "Процент завершенности";
+"overdueTasks" = "Просроченных задач";

@@ -84,3 +84,11 @@
 "selectInterval" = "Select interval";
 "numberOfDays" = "Number of days";
 "ok" = "OK";
+
+"totalProjects" = "Total Projects";
+"totalTasks" = "Total Tasks";
+"totalEvents" = "Total Events";
+"completedTasks" = "Completed Tasks";
+"completedEvents" = "Completed Events";
+"completionRate" = "Completion Rate";
+"overdueTasks" = "Overdue Tasks";

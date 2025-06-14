@@ -147,12 +147,14 @@ final class TrackersViewController: UIViewController {
         checkingForActiveTrackers()
         updateVisibleCategories()
         try? fetchARecord()
+        statisticsListener()
         analyticsService.report(event: .open, params: ["Screen" : "Main"])
         
         // Запускаем таймер обновления каждые 10 секунд
         updateTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { [weak self] _ in
             self?.updateVisibleCategories()
             self?.collectionView.reloadData()
+            self?.statisticsListener()
         }
     }
     
@@ -209,6 +211,11 @@ final class TrackersViewController: UIViewController {
     
     private func statisticsListener() {
         delegateStatistic?.completedTrackers = completedTrackers
+        do {
+            try delegateStatistic?.fetchStatistics()
+        } catch {
+            print("Error fetching statistics: \(error)")
+        }
     }
     
     private func checkingForActiveTrackers() {

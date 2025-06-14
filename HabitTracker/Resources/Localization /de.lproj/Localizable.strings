@@ -74,3 +74,11 @@
 "idealDays" = "Perfekte Tage";
 "trackersCompletedStats" = "Tracker abgeschlossen";
 "averageValue" = "Durchschnittswert";
+
+"totalProjects" = "Gesamtprojekte";
+"totalTasks" = "Gesamtaufgaben";
+"totalEvents" = "Gesamtveranstaltungen";
+"completedTasks" = "Abgeschlossene Aufgaben";
+"completedEvents" = "Abgeschlossene Veranstaltungen";
+"completionRate" = "Abschlussrate";
+"overdueTasks" = "Überfällige Aufgaben";

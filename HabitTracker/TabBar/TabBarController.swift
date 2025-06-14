@@ -37,8 +37,16 @@ final class TabBarController: UITabBarController {
         let trackerViewController = TrackersViewController()
         let statisticsViewController = StatisticsViewController()
         let statisticsViewModel = StatsViewModel()
+        
+        // Инициализируем StatisticsViewController с ViewModel
         statisticsViewController.initialize(viewModel: statisticsViewModel)
+        
+        // Устанавливаем делегат для обновления статистики
         trackerViewController.delegateStatistic = statisticsViewModel
+        
+        // Загружаем начальные данные
+        try? statisticsViewModel.fetchStatistics()
+        
         let notificationsViewController = NotificationsViewController()
         viewControllers = [
             generateVC(

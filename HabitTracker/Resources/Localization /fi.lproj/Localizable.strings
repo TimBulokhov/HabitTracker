@@ -74,3 +74,11 @@
 "idealDays" = "Täydelliset päivät";
 "trackersCompletedStats" = "Seurantalaitteet valmistuneet";
 "averageValue" = "Keskiarvo";
+
+"totalProjects" = "Projektit yhteensä";
+"totalTasks" = "Tehtävät yhteensä";
+"totalEvents" = "Tapahtumat yhteensä";
+"completedTasks" = "Valmistuneet tehtävät";
+"completedEvents" = "Valmistuneet tapahtumat";
+"completionRate" = "Valmistumisaste";
+"overdueTasks" = "Myöhässä olevat tehtävät";
