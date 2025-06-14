@@ -71,7 +71,11 @@ final class NotificationManager {
                 let deadlineId = "tracker-\(tracker.id)-deadline-\(Int(deadline.timeIntervalSince1970))"
                 let deadlineContent = UNMutableNotificationContent()
                 deadlineContent.title = "Скоро дедлайн!"
-                deadlineContent.body = "\(tracker.name)\nПроект: \(normalizedCategory)\nСтатус: \(tracker.status)"
+                var body = "\(tracker.name)\nПроект: \(normalizedCategory)\nСтатус: \(tracker.status)"
+                if !tracker.assignee.isEmpty {
+                    body += "\nОтветственное лицо: \(tracker.assignee)"
+                }
+                deadlineContent.body = body
                 deadlineContent.sound = UNNotificationSound.default
                 deadlineContent.userInfo = ["category": normalizedCategory, "type": "deadline"]
                 let now = Date()
@@ -109,7 +113,11 @@ final class NotificationManager {
             content.body = "\(tracker.name)\nПроект: \(normalizedCategory)\nНовая дата: \(formatDate(newDeadline))"
         } else {
             content.title = "Срок задачи изменен"
-            content.body = "\(tracker.name)\nПроект: \(normalizedCategory)\nНовый срок: \(formatDate(newDeadline))"
+            var body = "\(tracker.name)\nПроект: \(normalizedCategory)\nНовый срок: \(formatDate(newDeadline))"
+            if !tracker.assignee.isEmpty {
+                body += "\nОтветственное лицо: \(tracker.assignee)"
+            }
+            content.body = body
         }
         content.sound = .default
         content.userInfo = ["category": normalizedCategory, "type": "deadlineChanged"]
@@ -145,7 +153,14 @@ final class NotificationManager {
         center.removePendingNotificationRequests(withIdentifiers: [id])
         let content = UNMutableNotificationContent()
         content.title = tracker.isIrregular ? "Новое событие создано" : "Новая задача создана"
-        content.body = "\(tracker.name)\nПроект: \(normalizedCategory)\n" + (tracker.deadline != nil ? (tracker.isIrregular ? "Начало события: " : "Крайний срок: ") + formatDate(tracker.deadline!) : "")
+        var body = "\(tracker.name)\nПроект: \(normalizedCategory)"
+        if let deadline = tracker.deadline {
+            body += "\n" + (tracker.isIrregular ? "Начало события: " : "Крайний срок: ") + formatDate(deadline)
+        }
+        if !tracker.isIrregular && !tracker.assignee.isEmpty {
+            body += "\nОтветственное лицо: \(tracker.assignee)"
+        }
+        content.body = body
         content.sound = .default
         content.userInfo = ["category": normalizedCategory, "type": "created"]
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
@@ -166,7 +181,11 @@ final class NotificationManager {
         center.removePendingNotificationRequests(withIdentifiers: [id])
         let content = UNMutableNotificationContent()
         content.title = "Статус задачи изменён"
-        content.body = "\(tracker.name)\nПроект: \(normalizedCategory)\nТекущий статус: \(tracker.status)"
+        var body = "\(tracker.name)\nПроект: \(normalizedCategory)\nТекущий статус: \(tracker.status)"
+        if !tracker.assignee.isEmpty {
+            body += "\nОтветственное лицо: \(tracker.assignee)"
+        }
+        content.body = body
         content.sound = .default
         content.userInfo = ["category": normalizedCategory, "type": "statusChanged"]
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
@@ -203,7 +222,11 @@ final class NotificationManager {
         if tracker.isIrregular {
             newContent.body = "\(tracker.name)\nНовый проект: \(normalizedNewCategory)\nРанее: \(normalizedOldCategory)"
         } else {
-            newContent.body = "\(tracker.name)\nНовый проект: \(normalizedNewCategory)\nРанее: \(normalizedOldCategory)\nТекущий статус: \(tracker.status)"
+            var body = "\(tracker.name)\nНовый проект: \(normalizedNewCategory)\nРанее: \(normalizedOldCategory)\nТекущий статус: \(tracker.status)"
+            if !tracker.assignee.isEmpty {
+                body += "\nОтветственное лицо: \(tracker.assignee)"
+            }
+            newContent.body = body
         }
         newContent.sound = .default
         newContent.userInfo = ["category": normalizedNewCategory]
@@ -226,7 +249,11 @@ final class NotificationManager {
         if tracker.isIrregular {
             oldContent.body = "\(tracker.name)\nНовый проект: \(normalizedNewCategory)"
         } else {
-            oldContent.body = "\(tracker.name)\nНовый проект: \(normalizedNewCategory)\nТекущий статус: \(tracker.status)"
+            var body = "\(tracker.name)\nНовый проект: \(normalizedNewCategory)\nТекущий статус: \(tracker.status)"
+            if !tracker.assignee.isEmpty {
+                body += "\nОтветственное лицо: \(tracker.assignee)"
+            }
+            oldContent.body = body
         }
         oldContent.sound = .default
         oldContent.userInfo = ["category": normalizedOldCategory]
@@ -308,6 +335,32 @@ final class NotificationManager {
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
         return formatter.string(from: date)
+    }
+    
+    func scheduleAssigneeChangedNotification(for tracker: Tracker, category: String, oldAssignee: String, newAssignee: String) {
+        let normalizedCategory = normalizeCategory(category)
+        let id = "tracker-\(tracker.id)-assignee-\(Int(Date().timeIntervalSince1970))"
+        let content = UNMutableNotificationContent()
+        content.title = "У задачи новый исполнитель"
+        var body = "Задача: \(tracker.name)\nПроект: \(normalizedCategory)\nСтатус: \(tracker.status)"
+        if let deadline = tracker.deadline {
+            body += "\nКрайний срок: \(formatDate(deadline))"
+        }
+        body += "\nПредыдущий исполнитель: " + (oldAssignee.isEmpty ? "—" : oldAssignee)
+        body += "\nНовый исполнитель: " + (newAssignee.isEmpty ? "—" : newAssignee)
+        content.body = body
+        content.sound = .default
+        content.userInfo = ["category": normalizedCategory, "type": "assigneeChanged"]
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
+        center.add(request) { error in
+            if let error = error {
+                print("[Notification] Error scheduling assignee changed notification: \(error)")
+            } else {
+                print("[Notification] Assignee changed notification scheduled successfully")
+            }
+        }
+        NotificationStore.shared.addNotification(title: content.title, body: content.body, category: normalizedCategory, notificationId: id, type: "assigneeChanged")
     }
 }
 

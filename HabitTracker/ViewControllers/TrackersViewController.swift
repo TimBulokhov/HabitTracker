@@ -779,9 +779,11 @@ extension TrackersViewController: EditTrackerDelegate {
         let oldTracker = categories.compactMap { $0.trackers.first(where: { $0.id == tracker.id }) }.first
         let oldStatus = oldTracker?.status
         let oldDeadline = oldTracker?.deadline
+        let oldAssignee = oldTracker?.assignee ?? ""
         let categoryChanged = (oldCategory != nil && oldCategory != category)
         let statusChanged = (oldStatus != nil && oldStatus != tracker.status)
         let deadlineChanged = (oldDeadline != nil && oldDeadline != tracker.deadline)
+        let assigneeChanged = (oldTracker != nil && oldTracker!.assignee != tracker.assignee)
         
         // Если меняется только категория
         if categoryChanged && !statusChanged {
@@ -800,7 +802,10 @@ extension TrackersViewController: EditTrackerDelegate {
             try? trackersCategoryStore.moveTracker(tracker, toCategory: category, fromCategory: oldCategory!)
             NotificationManager.shared.scheduleCategoryChangedNotification(for: tracker, newCategory: category, oldCategory: oldCategory!)
         }
-        
+        // Если меняется assignee
+        if assigneeChanged {
+            NotificationManager.shared.scheduleAssigneeChangedNotification(for: tracker, category: category, oldAssignee: oldAssignee, newAssignee: tracker.assignee)
+        }
         // Если меняется дедлайн
         if deadlineChanged, let newDeadline = tracker.deadline {
             // Удаляем все старые уведомления для этого трекера

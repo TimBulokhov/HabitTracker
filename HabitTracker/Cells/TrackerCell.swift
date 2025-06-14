@@ -41,18 +41,41 @@ final class TrackerCell: UICollectionViewCell {
     
     private let descriptionLabel: UILabel = {
         let label = UILabel()
-        label.numberOfLines = 2
-        label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
+        label.numberOfLines = 3
+        label.lineBreakMode = .byWordWrapping
+        label.font = UIFont.boldSystemFont(ofSize: 15)
         label.textColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
+    private let assigneeIcon: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "person.fill")
+        imageView.tintColor = .white
+        imageView.contentMode = .scaleAspectFit
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.isHidden = true
+        return imageView
+    }()
+    
     private let assigneeLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
-        label.textColor = .label
+        label.textColor = .white
         label.numberOfLines = 1
+        label.lineBreakMode = .byTruncatingTail
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.isHidden = true
+        return label
+    }()
+    
+    private let statusLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        label.textColor = .white
+        label.backgroundColor = .clear
+        label.textAlignment = .left
         label.translatesAutoresizingMaskIntoConstraints = false
         label.isHidden = true
         return label
@@ -82,14 +105,6 @@ final class TrackerCell: UICollectionViewCell {
         button.translatesAutoresizingMaskIntoConstraints = false
         button.isHidden = true
         return button
-    }()
-    
-    private let statusLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
-        label.textColor = .white
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
     }()
     
     // MARK: - Lifecycle
@@ -129,17 +144,17 @@ final class TrackerCell: UICollectionViewCell {
         if !tracker.assignee.isEmpty {
             assigneeLabel.text = tracker.assignee
             assigneeLabel.isHidden = false
+            assigneeIcon.isHidden = false
         } else {
             assigneeLabel.text = nil
             assigneeLabel.isHidden = true
+            assigneeIcon.isHidden = true
         }
-        
-        // Скрываем статус, если он пустой или nil
+        // Статус
         if tracker.status.isEmpty {
             statusLabel.isHidden = true
         } else {
             statusLabel.isHidden = false
-            // Set status text and color
             let statusText: String
             let statusColor: UIColor
             switch tracker.status {
@@ -166,7 +181,12 @@ final class TrackerCell: UICollectionViewCell {
                 statusColor = .clear
             }
             statusLabel.text = statusText
-            statusLabel.textColor = statusColor
+            statusLabel.textColor = .white
+            statusLabel.backgroundColor = statusColor
+            statusLabel.layer.cornerRadius = 8
+            statusLabel.layer.masksToBounds = true
+            statusLabel.setContentHuggingPriority(.required, for: .horizontal)
+            statusLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
         }
         
         if let deadline = tracker.deadline {
@@ -277,8 +297,10 @@ final class TrackerCell: UICollectionViewCell {
         emojiLabel.text = nil
         daysCounterLabel.text = nil
         statusLabel.text = nil
+        statusLabel.isHidden = true
         assigneeLabel.text = nil
         assigneeLabel.isHidden = true
+        assigneeIcon.isHidden = true
     }
     
     // MARK: - Private methods
@@ -290,9 +312,10 @@ final class TrackerCell: UICollectionViewCell {
         contentView.addSubview(accomplishedButton)
         backgroundCellView.addSubview(emojiLabel)
         backgroundCellView.addSubview(descriptionLabel)
+        backgroundCellView.addSubview(assigneeIcon)
         backgroundCellView.addSubview(assigneeLabel)
-        backgroundCellView.addSubview(pinnedImage)
         backgroundCellView.addSubview(statusLabel)
+        backgroundCellView.addSubview(pinnedImage)
     }
     
     private func setupConstraints() {
@@ -300,38 +323,43 @@ final class TrackerCell: UICollectionViewCell {
             backgroundCellView.topAnchor.constraint(equalTo: topAnchor),
             backgroundCellView.leadingAnchor.constraint(equalTo: leadingAnchor),
             backgroundCellView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            backgroundCellView.heightAnchor.constraint(equalToConstant: 110),
+            backgroundCellView.heightAnchor.constraint(equalToConstant: 90),
             
-            emojiLabel.topAnchor.constraint(equalTo: backgroundCellView.topAnchor, constant: 12),
+            emojiLabel.topAnchor.constraint(equalTo: backgroundCellView.topAnchor, constant: 10),
             emojiLabel.leadingAnchor.constraint(equalTo: backgroundCellView.leadingAnchor, constant: 12),
             emojiLabel.heightAnchor.constraint(equalToConstant: 24),
             emojiLabel.widthAnchor.constraint(equalToConstant: 24),
             
-            statusLabel.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor, constant: 8),
-            statusLabel.leadingAnchor.constraint(equalTo: backgroundCellView.leadingAnchor, constant: 12),
-            statusLabel.trailingAnchor.constraint(equalTo: backgroundCellView.trailingAnchor, constant: -12),
-            
-            descriptionLabel.leadingAnchor.constraint(equalTo: backgroundCellView.leadingAnchor, constant: 12),
+            descriptionLabel.topAnchor.constraint(equalTo: backgroundCellView.topAnchor, constant: 10),
+            descriptionLabel.leadingAnchor.constraint(equalTo: emojiLabel.trailingAnchor, constant: 8),
             descriptionLabel.trailingAnchor.constraint(equalTo: backgroundCellView.trailingAnchor, constant: -12),
-            descriptionLabel.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 8),
             
-            assigneeLabel.leadingAnchor.constraint(equalTo: backgroundCellView.leadingAnchor, constant: 12),
-            assigneeLabel.trailingAnchor.constraint(equalTo: backgroundCellView.trailingAnchor, constant: -12),
-            assigneeLabel.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 4),
-            assigneeLabel.heightAnchor.constraint(equalToConstant: 18),
+            statusLabel.centerYAnchor.constraint(equalTo: assigneeIcon.centerYAnchor),
+            statusLabel.trailingAnchor.constraint(equalTo: backgroundCellView.trailingAnchor, constant: -12),
+            statusLabel.heightAnchor.constraint(equalToConstant: 20),
             
-            daysCounterLabel.topAnchor.constraint(equalTo: backgroundCellView.bottomAnchor, constant: 16),
+            assigneeLabel.centerYAnchor.constraint(equalTo: assigneeIcon.centerYAnchor),
+            assigneeLabel.leadingAnchor.constraint(equalTo: assigneeIcon.trailingAnchor, constant: 4),
+            assigneeLabel.trailingAnchor.constraint(lessThanOrEqualTo: statusLabel.leadingAnchor, constant: -8),
+            assigneeLabel.heightAnchor.constraint(equalToConstant: 16),
+            
+            assigneeIcon.bottomAnchor.constraint(equalTo: backgroundCellView.bottomAnchor, constant: -6),
+            assigneeIcon.leadingAnchor.constraint(equalTo: backgroundCellView.leadingAnchor, constant: 12),
+            assigneeIcon.widthAnchor.constraint(equalToConstant: 16),
+            assigneeIcon.heightAnchor.constraint(equalToConstant: 16),
+            
+            pinnedImage.topAnchor.constraint(equalTo: backgroundCellView.topAnchor, constant: 12),
+            pinnedImage.trailingAnchor.constraint(equalTo: backgroundCellView.trailingAnchor, constant: -12),
+            pinnedImage.heightAnchor.constraint(equalToConstant: 12),
+            pinnedImage.widthAnchor.constraint(equalToConstant: 8),
+            
+            daysCounterLabel.topAnchor.constraint(equalTo: backgroundCellView.bottomAnchor, constant: 8),
             daysCounterLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
             
             accomplishedButton.topAnchor.constraint(equalTo: backgroundCellView.bottomAnchor, constant: 8),
             accomplishedButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
             accomplishedButton.heightAnchor.constraint(equalToConstant: 34),
             accomplishedButton.widthAnchor.constraint(equalToConstant: 34),
-            
-            pinnedImage.topAnchor.constraint(equalTo: backgroundCellView.topAnchor, constant: 12),
-            pinnedImage.trailingAnchor.constraint(equalTo: backgroundCellView.trailingAnchor, constant: -12),
-            pinnedImage.heightAnchor.constraint(equalToConstant: 12),
-            pinnedImage.widthAnchor.constraint(equalToConstant: 8),
         ])
     }
 }

@@ -51,6 +51,8 @@ final class NewHabitViewController: UIViewController {
         ("done", "Завершена", UIColor(red: 102/255, green: 0/255, blue: 153/255, alpha: 1))
     ]
     
+    private let assigneeCharacterLimit = 38
+    
     // MARK: - UiElements
     
     private let contentView = UIView()
@@ -102,6 +104,17 @@ final class NewHabitViewController: UIViewController {
     private lazy var errorLabel: UILabel = {
         let label = UILabel()
         label.text = NSLocalizedString("limit", comment: "limit")
+        label.textColor = .ypRed
+        label.font = .systemFont(ofSize: 17)
+        label.textAlignment = .center
+        label.isHidden = true
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private lazy var errorAssigneeLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Ограничение 38 символов"
         label.textColor = .ypRed
         label.font = .systemFont(ofSize: 17)
         label.textAlignment = .center
@@ -197,11 +210,12 @@ final class NewHabitViewController: UIViewController {
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.layer.borderWidth = 2
         textField.layer.borderColor = UIColor.ypBlue.cgColor
+        textField.delegate = self
         return textField
     }()
     
     private lazy var assigneeStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [assigneeTextField])
+        let stackView = UIStackView(arrangedSubviews: [assigneeTextField, errorAssigneeLabel])
         stackView.distribution = .fill
         stackView.axis = .vertical
         stackView.spacing = 8
@@ -247,6 +261,9 @@ final class NewHabitViewController: UIViewController {
         } else {
             errorLabel.isHidden = false
         }
+        // Для assignee
+        let assigneeCount = assigneeTextField.text?.count ?? 0
+        errorAssigneeLabel.isHidden = assigneeCount < assigneeCharacterLimit
     }
     
     @objc
@@ -494,6 +511,7 @@ final class NewHabitViewController: UIViewController {
             stackViewForTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             stackViewForTextField.heightAnchor.constraint(equalToConstant: 75),
             errorLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            errorAssigneeLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             tableView.topAnchor.constraint(equalTo: stackViewForTextField.bottomAnchor, constant: 24),
             tableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
@@ -579,8 +597,14 @@ extension NewHabitViewController: NewHabitViewControllerDelegate {
 
 extension NewHabitViewController: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        let textField = textField.text ?? ""
-        let newLength = textField.count + string.count - range.length
+        if textField == assigneeTextField {
+            let currentText = textField.text ?? ""
+            let newLength = currentText.count + string.count - range.length
+            errorAssigneeLabel.isHidden = newLength < assigneeCharacterLimit
+            return newLength <= assigneeCharacterLimit
+        }
+        let textFieldText = textField.text ?? ""
+        let newLength = textFieldText.count + string.count - range.length
         return newLength <= characterLimitInField
     }
 }

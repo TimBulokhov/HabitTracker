@@ -334,7 +334,7 @@ final class NewSingleHabitViewController: UIViewController {
             return tracker
         } else {
             guard let id = editTrackerIrregular?.id else { return nil }
-            guard let isPinned = editTrackerIrregular?.isPinned else { return nil }
+            guard (editTrackerIrregular?.isPinned) != nil else { return nil }
             return Tracker(
                 id: id,
                 name: text,
