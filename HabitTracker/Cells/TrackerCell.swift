@@ -15,6 +15,7 @@ protocol TrackerCellDelegate: AnyObject {
 final class TrackerCell: UICollectionViewCell {
     weak var delegate: TrackerCellDelegate?
     private var isCompletedToday = false
+    private var tracker: Tracker?
     private var trackerId: UUID?
     
     // MARK: - UiElements
@@ -107,6 +108,7 @@ final class TrackerCell: UICollectionViewCell {
     // MARK: - Methods
     
     func setupCell(tracker: Tracker) {
+        self.tracker = tracker
         backgroundCellView.backgroundColor = tracker.color
         accomplishedButton.backgroundColor = tracker.color
         descriptionLabel.text = tracker.name
@@ -180,6 +182,12 @@ final class TrackerCell: UICollectionViewCell {
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = "HH:mm"
         let timeString = timeFormatter.string(from: deadline)
+        
+        // Если статус "done", всегда показываем "Задача завершена"
+        if let currentTracker = tracker, currentTracker.status == "done" {
+            return "Задача завершена"
+        }
+        
         if daysLeft == 0 {
             if deadline < Date() {
                 return "Просрочено сегодня"

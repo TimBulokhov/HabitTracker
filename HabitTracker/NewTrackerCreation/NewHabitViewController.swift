@@ -324,6 +324,12 @@ final class NewHabitViewController: UIViewController {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         let timeString = formatter.string(from: deadline)
+        
+        // Если статус "done", всегда показываем "Задача завершена"
+        if let tracker = editTrackerHabit, tracker.status == "done" {
+            return "Задача завершена"
+        }
+        
         if daysLeft == 0 {
             if deadline < Date() {
                 return "Просрочено сегодня"

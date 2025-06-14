@@ -242,10 +242,15 @@ final class TrackersViewController: UIViewController {
         if selectedFilter == nil {
             let filteredCategories = categories.compactMap { category -> TrackerCategory? in
                 let filteredTrackers = category.trackers.filter { tracker in
+                    // Скрываем завершенные события
                     let isCompletedEvent = tracker.isIrregular &&
                         tracker.deadline != nil &&
                         tracker.deadline! < Date()
                     if isCompletedEvent {
+                        return false
+                    }
+                    // Скрываем задачи со статусом "done"
+                    if tracker.status == "done" {
                         return false
                     }
                     // Если обычный трекер просрочен и статус не done — отправить уведомление о просрочке
