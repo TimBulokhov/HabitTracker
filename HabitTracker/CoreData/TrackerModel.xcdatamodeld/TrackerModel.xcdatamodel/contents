@@ -5,6 +5,7 @@
         <relationship name="trackers" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TrackerCoreData" inverseName="category" inverseEntity="TrackerCoreData"/>
     </entity>
     <entity name="TrackerCoreData" representedClassName="TrackerCoreData" syncable="YES" codeGenerationType="class">
+        <attribute name="assignee" optional="YES" attributeType="String"/>
         <attribute name="color" attributeType="String"/>
         <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="deadline" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
@@ -13,6 +14,7 @@
         <attribute name="isIrregular" attributeType="Boolean" defaultValueString="NO"/>
         <attribute name="isPinned" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="name" attributeType="String"/>
+        <attribute name="pinnedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="status" attributeType="String" defaultValueString="created"/>
         <relationship name="category" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TrackerCategoryCoreData" inverseName="trackers" inverseEntity="TrackerCategoryCoreData"/>
         <relationship name="records" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="TrackerRecordCoreData" inverseName="tracker" inverseEntity="TrackerRecordCoreData"/>

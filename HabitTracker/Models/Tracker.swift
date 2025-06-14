@@ -17,4 +17,6 @@ struct Tracker {
     var deadline: Date?
     let isIrregular: Bool
     let status: String
+    let assignee: String
+    let pinnedAt: Date?
 }

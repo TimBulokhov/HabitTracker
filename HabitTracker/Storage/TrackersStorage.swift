@@ -34,6 +34,7 @@ final class TrackersStorage {
         newTracker.color = UIColorSorting.hexString(from: tracker.color)
         newTracker.emoji = tracker.emoji
         newTracker.isPinned = tracker.isPinned
+        newTracker.pinnedAt = tracker.pinnedAt
         newTracker.createdAt = tracker.createdAt ?? Date()
         newTracker.deadline = tracker.deadline
         newTracker.status = tracker.status
@@ -61,7 +62,9 @@ final class TrackersStorage {
                     createdAt: trackerCoreData.createdAt,
                     deadline: trackerCoreData.deadline,
                     isIrregular: trackerCoreData.isIrregular,
-                    status: trackerCoreData.status ?? "created"
+                    status: trackerCoreData.status ?? "created",
+                    assignee: "",
+                    pinnedAt: trackerCoreData.pinnedAt
                 )
             }
             return trackers
@@ -87,7 +90,9 @@ final class TrackersStorage {
             createdAt: trackersCoreData.createdAt,
             deadline: trackersCoreData.deadline,
             isIrregular: trackersCoreData.isIrregular,
-            status: trackersCoreData.status ?? "created"
+            status: trackersCoreData.status ?? "created",
+            assignee: "",
+            pinnedAt: trackersCoreData.pinnedAt
         )
     }
     
@@ -119,9 +124,8 @@ final class TrackersStorage {
                 existingTracker.color = UIColorSorting.hexString(from: tracker.color)
                 existingTracker.emoji = tracker.emoji
                 existingTracker.isPinned = tracker.isPinned
-                if let createdAt = tracker.createdAt {
-                    existingTracker.createdAt = createdAt
-                }
+                existingTracker.pinnedAt = tracker.pinnedAt
+                existingTracker.createdAt = tracker.createdAt ?? existingTracker.createdAt ?? Date()
                 existingTracker.deadline = tracker.deadline
                 existingTracker.status = tracker.status
                 existingTracker.isIrregular = tracker.isIrregular

@@ -276,10 +276,34 @@ final class NewHabitViewController: UIViewController {
         let statusTitle = creatingTrackersModel[1].subTitleLabel
         let status = statusOptions.first(where: { $0.1 == statusTitle })?.0 ?? "created"
         if newTracker {
-            return Tracker(id: UUID(), name: text, color: color, emoji: emoji, isPinned: false, createdAt: Date(), deadline: deadline, isIrregular: false, status: status)
+            return Tracker(
+                id: UUID(),
+                name: text,
+                color: color,
+                emoji: emoji,
+                isPinned: false,
+                createdAt: Date(),
+                deadline: deadline,
+                isIrregular: false,
+                status: status,
+                assignee: "",
+                pinnedAt: nil
+            )
         } else {
             guard let editTracker = editTrackerHabit else { return nil }
-            return Tracker(id: editTracker.id, name: text, color: color, emoji: emoji, isPinned: editTracker.isPinned, createdAt: editTracker.createdAt, deadline: deadline, isIrregular: editTracker.isIrregular, status: status)
+            return Tracker(
+                id: editTracker.id,
+                name: text,
+                color: color,
+                emoji: emoji,
+                isPinned: editTracker.isPinned,
+                createdAt: editTracker.createdAt,
+                deadline: deadline,
+                isIrregular: editTracker.isIrregular,
+                status: status,
+                assignee: editTracker.assignee,
+                pinnedAt: editTracker.pinnedAt
+            )
         }
     }
     

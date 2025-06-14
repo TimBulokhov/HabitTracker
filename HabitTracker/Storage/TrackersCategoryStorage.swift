@@ -151,8 +151,9 @@ extension TrackersCategoryStorage {
         // Добавить в новую категорию (без дубликатов)
         var newTrackers = newCategoryCoreData.trackers?.allObjects as? [TrackerCoreData] ?? []
         newTrackers.removeAll { $0.id == tracker.id }
-        // Обновить дату перемещения
-        trackerCoreData.createdAt = Date()
+        // Сохраняем существующие значения и обновляем даты
+        trackerCoreData.pinnedAt = tracker.pinnedAt
+        trackerCoreData.createdAt = tracker.createdAt ?? trackerCoreData.createdAt ?? Date()
         newTrackers.append(trackerCoreData)
         newCategoryCoreData.trackers = NSSet(array: newTrackers)
         try context.save()

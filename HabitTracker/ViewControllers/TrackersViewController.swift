@@ -272,7 +272,30 @@ final class TrackersViewController: UIViewController {
                     return true
                 }
                 if filteredTrackers.isEmpty { return nil }
-                return TrackerCategory(title: category.title, trackers: filteredTrackers)
+                // Сортировка: закреплённые + незакреплённые
+                let pinned = filteredTrackers
+                    .filter { $0.isPinned }
+                    .sorted {
+                        if let firstPinned = $0.pinnedAt, let secondPinned = $1.pinnedAt {
+                            if firstPinned != secondPinned { return firstPinned < secondPinned }
+                        }
+                        return $0.id.uuidString < $1.id.uuidString
+                    }
+                let unpinned = filteredTrackers
+                    .filter { !$0.isPinned }
+                    .sorted {
+                        if let firstCreated = $0.createdAt, let secondCreated = $1.createdAt {
+                            if firstCreated != secondCreated { return firstCreated < secondCreated }
+                        }
+                        return $0.id.uuidString < $1.id.uuidString
+                    }
+                let sortedTrackers = pinned + unpinned
+                // DEBUG PRINT
+                print("Категория: \(category.title)")
+                for t in sortedTrackers {
+                    print("Трекер: \(t.name), id: \(t.id), createdAt: \(String(describing: t.createdAt)), pinnedAt: \(String(describing: t.pinnedAt)), isPinned: \(t.isPinned)")
+                }
+                return TrackerCategory(title: category.title, trackers: sortedTrackers)
             }
             visibleCategories = filteredCategories
         } else {
@@ -334,11 +357,28 @@ final class TrackersViewController: UIViewController {
                     }
                 }
                 if filteredTrackers.isEmpty { return nil }
-                // Сортируем: закреплённые сверху, остальные по дате создания
-                let sortedTrackers = filteredTrackers.sorted { (first: Tracker, second: Tracker) -> Bool in
-                    if first.isPinned && !second.isPinned { return true }
-                    if !first.isPinned && second.isPinned { return false }
-                    return (first.createdAt ?? Date.distantPast) < (second.createdAt ?? Date.distantPast)
+                // Сортировка: закреплённые + незакреплённые
+                let pinned = filteredTrackers
+                    .filter { $0.isPinned }
+                    .sorted {
+                        if let firstPinned = $0.pinnedAt, let secondPinned = $1.pinnedAt {
+                            if firstPinned != secondPinned { return firstPinned < secondPinned }
+                        }
+                        return $0.id.uuidString < $1.id.uuidString
+                    }
+                let unpinned = filteredTrackers
+                    .filter { !$0.isPinned }
+                    .sorted {
+                        if let firstCreated = $0.createdAt, let secondCreated = $1.createdAt {
+                            if firstCreated != secondCreated { return firstCreated < secondCreated }
+                        }
+                        return $0.id.uuidString < $1.id.uuidString
+                    }
+                let sortedTrackers = pinned + unpinned
+                // DEBUG PRINT
+                print("Категория: \(category.title)")
+                for t in sortedTrackers {
+                    print("Трекер: \(t.name), id: \(t.id), createdAt: \(String(describing: t.createdAt)), pinnedAt: \(String(describing: t.pinnedAt)), isPinned: \(t.isPinned)")
                 }
                 return TrackerCategory(title: category.title, trackers: sortedTrackers)
             }
@@ -832,10 +872,12 @@ extension TrackersViewController {
             color: tracker.color,
             emoji: tracker.emoji,
             isPinned: !tracker.isPinned,
-            createdAt: tracker.createdAt,
+            createdAt: tracker.createdAt ?? Date(),
             deadline: tracker.deadline,
             isIrregular: tracker.isIrregular,
-            status: tracker.status
+            status: tracker.status,
+            assignee: tracker.assignee,
+            pinnedAt: !tracker.isPinned ? Date() : nil
         )
         do {
             try trackerStore.updateTracker(with: updateTracker)
@@ -877,10 +919,12 @@ extension TrackersViewController: TrackerCellDelegate {
             color: tracker.color,
             emoji: tracker.emoji,
             isPinned: !tracker.isPinned,
-            createdAt: tracker.createdAt,
+            createdAt: tracker.createdAt ?? Date(),
             deadline: tracker.deadline,
             isIrregular: tracker.isIrregular,
-            status: tracker.status
+            status: tracker.status,
+            assignee: tracker.assignee,
+            pinnedAt: !tracker.isPinned ? Date() : nil
         )
         do {
             try trackerStore.updateTracker(with: updateTracker)

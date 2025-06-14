@@ -318,11 +318,36 @@ final class NewSingleHabitViewController: UIViewController {
         let color = colors[selectedColorIndexPath.row]
         let deadline = selectedDate
         if newTracker {
-            return Tracker(id: UUID(), name: text, color: color, emoji: emoji, isPinned: false, createdAt: Date(), deadline: deadline, isIrregular: true, status: "")
+            let tracker = Tracker(
+                id: UUID(),
+                name: text,
+                color: color,
+                emoji: emoji,
+                isPinned: false,
+                createdAt: Date(),
+                deadline: nil,
+                isIrregular: true,
+                status: "created",
+                assignee: "",
+                pinnedAt: nil
+            )
+            return tracker
         } else {
             guard let id = editTrackerIrregular?.id else { return nil }
             guard let isPinned = editTrackerIrregular?.isPinned else { return nil }
-            return Tracker(id: id, name: text, color: color, emoji: emoji, isPinned: isPinned, createdAt: editTrackerIrregular?.createdAt, deadline: deadline, isIrregular: true, status: "")
+            return Tracker(
+                id: id,
+                name: text,
+                color: color,
+                emoji: emoji,
+                isPinned: editTrackerIrregular?.isPinned ?? false,
+                createdAt: editTrackerIrregular?.createdAt ?? Date(),
+                deadline: deadline,
+                isIrregular: true,
+                status: editTrackerIrregular?.status ?? "created",
+                assignee: "",
+                pinnedAt: nil
+            )
         }
     }
     
