@@ -41,6 +41,23 @@ final class TrackersStorage {
         newTracker.isIrregular = tracker.isIrregular
         newTracker.assignee = tracker.assignee
         newTracker.details = tracker.details
+        
+        // Добавляем вложения
+        if let attachments = tracker.attachments {
+            for attachment in attachments {
+                guard let attachmentEntity = NSEntityDescription.entity(forEntityName: "AttachmentCoreData", in: context) else {
+                    continue
+                }
+                let attachmentCoreData = AttachmentCoreData(entity: attachmentEntity, insertInto: context)
+                attachmentCoreData.id = attachment.id
+                attachmentCoreData.type = attachment.type.rawValue
+                attachmentCoreData.url = attachment.url
+                attachmentCoreData.text = attachment.text
+                attachmentCoreData.fileName = attachment.fileName
+                attachmentCoreData.tracker = newTracker
+            }
+        }
+        
         return newTracker
     }
     
@@ -84,6 +101,25 @@ final class TrackersStorage {
         else {
             throw StorageError.failedDecoding
         }
+        
+        // Декодируем вложения
+        var attachments: [Attachment] = []
+        if let attachmentsCoreData = trackersCoreData.attachments?.allObjects as? [AttachmentCoreData] {
+            for attachmentCoreData in attachmentsCoreData {
+                guard let typeString = attachmentCoreData.type,
+                      let type = AttachmentType(rawValue: typeString) else {
+                    continue
+                }
+                let attachment = Attachment(
+                    type: type,
+                    url: attachmentCoreData.url,
+                    text: attachmentCoreData.text,
+                    fileName: attachmentCoreData.fileName
+                )
+                attachments.append(attachment)
+            }
+        }
+        
         return Tracker(
             id: id,
             name: name,
@@ -96,7 +132,8 @@ final class TrackersStorage {
             status: trackersCoreData.status ?? "created",
             assignee: trackersCoreData.assignee ?? "",
             pinnedAt: trackersCoreData.pinnedAt,
-            details: trackersCoreData.details
+            details: trackersCoreData.details,
+            attachments: attachments.isEmpty ? nil : attachments
         )
     }
     
@@ -135,6 +172,30 @@ final class TrackersStorage {
                 existingTracker.isIrregular = tracker.isIrregular
                 existingTracker.assignee = tracker.assignee
                 existingTracker.details = tracker.details
+                
+                // Удаляем старые вложения
+                if let oldAttachments = existingTracker.attachments?.allObjects as? [AttachmentCoreData] {
+                    for attachment in oldAttachments {
+                        context.delete(attachment)
+                    }
+                }
+                
+                // Добавляем новые вложения
+                if let attachments = tracker.attachments {
+                    for attachment in attachments {
+                        guard let attachmentEntity = NSEntityDescription.entity(forEntityName: "AttachmentCoreData", in: context) else {
+                            continue
+                        }
+                        let attachmentCoreData = AttachmentCoreData(entity: attachmentEntity, insertInto: context)
+                        attachmentCoreData.id = attachment.id
+                        attachmentCoreData.type = attachment.type.rawValue
+                        attachmentCoreData.url = attachment.url
+                        attachmentCoreData.text = attachment.text
+                        attachmentCoreData.fileName = attachment.fileName
+                        attachmentCoreData.tracker = existingTracker
+                    }
+                }
+                
                 try context.save()
             } else {
                 throw StorageError.trackerNotFound

@@ -6,6 +6,9 @@
 //
 
 import UIKit
+import MobileCoreServices
+import AVKit
+import UniformTypeIdentifiers
 
 protocol TrackerCreationDelegate: AnyObject {
     func didCreateTracker(_ tracker: Tracker, category: String)
@@ -242,36 +245,18 @@ final class NewHabitViewController: UIViewController {
         return textView
     }()
     
-    private lazy var attachIcon: UIImageView = {
-        let imageView = UIImageView(image: UIImage(systemName: "paperclip"))
-        imageView.tintColor = .ypBlue
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        return imageView
-    }()
-    
-    private lazy var attachLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Прикрепить вложения"
-        label.font = .systemFont(ofSize: 17, weight: .regular)
-        label.textColor = .ypBlue
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
     private lazy var attachButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
+        let image = UIImage(systemName: "paperclip")?.withRenderingMode(.alwaysTemplate)
+        button.setImage(image, for: .normal)
+        button.tintColor = .ypBlue
+        button.setTitle(" Прикрепить вложения", for: .normal)
+        button.setTitleColor(.ypBlue, for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 17, weight: .regular)
+        button.contentHorizontalAlignment = .left
         button.addTarget(self, action: #selector(attachButtonTapped), for: .touchUpInside)
         return button
-    }()
-    
-    private lazy var attachStack: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [attachIcon, attachLabel])
-        stack.axis = .horizontal
-        stack.spacing = 4
-        stack.alignment = .center
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        return stack
     }()
     
     private lazy var deadlineLabel: UILabel = {
@@ -294,9 +279,17 @@ final class NewHabitViewController: UIViewController {
         return stack
     }()
     
+    private var attachmentsStack: UIStackView?
+    
     // MARK: - Lifecycle
     
     private var deadlineTimer: Timer?
+    private var attachments: [Attachment] = []
+    
+    // Добавляем свойство для хранения constraint
+    private var deadlineStackTopConstraint: NSLayoutConstraint?
+    
+    private var presentedImageVC: UIViewController? = nil
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -377,7 +370,146 @@ final class NewHabitViewController: UIViewController {
     }
     
     @objc private func attachButtonTapped() {
-        // TODO: Реализовать выбор вложений (фото, файлы, ссылки)
+        let actionSheet = UIAlertController(title: "Добавить вложение", message: nil, preferredStyle: .actionSheet)
+        actionSheet.addAction(UIAlertAction(title: "Фото", style: .default) { _ in self.presentImagePicker(type: .photo) })
+        actionSheet.addAction(UIAlertAction(title: "Видео", style: .default) { _ in self.presentImagePicker(type: .video) })
+        actionSheet.addAction(UIAlertAction(title: "Файл", style: .default) { _ in self.presentDocumentPicker() })
+        actionSheet.addAction(UIAlertAction(title: "Ссылка", style: .default) { _ in self.presentLinkAlert() })
+        actionSheet.addAction(UIAlertAction(title: "Код", style: .default) { _ in self.presentCodeAlert() })
+        actionSheet.addAction(UIAlertAction(title: "Отмена", style: .cancel))
+        present(actionSheet, animated: true)
+    }
+    
+    private func presentImagePicker(type: AttachmentType) {
+        let picker = UIImagePickerController()
+        picker.delegate = self
+        if #available(iOS 14.0, *) {
+            picker.mediaTypes = type == .photo ? [UTType.image.identifier] : [UTType.movie.identifier]
+        } else {
+            picker.mediaTypes = type == .photo ? [kUTTypeImage as String] : [kUTTypeMovie as String]
+        }
+        picker.sourceType = .photoLibrary
+        present(picker, animated: true)
+    }
+    
+    private func presentDocumentPicker() {
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
+        picker.delegate = self
+        present(picker, animated: true)
+    }
+    
+    private func presentLinkAlert() {
+        let alert = UIAlertController(title: "Вставьте ссылку", message: nil, preferredStyle: .alert)
+        alert.addTextField { $0.placeholder = "https://example.com" }
+        alert.addAction(UIAlertAction(title: "Добавить", style: .default) { [weak self] _ in
+            guard let text = alert.textFields?.first?.text, !text.isEmpty else { return }
+            // Проверяем, что текст похож на URL
+            if let url = URL(string: text), UIApplication.shared.canOpenURL(url) {
+                let attachment = Attachment(type: .link, url: url, text: text)
+                self?.attachments.append(attachment)
+                self?.updateAttachmentsView()
+            } else {
+                // Если не похоже на URL, показываем ошибку
+                let errorAlert = UIAlertController(title: "Ошибка", message: "Введите корректную ссылку", preferredStyle: .alert)
+                errorAlert.addAction(UIAlertAction(title: "OK", style: .default))
+                self?.present(errorAlert, animated: true)
+            }
+        })
+        alert.addAction(UIAlertAction(title: "Отмена", style: .cancel))
+        present(alert, animated: true)
+    }
+    
+    private func presentCodeAlert() {
+        let alert = UIAlertController(title: "Вставьте код", message: nil, preferredStyle: .alert)
+        alert.addTextField { $0.placeholder = "Ваш код..." }
+        alert.addAction(UIAlertAction(title: "Добавить", style: .default) { [weak self] _ in
+            guard let text = alert.textFields?.first?.text, !text.isEmpty else { return }
+            let attachment = Attachment(type: .code, text: text)
+            self?.attachments.append(attachment)
+            self?.updateAttachmentsView()
+        })
+        alert.addAction(UIAlertAction(title: "Отмена", style: .cancel))
+        present(alert, animated: true)
+    }
+    
+    private func updateAttachmentsView() {
+        attachmentsStack?.removeFromSuperview()
+        deadlineStackTopConstraint?.isActive = false
+        if !attachments.isEmpty {
+            let stack = UIStackView()
+            stack.axis = .vertical
+            stack.spacing = 8
+            stack.translatesAutoresizingMaskIntoConstraints = false
+            for (index, att) in attachments.enumerated() {
+                let hStack = UIStackView()
+                hStack.axis = .horizontal
+                hStack.spacing = 8
+                hStack.isUserInteractionEnabled = true
+                hStack.tag = index
+                // Кнопка удаления
+                let deleteButton = UIButton(type: .system)
+                deleteButton.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
+                deleteButton.tintColor = .ypRed
+                deleteButton.tag = index
+                deleteButton.addTarget(self, action: #selector(deleteAttachment(_:)), for: .touchUpInside)
+                deleteButton.widthAnchor.constraint(equalToConstant: 22).isActive = true
+                deleteButton.heightAnchor.constraint(equalToConstant: 22).isActive = true
+                // Иконка типа вложения
+                let icon = UIImageView()
+                icon.contentMode = .scaleAspectFit
+                icon.tintColor = .ypBlue
+                switch att.type {
+                case .photo: icon.image = UIImage(systemName: "photo")
+                case .video: icon.image = UIImage(systemName: "video")
+                case .file: icon.image = UIImage(systemName: "doc")
+                case .link: icon.image = UIImage(systemName: "link")
+                case .code: icon.image = UIImage(systemName: "chevron.left.slash.chevron.right")
+                case .other: icon.image = UIImage(systemName: "questionmark")
+                }
+                icon.widthAnchor.constraint(equalToConstant: 22).isActive = true
+                icon.heightAnchor.constraint(equalToConstant: 22).isActive = true
+                // Текст вложения
+                let label = UILabel()
+                label.font = .systemFont(ofSize: 15)
+                label.textColor = .label
+                label.text = att.fileName ?? att.text ?? att.url?.lastPathComponent ?? att.url?.absoluteString ?? "Вложение"
+                // Добавляем элементы
+                hStack.addArrangedSubview(deleteButton)
+                hStack.addArrangedSubview(icon)
+                hStack.addArrangedSubview(label)
+                // Добавляем tap gesture для просмотра вложения
+                let tap = UITapGestureRecognizer(target: self, action: #selector(attachmentTapped(_:)))
+                hStack.addGestureRecognizer(tap)
+                stack.addArrangedSubview(hStack)
+            }
+            contentView.addSubview(stack)
+            NSLayoutConstraint.activate([
+                stack.topAnchor.constraint(equalTo: attachButton.bottomAnchor, constant: 8),
+                stack.leadingAnchor.constraint(equalTo: attachButton.leadingAnchor),
+                stack.trailingAnchor.constraint(lessThanOrEqualTo: contentView.trailingAnchor, constant: -16)
+            ])
+            attachmentsStack = stack
+            deadlineStackTopConstraint = deadlineStack.topAnchor.constraint(equalTo: stack.bottomAnchor, constant: 16)
+        } else {
+            deadlineStackTopConstraint = deadlineStack.topAnchor.constraint(equalTo: attachButton.bottomAnchor, constant: 16)
+        }
+        deadlineStackTopConstraint?.isActive = true
+    }
+    
+    @objc private func deleteAttachment(_ sender: UIButton) {
+        let index = sender.tag
+        if index < attachments.count {
+            attachments.remove(at: index)
+            updateAttachmentsView()
+        }
+    }
+    
+    @objc private func attachmentTapped(_ sender: UITapGestureRecognizer) {
+        guard let hStack = sender.view as? UIStackView else { return }
+        let index = hStack.tag
+        if index < attachments.count {
+            viewAttachmentContent(attachments[index])
+        }
     }
     
     // MARK: - Private methods
@@ -405,7 +537,8 @@ final class NewHabitViewController: UIViewController {
                 status: status,
                 assignee: assignee,
                 pinnedAt: nil,
-                details: details
+                details: details,
+                attachments: attachments.isEmpty ? nil : attachments
             )
         } else {
             guard let editTracker = editTrackerHabit else { return nil }
@@ -421,7 +554,8 @@ final class NewHabitViewController: UIViewController {
                 status: status,
                 assignee: assignee,
                 pinnedAt: editTracker.pinnedAt,
-                details: details
+                details: details,
+                attachments: attachments.isEmpty ? nil : attachments
             )
         }
     }
@@ -444,6 +578,13 @@ final class NewHabitViewController: UIViewController {
         nameTrackerTextField.text = trackerForEditing.name
         assigneeTextField.text = trackerForEditing.assignee
         detailsTextView.text = trackerForEditing.details
+        
+        // Загружаем вложения
+        if let existingAttachments = trackerForEditing.attachments {
+            attachments = existingAttachments
+            updateAttachmentsView()
+        }
+        
         updateSubitle(nameSubitle: categiryForEditing)
         if let statusTuple = statusOptions.first(where: { $0.0 == trackerForEditing.status }) {
             creatingTrackersModel[1].subTitleLabel = statusTuple.1
@@ -528,7 +669,7 @@ final class NewHabitViewController: UIViewController {
             return "[overdue]Просрочено на \(overdueDays) " + declensionDays(overdueDays)
         } else {
             return ""
-    }
+        }
     }
     
     private func updateCreatingButton() {
@@ -562,7 +703,6 @@ final class NewHabitViewController: UIViewController {
         contentView.addSubview(assigneeStackView)
         contentView.addSubview(detailsTextView)
         contentView.addSubview(attachButton)
-        attachButton.addSubview(attachStack)
         contentView.addSubview(deadlineStack)
         contentView.addSubview(collectionView)
         contentView.addSubview(cancelButton)
@@ -609,13 +749,6 @@ final class NewHabitViewController: UIViewController {
             attachButton.topAnchor.constraint(equalTo: detailsTextView.bottomAnchor, constant: 8),
             attachButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             attachButton.heightAnchor.constraint(equalToConstant: 32),
-            attachStack.leadingAnchor.constraint(equalTo: attachButton.leadingAnchor),
-            attachStack.topAnchor.constraint(equalTo: attachButton.topAnchor),
-            attachStack.bottomAnchor.constraint(equalTo: attachButton.bottomAnchor),
-            attachStack.trailingAnchor.constraint(equalTo: attachButton.trailingAnchor),
-            attachIcon.widthAnchor.constraint(equalToConstant: 20),
-            attachIcon.heightAnchor.constraint(equalToConstant: 20),
-            deadlineStack.topAnchor.constraint(equalTo: attachButton.bottomAnchor, constant: 16),
             deadlineStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             deadlineStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             collectionView.topAnchor.constraint(equalTo: deadlineStack.bottomAnchor, constant: 32),
@@ -632,6 +765,9 @@ final class NewHabitViewController: UIViewController {
             creatingButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             creatingButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16)
         ])
+        // Устанавливаем начальный constraint для deadlineStack
+        deadlineStackTopConstraint = deadlineStack.topAnchor.constraint(equalTo: attachButton.bottomAnchor, constant: 16)
+        deadlineStackTopConstraint?.isActive = true
     }
     
     private func startDeadlineTimer() {
@@ -655,6 +791,118 @@ final class NewHabitViewController: UIViewController {
             } else {
                 completedDaysLabel.text = deadlineText
                 completedDaysLabel.textColor = .label
+            }
+        }
+    }
+    
+    // Добавляем метод для просмотра вложений
+    fileprivate func viewAttachmentContent(_ attachment: Attachment) {
+        switch attachment.type {
+        case .photo:
+            if let url = attachment.url {
+                let imageView = UIImageView()
+                imageView.contentMode = .scaleAspectFit
+                imageView.backgroundColor = .black
+                imageView.isUserInteractionEnabled = true
+                if let data = try? Data(contentsOf: url),
+                   let image = UIImage(data: data) {
+                    imageView.image = image
+                    let viewController = UIViewController()
+                    viewController.view.backgroundColor = .black
+                    viewController.modalPresentationStyle = .fullScreen
+                    // Затемнённый фон для закрытия по тапу
+                    let bgTap = UITapGestureRecognizer(target: self, action: #selector(dismissFullScreen))
+                    viewController.view.addGestureRecognizer(bgTap)
+                    // Добавляем imageView
+                    imageView.translatesAutoresizingMaskIntoConstraints = false
+                    viewController.view.addSubview(imageView)
+                    NSLayoutConstraint.activate([
+                        imageView.topAnchor.constraint(equalTo: viewController.view.topAnchor),
+                        imageView.bottomAnchor.constraint(equalTo: viewController.view.bottomAnchor),
+                        imageView.leadingAnchor.constraint(equalTo: viewController.view.leadingAnchor),
+                        imageView.trailingAnchor.constraint(equalTo: viewController.view.trailingAnchor)
+                    ])
+                    // Кнопка закрытия
+                    let closeButton = UIButton(type: .system)
+                    closeButton.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
+                    closeButton.tintColor = .white
+                    closeButton.translatesAutoresizingMaskIntoConstraints = false
+                    closeButton.backgroundColor = UIColor.black.withAlphaComponent(0.2)
+                    closeButton.layer.cornerRadius = 24
+                    closeButton.clipsToBounds = true
+                    viewController.view.addSubview(closeButton)
+                    NSLayoutConstraint.activate([
+                        closeButton.topAnchor.constraint(equalTo: viewController.view.safeAreaLayoutGuide.topAnchor, constant: 24),
+                        closeButton.trailingAnchor.constraint(equalTo: viewController.view.trailingAnchor, constant: -24),
+                        closeButton.widthAnchor.constraint(equalToConstant: 48),
+                        closeButton.heightAnchor.constraint(equalToConstant: 48)
+                    ])
+                    closeButton.addTarget(self, action: #selector(dismissFullScreen), for: .touchUpInside)
+                    // Свайп вниз для закрытия
+                    let pan = UIPanGestureRecognizer(target: self, action: #selector(handleImagePan(_:)))
+                    viewController.view.addGestureRecognizer(pan)
+                    present(viewController, animated: true)
+                }
+            }
+            
+        case .video:
+            if let url = attachment.url {
+                let player = AVPlayer(url: url)
+                let playerViewController = AVPlayerViewController()
+                playerViewController.player = player
+                present(playerViewController, animated: true) {
+                    player.play()
+                }
+            }
+            
+        case .file:
+            if let url = attachment.url {
+                let documentViewController = UIDocumentInteractionController(url: url)
+                documentViewController.delegate = self
+                documentViewController.presentPreview(animated: true)
+            }
+            
+        case .link:
+            if let url = attachment.url {
+                UIApplication.shared.open(url)
+            }
+            
+        case .code:
+            if let text = attachment.text {
+                let alert = UIAlertController(title: "Код", message: text, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Копировать", style: .default) { _ in
+                    UIPasteboard.general.string = text
+                })
+                alert.addAction(UIAlertAction(title: "Закрыть", style: .cancel))
+                present(alert, animated: true)
+            }
+            
+        case .other:
+            break
+        }
+    }
+
+    @objc private func dismissFullScreen() {
+        if let presented = presentedViewController {
+            presented.dismiss(animated: true)
+        } else if let presented = presentedImageVC {
+            presented.dismiss(animated: true)
+            presentedImageVC = nil
+        }
+    }
+
+    @objc private func handleImagePan(_ gesture: UIPanGestureRecognizer) {
+        guard let vc = presentedViewController else { return }
+        let translation = gesture.translation(in: vc.view)
+        if gesture.state == .changed {
+            vc.view.transform = CGAffineTransform(translationX: 0, y: translation.y)
+        } else if gesture.state == .ended {
+            if translation.y > 120 {
+                vc.dismiss(animated: true)
+            } else {
+                UIView.animate(withDuration: 0.2) {
+                    vc.view.transform = .identity
+                }
             }
         }
     }
@@ -853,4 +1101,43 @@ extension NewHabitViewController: UITextViewDelegate {
     }
     func textViewDidBeginEditing(_ textView: UITextView) {}
     func textViewDidEndEditing(_ textView: UITextView) {}
+}
+
+// MARK: - UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIDocumentPickerDelegate
+
+extension NewHabitViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIDocumentPickerDelegate {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        if let imageUrl = info[.imageURL] as? URL {
+            let attachment = Attachment(type: .photo, url: imageUrl, fileName: imageUrl.lastPathComponent)
+            attachments.append(attachment)
+        } else if let image = info[.originalImage] as? UIImage {
+            // Сохраняем изображение во временный файл
+            if let data = image.jpegData(compressionQuality: 0.95) {
+                let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".jpg")
+                try? data.write(to: tempUrl)
+                let attachment = Attachment(type: .photo, url: tempUrl, fileName: tempUrl.lastPathComponent)
+                attachments.append(attachment)
+            }
+        } else if let videoUrl = info[.mediaURL] as? URL {
+            let attachment = Attachment(type: .video, url: videoUrl, fileName: videoUrl.lastPathComponent)
+            attachments.append(attachment)
+        }
+        updateAttachmentsView()
+        picker.dismiss(animated: true)
+    }
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        for url in urls {
+            let attachment = Attachment(type: .file, url: url, fileName: url.lastPathComponent)
+            attachments.append(attachment)
+        }
+        updateAttachmentsView()
+    }
+}
+
+// MARK: - UIDocumentInteractionControllerDelegate
+
+extension NewHabitViewController: UIDocumentInteractionControllerDelegate {
+    func documentInteractionControllerViewControllerForPreview(_ controller: UIDocumentInteractionController) -> UIViewController {
+        return self
+    }
 }
