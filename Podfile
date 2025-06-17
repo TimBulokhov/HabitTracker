@@ -9,8 +9,8 @@ target 'HabitTracker' do
 
   # Pods for HabitTracker
 
-  pod 'AppMetricaCore', '~> 5.4.0'
-  
+  pod 'AppMetricaCore', '~> 5.4.0' 
+
   # Firebase
   pod 'Firebase/Core'
   pod 'Firebase/Auth'

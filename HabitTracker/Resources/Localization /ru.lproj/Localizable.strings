@@ -93,4 +93,5 @@
 "completionRate" = "Процент завершенности";
 "overdueTasks" = "Просроченных задач";
 
-"profile" = "profile";
+"profile" = "Профиль";
+"notifications" = "Уведомления";

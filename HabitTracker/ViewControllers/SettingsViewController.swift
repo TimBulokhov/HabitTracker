@@ -22,9 +22,24 @@ final class SettingsViewController: UIViewController {
     
     // Личные данные
     private let personalDataSection = SettingsSection(title: "Личные данные")
-    private let nameField = SettingsTextField(placeholder: "Имя")
-    private let surnameField = SettingsTextField(placeholder: "Фамилия")
-    private let tagField = SettingsTextField(placeholder: "@Уникальный тег")
+    private let nameField: SettingsTextField = {
+        let field = SettingsTextField()
+        field.placeholder = "Имя"
+        field.translatesAutoresizingMaskIntoConstraints = false
+        return field
+    }()
+    private let surnameField: SettingsTextField = {
+        let field = SettingsTextField()
+        field.placeholder = "Фамилия"
+        field.translatesAutoresizingMaskIntoConstraints = false
+        return field
+    }()
+    private let tagField: SettingsTextField = {
+        let field = SettingsTextField()
+        field.placeholder = "Тег"
+        field.translatesAutoresizingMaskIntoConstraints = false
+        return field
+    }()
     
     // Аккаунт
     private let accountSection = SettingsSection(title: "Аккаунт")
@@ -47,7 +62,7 @@ final class SettingsViewController: UIViewController {
     
     private func setupUI() {
         view.backgroundColor = UIColor(named: "ypWhite")
-        title = "Профиль"
+        title = NSLocalizedString("profile",  comment: "profile")
         navigationController?.navigationBar.prefersLargeTitles = true
         
         // ScrollView
@@ -174,15 +189,45 @@ final class SettingsViewController: UIViewController {
     }
     
     private func setupActions() {
+        avatarImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(avatarTapped)))
         avatarButton.addTarget(self, action: #selector(avatarTapped), for: .touchUpInside)
         avatarButton.addTarget(self, action: #selector(avatarTouchDown), for: .touchDown)
-        avatarButton.addTarget(self, action: #selector(avatarTouchUp), for: [.touchUpInside, .touchUpOutside, .touchCancel])
+        
+        // Устанавливаем делегаты для текстовых полей
+        nameField.delegate = self
+        surnameField.delegate = self
+        tagField.delegate = self
+        
         changePasswordButton.addTarget(self, action: #selector(changePasswordTapped), for: .touchUpInside)
         logoutButton.addTarget(self, action: #selector(logoutTapped), for: .touchUpInside)
         
         // Добавляем обработку тапа по экрану
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         view.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc private func textFieldDidChange() {
+        updateAvatarImage()
+    }
+    
+    private func updateAvatarImage() {
+        avatarOverlay.isHidden = true
+        if let avatarImage = avatarImage {
+            avatarImageView.image = avatarImage
+        } else {
+            let name = nameField.text ?? ""
+            let surname = surnameField.text ?? ""
+            
+            if name.isEmpty && surname.isEmpty {
+                // Если имя и фамилия пустые, показываем знак вопроса
+                let config = UIImage.SymbolConfiguration(pointSize: 40, weight: .medium)
+                avatarImageView.image = UIImage(systemName: "person.crop.circle.fill", withConfiguration: config)
+                avatarImageView.tintColor = .systemGray
+            } else {
+                // Иначе показываем инициалы
+                avatarImageView.image = generateInitialsImage(name: name, surname: surname)
+            }
+        }
     }
     
     @objc private func avatarTouchDown() {
@@ -200,8 +245,9 @@ final class SettingsViewController: UIViewController {
             alert.addAction(UIAlertAction(title: "Удалить фото", style: .destructive) { [weak self] _ in
                 guard let self = self, let userId = self.userId else { return }
                 self.avatarImage = nil
-                self.avatarImageView.image = self.generateInitialsImage(name: self.nameField.text ?? "", surname: self.surnameField.text ?? "")
-                self.deleteAvatarFile(userId: userId)  // Удаляем файл аватара
+                self.updateAvatarImage()
+                self.avatarOverlay.isHidden = true
+                self.deleteAvatarFile(userId: userId)
                 
                 // Обновляем профиль в Firestore, удаляя avatarFileName
                 var updateData: [String: Any] = [
@@ -209,7 +255,7 @@ final class SettingsViewController: UIViewController {
                     "surname": self.surnameField.text ?? "",
                     "tag": self.tagField.text ?? ""
                 ]
-                updateData["avatarFileName"] = FieldValue.delete()  // Удаляем поле avatarFileName
+                updateData["avatarFileName"] = FieldValue.delete()
                 self.updateUserProfile(userId: userId, updateData: updateData)
             })
         }
@@ -218,7 +264,10 @@ final class SettingsViewController: UIViewController {
             self?.showImagePicker()
         })
         
-        alert.addAction(UIAlertAction(title: "Отмена", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Отмена", style: .cancel) { [weak self] _ in
+            self?.avatarOverlay.isHidden = true
+            self?.updateAvatarImage()
+        })
         present(alert, animated: true)
     }
     
@@ -318,9 +367,7 @@ final class SettingsViewController: UIViewController {
     @objc private func logoutTapped() {
         do {
             try Auth.auth().signOut()
-            let authVC = AuthViewController()
-            authVC.modalPresentationStyle = .fullScreen
-            present(authVC, animated: true)
+            setRootViewController(AuthViewController())
         } catch {
             showBanner(message: error.localizedDescription, isError: true)
         }
@@ -354,13 +401,10 @@ final class SettingsViewController: UIViewController {
                 // Загружаем аватар из файловой системы
                 if let avatarFileName = data?["avatarFileName"] as? String,
                    let avatarImage = self.loadAvatarFromFileSystem(fileName: avatarFileName) {
-                    self.avatarImageView.image = avatarImage
                     self.avatarImage = avatarImage
+                    self.avatarImageView.image = avatarImage
                 } else {
-                    // Если аватара нет, показываем инициалы
-                    let name = data?["name"] as? String ?? ""
-                    let surname = data?["surname"] as? String ?? ""
-                    self.avatarImageView.image = self.generateInitialsImage(name: name, surname: surname)
+                    self.updateAvatarImage()
                 }
             }
         }
@@ -547,31 +591,65 @@ final class SettingsViewController: UIViewController {
             print("Error deleting avatar file: \(error)")
         }
     }
+    
+    private func setRootViewController(_ vc: UIViewController) {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first else { return }
+        func dismissAllPresented(from root: UIViewController, completion: @escaping () -> Void) {
+            if let presented = root.presentedViewController {
+                presented.dismiss(animated: false) {
+                    dismissAllPresented(from: root, completion: completion)
+                }
+            } else {
+                completion()
+            }
+        }
+        if let root = window.rootViewController {
+            dismissAllPresented(from: root) {
+                window.rootViewController = vc
+                window.makeKeyAndVisible()
+            }
+        } else {
+            window.rootViewController = vc
+            window.makeKeyAndVisible()
+        }
+    }
 }
 
 // MARK: - PHPickerViewControllerDelegate
 extension SettingsViewController: PHPickerViewControllerDelegate {
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
         picker.dismiss(animated: true)
-        
-        guard let result = results.first else { return }
-        
+        avatarOverlay.isHidden = true
+
+        guard let result = results.first else {
+            updateAvatarImage()
+            return
+        }
+
         result.itemProvider.loadObject(ofClass: UIImage.self) { [weak self] object, error in
             if let error = error {
                 DispatchQueue.main.async {
                     self?.showBanner(message: error.localizedDescription, isError: true)
+                    self?.avatarOverlay.isHidden = true
                 }
                 return
             }
-            
+
             if let image = object as? UIImage {
                 DispatchQueue.main.async {
                     self?.avatarImage = image
                     self?.avatarImageView.image = image
                     self?.avatarImageView.backgroundColor = .clear
+                    self?.avatarOverlay.isHidden = true
                 }
             }
         }
+    }
+
+    func pickerDidCancel(_ picker: PHPickerViewController) {
+        avatarOverlay.isHidden = true
+        updateAvatarImage()
     }
 }
 
@@ -617,54 +695,39 @@ class SettingsSection: UIView {
 }
 
 // MARK: - Settings TextField
-class SettingsTextField: UIView {
-    let textField = UITextField()
-    
-    init(placeholder: String) {
-        super.init(frame: .zero)
-        backgroundColor = .secondarySystemBackground
-        layer.cornerRadius = 12
-        layer.borderWidth = 1
-        layer.borderColor = UIColor.systemGray4.cgColor
-        textField.placeholder = placeholder
-        textField.font = .systemFont(ofSize: 16)
-        textField.borderStyle = .none
-        textField.backgroundColor = .clear
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.clearButtonMode = .whileEditing
-        textField.textColor = .label
-        textField.returnKeyType = .done
-        textField.delegate = self
-        textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 44))
-        textField.leftViewMode = .always
-        let placeholderColor = UIColor.systemGray2
-        textField.attributedPlaceholder = NSAttributedString(string: placeholder, attributes: [.foregroundColor: placeholderColor])
-        addSubview(textField)
-        NSLayoutConstraint.activate([
-            textField.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 7),
-            textField.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -7),
-            textField.topAnchor.constraint(equalTo: topAnchor),
-            textField.bottomAnchor.constraint(equalTo: bottomAnchor),
-            heightAnchor.constraint(equalToConstant: 44),
-            widthAnchor.constraint(equalToConstant: 320)
-        ])
-        translatesAutoresizingMaskIntoConstraints = false
-    }
-    
-    var text: String? {
-        get { textField.text }
-        set { textField.text = newValue }
+class SettingsTextField: UITextField {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupTextField()
     }
     
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: coder)
+        setupTextField()
+    }
+    
+    private func setupTextField() {
+        backgroundColor = UIColor.secondarySystemBackground
+        layer.cornerRadius = 12
+        setLeftPaddingPoints(16)
+        font = UIFont.systemFont(ofSize: 17)
+        heightAnchor.constraint(equalToConstant: 60).isActive = true
+    }
+    
+    func setLeftPaddingPoints(_ amount: CGFloat) {
+        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: amount, height: self.frame.size.height))
+        self.leftView = paddingView
+        self.leftViewMode = .always
     }
 }
 
 // MARK: - UITextFieldDelegate
-extension SettingsTextField: UITextFieldDelegate {
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
+extension SettingsViewController: UITextFieldDelegate {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        // Вызываем обновление аватарки после изменения текста
+        DispatchQueue.main.async { [weak self] in
+            self?.updateAvatarImage()
+        }
         return true
     }
 }

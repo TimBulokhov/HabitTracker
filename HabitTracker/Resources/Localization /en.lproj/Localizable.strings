@@ -92,3 +92,6 @@
 "completedEvents" = "Completed Events";
 "completionRate" = "Completion Rate";
 "overdueTasks" = "Overdue Tasks";
+
+"notifications" = "Notifications";
+"profile" = "Profile";

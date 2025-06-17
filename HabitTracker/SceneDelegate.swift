@@ -26,7 +26,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Проверяем, авторизован ли пользователь
         if Auth.auth().currentUser != nil {
             // Если пользователь уже авторизован, показываем основной интерфейс
-            window.rootViewController = dataStorage.firstLaunchApplication ? (TabBarController()) : (OnboardViewController())
+        window.rootViewController = dataStorage.firstLaunchApplication ? (TabBarController()) : (OnboardViewController())
         } else {
             // Если пользователь не авторизован, показываем экран авторизации
             window.rootViewController = AuthViewController()
