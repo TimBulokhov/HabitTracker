@@ -9,6 +9,7 @@ import UIKit
 import MobileCoreServices
 import AVKit
 import UniformTypeIdentifiers
+import FirebaseFirestore
 
 protocol TrackerCreationDelegate: AnyObject {
     func didCreateTracker(_ tracker: Tracker, category: String)
@@ -291,6 +292,32 @@ final class NewHabitViewController: UIViewController {
     
     private var presentedImageVC: UIViewController? = nil
     
+    // --- Для автокомплита assignee ---
+    struct UserSearchEntry {
+        let userId: String
+        let email: String
+        let tag: String?
+        let name: String?
+        let surname: String?
+        
+        var searchVariants: [String] {
+            var variants = [email]
+            if let tag = tag, !tag.isEmpty { variants.append(tag) }
+            if let name = name, let surname = surname, !name.isEmpty, !surname.isEmpty {
+                variants.append("\(name) \(surname)")
+            }
+            if let name = name, !name.isEmpty { variants.append(name) }
+            if let surname = surname, !surname.isEmpty { variants.append(surname) }
+            return variants
+        }
+    }
+
+    // --- Массив для хранения всех пользователей ---
+    private var allUsers: [UserSearchEntry] = []
+    
+    private var filteredUsers: [UserSearchEntry] = []
+    private var assigneeSuggestionsTableView: UITableView?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         configViews()
@@ -303,6 +330,9 @@ final class NewHabitViewController: UIViewController {
         analyticsService.report(event: .open, params: ["Screen" : "NewHabit"])
         completedDaysLabel.textColor = .label
         updateDeadlineLabel()
+        loadAllUsersForAssignee()
+        setupAssigneeAutocompleteTable()
+        assigneeTextField.addTarget(self, action: #selector(assigneeTextChanged), for: .editingChanged)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -906,6 +936,59 @@ final class NewHabitViewController: UIViewController {
             }
         }
     }
+
+    private func loadAllUsersForAssignee() {
+        let db = Firestore.firestore()
+        db.collection("users").getDocuments { [weak self] snapshot, error in
+            guard let self = self else { return }
+            guard let documents = snapshot?.documents, error == nil else { return }
+            self.allUsers = documents.compactMap { doc in
+                let data = doc.data()
+                return UserSearchEntry(
+                    userId: doc.documentID,
+                    email: data["email"] as? String ?? "",
+                    tag: data["tag"] as? String,
+                    name: data["name"] as? String,
+                    surname: data["surname"] as? String
+                )
+            }
+        }
+    }
+
+    private func setupAssigneeAutocompleteTable() {
+        let tableView = UITableView()
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.isHidden = true
+        tableView.layer.cornerRadius = 12
+        tableView.layer.borderWidth = 1
+        tableView.layer.borderColor = UIColor.ypBlue.cgColor
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "AssigneeSuggestionCell")
+        view.addSubview(tableView)
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: assigneeTextField.bottomAnchor, constant: 2),
+            tableView.leadingAnchor.constraint(equalTo: assigneeTextField.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: assigneeTextField.trailingAnchor),
+            tableView.heightAnchor.constraint(equalToConstant: 150)
+        ])
+        assigneeSuggestionsTableView = tableView
+    }
+
+    @objc private func assigneeTextChanged() {
+        let input = assigneeTextField.text?.lowercased() ?? ""
+        if input.isEmpty {
+            filteredUsers = []
+            assigneeSuggestionsTableView?.isHidden = true
+            assigneeSuggestionsTableView?.reloadData()
+            return
+        }
+        filteredUsers = allUsers.filter { user in
+            user.searchVariants.contains { $0.lowercased().contains(input) }
+        }
+        assigneeSuggestionsTableView?.isHidden = filteredUsers.isEmpty
+        assigneeSuggestionsTableView?.reloadData()
+    }
 }
 
 extension NewHabitViewController: UIScrollViewDelegate {
@@ -956,10 +1039,30 @@ extension NewHabitViewController: UITextFieldDelegate {
 
 extension NewHabitViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if tableView == assigneeSuggestionsTableView {
+            return filteredUsers.count
+        }
         return creatingTrackersModel.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if tableView == assigneeSuggestionsTableView {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "AssigneeSuggestionCell", for: indexPath)
+            let user = filteredUsers[indexPath.row]
+            var display = ""
+            if let tag = user.tag, !tag.isEmpty {
+                display += tag
+            }
+            if let name = user.name, !name.isEmpty {
+                display += " " + name
+            }
+            if let surname = user.surname, !surname.isEmpty {
+                display += " " + surname
+            }
+            cell.textLabel?.text = display.trimmingCharacters(in: .whitespaces)
+            cell.textLabel?.font = .systemFont(ofSize: 15)
+            return cell
+        }
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "NewTableCell", for: indexPath) as? NewTableCell else { return UITableViewCell() }
         let data = creatingTrackersModel[indexPath.row]
         if indexPath.row == 1 {
@@ -973,6 +1076,17 @@ extension NewHabitViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if tableView == assigneeSuggestionsTableView {
+            let user = filteredUsers[indexPath.row]
+            if let tag = user.tag, !tag.isEmpty {
+                assigneeTextField.text = tag
+            } else {
+                assigneeTextField.text = ""
+            }
+            assigneeSuggestionsTableView?.isHidden = true
+            assigneeTextField.resignFirstResponder()
+            return
+        }
         tableView.deselectRow(at: indexPath, animated: true)
         if indexPath.row == 0 {
             let categoryViewController = TrackerCategoryViewController()

@@ -11,6 +11,14 @@ final class SettingsViewController: UIViewController {
     
     // Профиль
     private let profileHeader = UIView()
+    private let profileTitleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Заполнение профиля"
+        label.font = UIFont.systemFont(ofSize: 24, weight: .bold)
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
     private let avatarButton = UIButton(type: .system)
     private let avatarImageView = UIImageView()
     private let avatarOverlay = UIView()
@@ -51,6 +59,8 @@ final class SettingsViewController: UIViewController {
     private var avatarURL: String?
     private var userId: String? { Auth.auth().currentUser?.uid }
     private var userEmail: String? { Auth.auth().currentUser?.email }
+    private var isFirstProfileSetup: Bool = false
+    private var contentStackTopConstraint: NSLayoutConstraint?
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -60,13 +70,22 @@ final class SettingsViewController: UIViewController {
         loadUserProfile()
     }
     
+    func setupAsFirstProfile() {
+        isFirstProfileSetup = true
+        profileTitleLabel.isHidden = false
+        profileTitleLabel.text = "Заполнение профиля"
+        navigationItem.hidesBackButton = true
+        view.layoutIfNeeded()
+    }
+    
     private func setupUI() {
         view.backgroundColor = UIColor(named: "ypWhite")
-        title = NSLocalizedString("profile",  comment: "profile")
+        title = nil
         navigationController?.navigationBar.prefersLargeTitles = true
         
         // ScrollView
         scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.isScrollEnabled = true
         view.addSubview(scrollView)
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -80,8 +99,10 @@ final class SettingsViewController: UIViewController {
         contentStack.spacing = 32
         contentStack.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(contentStack)
+        let topOffset: CGFloat = isFirstProfileSetup ? 100 : 60
+        contentStackTopConstraint = contentStack.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: topOffset)
         NSLayoutConstraint.activate([
-            contentStack.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 100),
+            contentStackTopConstraint!,
             contentStack.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             contentStack.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentStack.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
@@ -91,6 +112,15 @@ final class SettingsViewController: UIViewController {
         // Profile Header
         profileHeader.translatesAutoresizingMaskIntoConstraints = false
         contentStack.addArrangedSubview(profileHeader)
+        
+        // Profile Title Label
+        profileHeader.addSubview(profileTitleLabel)
+        NSLayoutConstraint.activate([
+            profileTitleLabel.topAnchor.constraint(equalTo: profileHeader.topAnchor, constant: 20),
+            profileTitleLabel.centerXAnchor.constraint(equalTo: profileHeader.centerXAnchor),
+            profileTitleLabel.leadingAnchor.constraint(equalTo: profileHeader.leadingAnchor, constant: 20),
+            profileTitleLabel.trailingAnchor.constraint(equalTo: profileHeader.trailingAnchor, constant: -20)
+        ])
         
         // Avatar
         avatarButton.translatesAutoresizingMaskIntoConstraints = false
@@ -119,7 +149,7 @@ final class SettingsViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             avatarButton.centerXAnchor.constraint(equalTo: profileHeader.centerXAnchor),
-            avatarButton.topAnchor.constraint(equalTo: profileHeader.topAnchor, constant: 20),
+            avatarButton.topAnchor.constraint(equalTo: profileTitleLabel.bottomAnchor, constant: 20),
             avatarButton.widthAnchor.constraint(equalToConstant: 80),
             avatarButton.heightAnchor.constraint(equalToConstant: 80),
             
@@ -186,6 +216,8 @@ final class SettingsViewController: UIViewController {
         contentStack.alignment = .fill
         
         saveButton.isEnabled = true
+        
+        profileTitleLabel.isHidden = !isFirstProfileSetup
     }
     
     private func setupActions() {
@@ -296,40 +328,69 @@ final class SettingsViewController: UIViewController {
     
     @objc private func saveTapped() {
         view.endEditing(true)
-        guard let tag = tagField.text, !tag.isEmpty else {
-            showBanner(message: "Поле уникального тега обязательно", isError: true)
+        guard let name = nameField.text, !name.isEmpty,
+              let surname = surnameField.text, !surname.isEmpty,
+              let tag = tagField.text, !tag.isEmpty else {
+            showAlert(title: "Ошибка", message: "Пожалуйста, заполните все обязательные поля")
             return
         }
-        guard tag.first == "@", tag.count > 1 else {
-            showBanner(message: "Тег должен начинаться с @", isError: true)
+        guard let user = Auth.auth().currentUser else {
+            showAlert(title: "Ошибка", message: "Пользователь не авторизован")
             return
         }
-        let tagBody = tag.dropFirst()
-        let tagRegex = "^[A-Za-z0-9]+$"
-        if !NSPredicate(format: "SELF MATCHES %@", tagRegex).evaluate(with: tagBody) {
-            showBanner(message: "Тег должен содержать только латинские буквы и цифры", isError: true)
-            return
-        }
-        guard let userId = userId else { return }
-        var updateData: [String: Any] = [
-            "name": nameField.text ?? "",
-            "surname": surnameField.text ?? "",
-            "tag": tag
-        ]
-        
-        if let image = avatarImage {
-            saveAvatar(image: image) { [weak self] fileName in
-                if let fileName = fileName {
-                    updateData["avatarFileName"] = fileName
+        let db = Firestore.firestore()
+        let userRef = db.collection("users").document(user.uid)
+        // Проверяем уникальность тега
+        db.collection("users").whereField("tag", isEqualTo: tag).getDocuments { [weak self] snapshot, error in
+            if let error = error {
+                self?.showAlert(title: "Ошибка", message: error.localizedDescription)
+                return
+            }
+            if let documents = snapshot?.documents, !documents.isEmpty {
+                let isTagTakenByOtherUser = documents.contains { doc in
+                    doc.documentID != user.uid
                 }
-                self?.updateUserProfile(userId: userId, updateData: updateData)
-                DispatchQueue.main.async {
-                    self?.showBanner(message: "Данные сохранены", isError: false)
+                if isTagTakenByOtherUser {
+                    self?.showAlert(title: "Ошибка", message: "Этот тег уже занят другим пользователем")
+                    return
                 }
             }
+            // Сохраняем аватарку, если выбрана
+            var updateData: [String: Any] = [
+                "name": name,
+                "surname": surname,
+                "tag": tag
+            ]
+            if let avatarImage = self?.avatarImage {
+                self?.saveAvatar(image: avatarImage) { fileName in
+                    if let fileName = fileName {
+                        updateData["avatarFileName"] = fileName
+                    }
+                    userRef.setData(updateData, merge: true) { [weak self] error in
+                        self?.handleProfileSaveResult(error: error)
+                    }
+                }
+            } else {
+                userRef.setData(updateData, merge: true) { [weak self] error in
+                    self?.handleProfileSaveResult(error: error)
+                }
+            }
+        }
+    }
+    
+    private func handleProfileSaveResult(error: Error?) {
+        if let error = error {
+            self.showAlert(title: "Ошибка", message: error.localizedDescription)
         } else {
-            updateUserProfile(userId: userId, updateData: updateData)
-            showBanner(message: "Данные сохранены", isError: false)
+            self.showBanner(message: "Данные сохранены", isError: false)
+            if self.isFirstProfileSetup == true {
+                self.profileTitleLabel.isHidden = true
+                self.view.layoutIfNeeded()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                    self.navigateToTabBar(animated: true)
+                    self.isFirstProfileSetup = false
+                }
+            }
         }
     }
     
@@ -614,6 +675,32 @@ final class SettingsViewController: UIViewController {
             window.makeKeyAndVisible()
         }
     }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    private func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+    
+    private func navigateToTabBar(animated: Bool = false) {
+        let tabBarVC = TabBarController()
+        if animated {
+            guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                  let window = windowScene.windows.first else { return }
+            let transition = CATransition()
+            transition.type = .fade
+            transition.duration = 0.4
+            window.layer.add(transition, forKey: kCATransition)
+            window.rootViewController = tabBarVC
+            window.makeKeyAndVisible()
+        } else {
+            setRootViewController(tabBarVC)
+        }
+    }
 }
 
 // MARK: - PHPickerViewControllerDelegate
@@ -724,7 +811,10 @@ class SettingsTextField: UITextField {
 // MARK: - UITextFieldDelegate
 extension SettingsViewController: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        // Вызываем обновление аватарки после изменения текста
+        // Запретить пробелы в поле тега
+        if textField == tagField, string.contains(where: { $0.isWhitespace }) {
+            return false
+        }
         DispatchQueue.main.async { [weak self] in
             self?.updateAvatarImage()
         }

@@ -287,6 +287,12 @@ class AuthViewController: UIViewController {
         setRootViewController(rootVC)
     }
     
+    private func navigateToProfileSetup() {
+        let settingsVC = SettingsViewController()
+        settingsVC.setupAsFirstProfile()
+        setRootViewController(settingsVC)
+    }
+    
     // MARK: - Actions
     @objc private func actionButtonTapped() {
         guard let email = emailField.text, !email.isEmpty,
@@ -311,20 +317,25 @@ class AuthViewController: UIViewController {
                     self?.showAlert(title: "Ошибка", message: error.localizedDescription)
                     return
                 }
-                // Создаем документ пользователя в Firestore
+                // Создаём документ пользователя в Firestore
                 if let userId = result?.user.uid {
                     let db = Firestore.firestore()
                     db.collection("users").document(userId).setData([
                         "email": email,
-                        "createdAt": FieldValue.serverTimestamp()
-                    ]) { error in
+                        "tag": "",
+                        "name": "",
+                        "surname": "",
+                        "avatar": ""
+                    ], merge: true) { error in
                         if let error = error {
-                            print("Error creating user document: \(error)")
+                            print("Ошибка при создании профиля пользователя: \(error)")
+                        } else {
+                            print("Профиль пользователя успешно создан/обновлён")
                         }
                     }
                 }
                 self?.showAlert(title: "Успех", message: "Регистрация успешно завершена") { [weak self] in
-                    self?.navigateToTracker()
+                    self?.navigateToProfileSetup()
                 }
             }
         } else {
@@ -334,7 +345,37 @@ class AuthViewController: UIViewController {
                     self?.showAlert(title: "Ошибка", message: error.localizedDescription)
                     return
                 }
-                self?.navigateToTracker()
+                // Проверяем и создаём документ пользователя, если его нет
+                if let userId = result?.user.uid {
+                    let db = Firestore.firestore()
+                    let userRef = db.collection("users").document(userId)
+                    userRef.getDocument { snapshot, error in
+                        if let snapshot = snapshot, !snapshot.exists {
+                            userRef.setData([
+                                "email": email,
+                                "tag": "",
+                                "name": "",
+                                "surname": "",
+                                "avatar": ""
+                            ], merge: true) { error in
+                                if let error = error {
+                                    print("Ошибка при создании профиля пользователя: \(error)")
+                                } else {
+                                    print("Профиль пользователя успешно создан/обновлён")
+                                }
+                            }
+                        }
+                        let data = snapshot?.data()
+                        let name = data?["name"] as? String ?? ""
+                        let surname = data?["surname"] as? String ?? ""
+                        let tag = data?["tag"] as? String ?? ""
+                        if !name.isEmpty && !surname.isEmpty && !tag.isEmpty {
+                            self?.navigateToTracker()
+                        } else {
+                            self?.navigateToProfileSetup()
+                        }
+                    }
+                }
             }
         }
     }
@@ -454,11 +495,38 @@ class AuthViewController: UIViewController {
                 } else if let user = authResult?.user {
                     // Сохраняем профиль в Firestore
                     let db = Firestore.firestore()
-                    db.collection("users").document(user.uid).setData([
-                        "email": user.email ?? "",
-                        "createdAt": FieldValue.serverTimestamp()
-                    ], merge: true)
-                    self?.navigateToTracker()
+                    let userRef = db.collection("users").document(user.uid)
+                    userRef.getDocument { snapshot, error in
+                        if let snapshot = snapshot, !snapshot.exists {
+                            // Если профиля нет, создаем пустой
+                            userRef.setData([
+                                "email": user.email ?? "",
+                                "tag": "",
+                                "name": "",
+                                "surname": "",
+                                "avatar": ""
+                            ], merge: true) { error in
+                                if let error = error {
+                                    print("Ошибка при создании профиля пользователя: \(error)")
+                                } else {
+                                    print("Профиль пользователя успешно создан/обновлён")
+                                }
+                                self?.navigateToProfileSetup()
+                            }
+                        } else {
+                            // Проверяем заполненность существующего профиля
+                            let data = snapshot?.data()
+                            let name = data?["name"] as? String ?? ""
+                            let surname = data?["surname"] as? String ?? ""
+                            let tag = data?["tag"] as? String ?? ""
+                            
+                            if name.isEmpty || surname.isEmpty || tag.isEmpty {
+                                self?.navigateToProfileSetup()
+                            } else {
+                                self?.navigateToTracker()
+                            }
+                        }
+                    }
                 }
             }
         }
