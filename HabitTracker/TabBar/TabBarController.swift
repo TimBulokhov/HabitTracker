@@ -37,6 +37,7 @@ final class TabBarController: UITabBarController {
         let trackerViewController = TrackersViewController()
         let statisticsViewController = StatisticsViewController()
         let statisticsViewModel = StatsViewModel()
+        let settingsViewController = SettingsViewController()
         
         // Инициализируем StatisticsViewController с ViewModel
         statisticsViewController.initialize(viewModel: statisticsViewModel)
@@ -63,6 +64,11 @@ final class TabBarController: UITabBarController {
                 viewController: notificationsViewController,
                 title: NSLocalizedString("notifications", comment: "notifications"),
                 image: UIImage(systemName: "bell.badge")
+            ),
+            generateVC(
+                viewController: settingsViewController,
+                title: NSLocalizedString("profile", comment: "profile"),
+                image: UIImage(systemName: "gear")
             )
         ]
         updateNotificationsBadge()

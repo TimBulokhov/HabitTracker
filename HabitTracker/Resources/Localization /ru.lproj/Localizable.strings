@@ -92,3 +92,5 @@
 "completedEvents" = "Завершено событий";
 "completionRate" = "Процент завершенности";
 "overdueTasks" = "Просроченных задач";
+
+"profile" = "profile";

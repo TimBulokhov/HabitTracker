@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import FirebaseCore
+import FirebaseAuth
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
@@ -16,8 +18,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
+        // Инициализируем Firebase
+        FirebaseApp.configure()
+        
         let window = UIWindow(windowScene: windowScene)
-        window.rootViewController = dataStorage.firstLaunchApplication ? (TabBarController()) : (OnboardViewController())
+        
+        // Проверяем, авторизован ли пользователь
+        if Auth.auth().currentUser != nil {
+            // Если пользователь уже авторизован, показываем основной интерфейс
+            window.rootViewController = dataStorage.firstLaunchApplication ? (TabBarController()) : (OnboardViewController())
+        } else {
+            // Если пользователь не авторизован, показываем экран авторизации
+            window.rootViewController = AuthViewController()
+        }
+        
         window.makeKeyAndVisible()
         self.window = window
     }
