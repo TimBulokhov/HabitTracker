@@ -220,12 +220,12 @@ final class NotificationsViewController: UIViewController {
     private func highlightStatus(_ status: String) -> NSAttributedString {
         let attributed = NSMutableAttributedString(string: status)
         let statusOptions: [(String, UIColor)] = [
-            ("created", UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1)),
-            ("in_progress", UIColor(red: 255/255, green: 215/255, blue: 0/255, alpha: 1)),
-            ("completed", UIColor(red: 66/255, green: 170/255, blue: 255/255, alpha: 1)),
-            ("testing", UIColor(red: 247/255, green: 148/255, blue: 60/255, alpha: 1)),
-            ("ready_for_release", UIColor(red: 0/255, green: 165/255, blue: 80/255, alpha: 1)),
-            ("done", UIColor(red: 102/255, green: 0/255, blue: 153/255, alpha: 1))
+            ("Создана", UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1)),
+            ("В процессе", UIColor(red: 255/255, green: 215/255, blue: 0/255, alpha: 1)),
+            ("Выполнена", UIColor(red: 66/255, green: 170/255, blue: 255/255, alpha: 1)),
+            ("Тестируется", UIColor(red: 247/255, green: 148/255, blue: 60/255, alpha: 1)),
+            ("Готово к релизу", UIColor(red: 0/255, green: 165/255, blue: 80/255, alpha: 1)),
+            ("Завершена", UIColor(red: 102/255, green: 0/255, blue: 153/255, alpha: 1))
         ]
         for (raw, color) in statusOptions {
             if let range = status.range(of: raw) {
@@ -574,12 +574,12 @@ final class NotificationCell: UITableViewCell {
     private func highlightStatus(_ status: String) -> NSAttributedString {
         let attributed = NSMutableAttributedString(string: status)
         let statusOptions: [(String, UIColor)] = [
-            ("created", UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1)),
-            ("in_progress", UIColor(red: 255/255, green: 215/255, blue: 0/255, alpha: 1)),
-            ("completed", UIColor(red: 66/255, green: 170/255, blue: 255/255, alpha: 1)),
-            ("testing", UIColor(red: 247/255, green: 148/255, blue: 60/255, alpha: 1)),
-            ("ready_for_release", UIColor(red: 0/255, green: 165/255, blue: 80/255, alpha: 1)),
-            ("done", UIColor(red: 102/255, green: 0/255, blue: 153/255, alpha: 1))
+            ("Создана", UIColor(red: 128/255, green: 128/255, blue: 128/255, alpha: 1)),
+            ("В процессе", UIColor(red: 255/255, green: 215/255, blue: 0/255, alpha: 1)),
+            ("Выполнена", UIColor(red: 66/255, green: 170/255, blue: 255/255, alpha: 1)),
+            ("Тестируется", UIColor(red: 247/255, green: 148/255, blue: 60/255, alpha: 1)),
+            ("Готово к релизу", UIColor(red: 0/255, green: 165/255, blue: 80/255, alpha: 1)),
+            ("Завершена", UIColor(red: 102/255, green: 0/255, blue: 153/255, alpha: 1))
         ]
         for (raw, color) in statusOptions {
             if let range = status.range(of: raw) {

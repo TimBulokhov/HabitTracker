@@ -12,6 +12,26 @@ final class NotificationManager {
         return normalized
     }
     
+    // Функция для перевода статусов на русский язык
+    private func getStatusText(_ status: String) -> String {
+        switch status {
+        case "created":
+            return "Создана"
+        case "in_progress":
+            return "В процессе"
+        case "completed":
+            return "Выполнена"
+        case "testing":
+            return "Тестируется"
+        case "ready_for_release":
+            return "Готово к релизу"
+        case "done":
+            return "Завершена"
+        default:
+            return status
+        }
+    }
+    
     func requestAuthorization() {
         center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if let error = error {
@@ -71,7 +91,7 @@ final class NotificationManager {
                 let deadlineId = "tracker-\(tracker.id)-deadline-\(Int(deadline.timeIntervalSince1970))"
                 let deadlineContent = UNMutableNotificationContent()
                 deadlineContent.title = "Скоро дедлайн!"
-                var body = "\(tracker.name)\nПроект: \(normalizedCategory)\nСтатус: \(tracker.status)"
+                var body = "\(tracker.name)\nПроект: \(normalizedCategory)\nСтатус: \(self.getStatusText(tracker.status))"
                 if !tracker.assignee.isEmpty {
                     body += "\nОтветственное лицо: \(tracker.assignee)"
                 }
@@ -181,7 +201,7 @@ final class NotificationManager {
         center.removePendingNotificationRequests(withIdentifiers: [id])
         let content = UNMutableNotificationContent()
         content.title = "Статус задачи изменён"
-        var body = "\(tracker.name)\nПроект: \(normalizedCategory)\nТекущий статус: \(tracker.status)"
+        var body = "\(tracker.name)\nПроект: \(normalizedCategory)\nТекущий статус: \(self.getStatusText(tracker.status))"
         if !tracker.assignee.isEmpty {
             body += "\nОтветственное лицо: \(tracker.assignee)"
         }
@@ -222,7 +242,7 @@ final class NotificationManager {
         if tracker.isIrregular {
             newContent.body = "\(tracker.name)\nНовый проект: \(normalizedNewCategory)\nРанее: \(normalizedOldCategory)"
         } else {
-            var body = "\(tracker.name)\nНовый проект: \(normalizedNewCategory)\nРанее: \(normalizedOldCategory)\nТекущий статус: \(tracker.status)"
+            var body = "\(tracker.name)\nНовый проект: \(normalizedNewCategory)\nРанее: \(normalizedOldCategory)\nТекущий статус: \(self.getStatusText(tracker.status))"
             if !tracker.assignee.isEmpty {
                 body += "\nОтветственное лицо: \(tracker.assignee)"
             }
@@ -249,7 +269,7 @@ final class NotificationManager {
         if tracker.isIrregular {
             oldContent.body = "\(tracker.name)\nНовый проект: \(normalizedNewCategory)"
         } else {
-            var body = "\(tracker.name)\nНовый проект: \(normalizedNewCategory)\nТекущий статус: \(tracker.status)"
+            var body = "\(tracker.name)\nНовый проект: \(normalizedNewCategory)\nТекущий статус: \(self.getStatusText(tracker.status))"
             if !tracker.assignee.isEmpty {
                 body += "\nОтветственное лицо: \(tracker.assignee)"
             }
@@ -285,7 +305,7 @@ final class NotificationManager {
         
         let content = UNMutableNotificationContent()
         content.title = "Время вышло. Задача просрочена!"
-        content.body = "\(tracker.name)\nПроект: \(normalizedCategory)\nСтатус: \(tracker.status)"
+        content.body = "\(tracker.name)\nПроект: \(normalizedCategory)\nСтатус: \(self.getStatusText(tracker.status))"
         content.sound = UNNotificationSound.default
         content.userInfo = ["category": normalizedCategory, "type": "overdue"]
         
@@ -342,7 +362,7 @@ final class NotificationManager {
         let id = "tracker-\(tracker.id)-assignee-\(Int(Date().timeIntervalSince1970))"
         let content = UNMutableNotificationContent()
         content.title = "У задачи новый исполнитель"
-        var body = "Задача: \(tracker.name)\nПроект: \(normalizedCategory)\nСтатус: \(tracker.status)"
+        var body = "Задача: \(tracker.name)\nПроект: \(normalizedCategory)\nСтатус: \(self.getStatusText(tracker.status))"
         if let deadline = tracker.deadline {
             body += "\nКрайний срок: \(formatDate(deadline))"
         }

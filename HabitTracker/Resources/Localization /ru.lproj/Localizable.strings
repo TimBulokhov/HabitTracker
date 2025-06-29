@@ -5,15 +5,15 @@
   Created by Timofey Bulokhov on 08.06.2024.
   
 */
-
-"trackerTitle" = "Трекеры";
+"status" = "Статус";
+"trackerTitle" = "Задачи";
 "statisticsTitle" = "Статистика";
 "filterButton" = "Фильтры";
 "search" = "Поиск";
 "cancel" = "Отменить";
 "schedule" = "Расписание";
 "ready" = "Готово";
-"category" = "Категория";
+"category" = "Проект";
 "create" = "Создать";
 "save" = "Сохранить";
 
@@ -21,28 +21,28 @@
 "unpinTracker" = "Открепить";
 "editTracker" = "Редактировать";
 "deleteTracker" = "Удалить";
-"addCategory" = "Добавить категорию";
+"addCategory" = "Добавить проект";
 "deleteCategory" = "Удалить";
-"newCategory" = "Новая категория";
-"nameOfCategory" = "Введите название категории";
-"trackerCreation" = "Создание трекера";
-"habit" = "Привычка";
+"newCategory" = "Новый проект";
+"nameOfCategory" = "Введите название проекта";
+"trackerCreation" = "Создание задачи";
+"habit" = "Стандартная задача";
 "irrEvent" = "Нерегулярное событие";
-"newHabit" = "Новая привычка";
-"nameOfTracker" = "Введите название трекера";
+"newHabit" = "Новая задача";
+"nameOfTracker" = "Введите название задачи";
 "limit" = "Ограничение 38 символов";
 "everyDay" = "Каждый день";
 "color" = "Цвет";
 "newIrrEvent" = "Новое нерегулярное событие";
-"editing" = "Редактирование привычки";
+"editing" = "Редактирование задачи";
 
 "pinnedTrackers" = "Закрепленные";
-"showDeleteAlert" = "Уверены что хотите удалить трекер?";
+"showDeleteAlert" = "Уверены что хотите удалить карточку?";
 
 "searchErrorStub" = "Ничего не найдено";
 "emptyErrorStub" = "Что будем отслеживать?";
 "nothingToAnalyze" = "Анализировать пока нечего";
-"descriptionPlaceholderStub" = "Привычки и события можно\nобъединить по смыслу";
+"descriptionPlaceholderStub" = "Задачи и события можно\nобъединить в проект";
 
 
 "blueOnboardingText" = "Отслеживайте только то, что хотите";
@@ -65,14 +65,14 @@
 "Sat" = "Сб";
 "Sun" = "Вс";
 
-"allTrackers" = "Все трекеры";
-"todayTrackers" = "Трекеры на сегодня";
+"allTrackers" = "Все задачи";
+"todayTrackers" = "Задачи на сегодня";
 "completedTrackers" = "Завершенные";
 "uncompletedTrackers" = "Незавершенные";
 
 "bestPeriod" = "Лучший период";
 "idealDays" = "Идеальные дни";
-"trackersCompletedStats" = "Трекеров завершено";
+"trackersCompletedStats" = "Задач завершено";
 "averageValue" = "Среднее значение";
 
 "emoji" = "Эмодзи";
